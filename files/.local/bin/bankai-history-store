@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Bounded, locked greeting history and edition headings for Bleach Kitty."""
+import argparse
+from datetime import datetime, timezone
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import sys
+import tempfile
+
+
+def portrait(name, art):
+    if not re.fullmatch(r'[a-z0-9-]+', name) or art not in ('color', 'manga'):
+        raise ValueError('Invalid portrait or edition')
+    root = Path.home() / '.config/fastfetch'
+    folder = 'manga' if art == 'manga' else 'portraits'
+    if not (root / 'portraits' / (name + '.png')).is_file() or not (root / folder / (name + '.png')).is_file():
+        raise ValueError('Portrait edition is unavailable')
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', choices=['record', 'list', 'get', 'config'])
+    parser.add_argument('values', nargs='*')
+    args = parser.parse_args()
+    if args.action == 'config':
+        config, art = args.values
+        if art not in ('color', 'manga'):
+            raise ValueError('Invalid edition')
+        data = json.loads(Path(config).read_text())
+        heading = data['modules'][0]
+        if isinstance(heading, dict) and heading.get('type') == 'custom':
+            heading['format'] += '\x1b[38;2;129;144;166m  / ' + art.upper() + '\x1b[0m'
+        print(json.dumps(data))
+        return
+    state = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'bleach'
+    state.mkdir(parents=True, exist_ok=True)
+    path = state / 'art-history.json'
+    with (state / 'art-history.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            rows = json.loads(path.read_text())
+            if not isinstance(rows, list):
+                raise ValueError('Invalid history file')
+        except FileNotFoundError:
+            rows = []
+        if args.action == 'record':
+            name, art = args.values
+            portrait(name, art)
+            rows.insert(0, {'name': name, 'art': art, 'time': datetime.now(timezone.utc).isoformat(timespec='seconds')})
+            with tempfile.NamedTemporaryFile(mode='w', dir=state, delete=False) as stream:
+                temp = Path(stream.name)
+                json.dump(rows[:50], stream, indent=2)
+                stream.write('\n')
+            try:
+                temp.replace(path)
+            finally:
+                temp.unlink(missing_ok=True)
+        elif args.action == 'get':
+            index = int(args.values[0])
+            if index < 1 or index > len(rows):
+                raise ValueError('History entry is unavailable')
+            row = rows[index - 1]
+            portrait(row['name'], row['art'])
+            print(row['name'])
+            print(row['art'])
+        else:
+            for index, row in enumerate(rows, 1):
+                portrait(row['name'], row['art'])
+                time = datetime.fromisoformat(row['time']).astimezone().strftime('%b %d %H:%M')
+                print(f"{index}\t{row['name']}\t{row['art']}\t{time} · {row['name'].replace('-', ' ').title()} · {row['art'].upper()}")
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (ValueError, OSError, KeyError, TypeError, IndexError) as error:
+        print(f'bankai-history: {error}', file=sys.stderr)
+        sys.exit(1)

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Reiatsu Monitor
+Comment=Bleach V5 live system telemetry
+Exec=kitty --title "Reiatsu Monitor · BANKAI" fish -c bankai-monitor
+TryExec=kitty
+Icon=bleach-bankai
+Terminal=false
+Categories=System;Monitor;
+Keywords=Bleach;Bankai;Soul Society;TYBW;
+StartupNotify=true

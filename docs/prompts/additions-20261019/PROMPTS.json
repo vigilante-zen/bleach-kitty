@@ -1,0 +1,82 @@
+{
+  "tool": "built-in imagegen",
+  "jobs": [
+    {
+      "name": "starrk",
+      "label": "STARRK",
+      "primary": "91B9D9",
+      "secondary": "E8D9A0",
+      "subject": "Coyote Starrk from Bleach, adult man with shoulder-length wavy brown hair, short facial stubble, tired blue-gray eyes, bone jaw necklace and white high-collared Arrancar coat, calm weary expression",
+      "prompt": "Use case: illustration-story. Create one premium anime color portrait for a Bleach-themed Kitty terminal greeting. Subject: Coyote Starrk from Bleach, adult man with shoulder-length wavy brown hair, short facial stubble, tired blue-gray eyes, bone jaw necklace and white high-collared Arrancar coat, calm weary expression. Square shoulder-up centered composition, head fully visible, clean silhouette readable at 240 pixels. Almost-black #090C12 plain background with very subtle texture. Polished cel shading, confident clean ink contours, restrained rim lighting in #91B9D9. Canonical character colors, rich shadows, sharp facial features. No extra characters, text (except Hisagi's canonical small cheek tattoo), letters, border, logos or watermark. Fully clothed, no weapons pointed at viewer.",
+      "manga_prompt": "Use case: style-transfer. Edit target: the supplied color portrait of Coyote Starrk from Bleach, adult man with shoulder-length wavy brown hair, short facial stubble, tired blue-gray eyes, bone jaw necklace and white high-collared Arrancar coat, calm weary expression. Convert this same portrait into a premium manga ink edition for Kitty. Keep character identity, face, expression, hairstyle, outfit coverage, accessories and pose unchanged. Square shoulder-up composition, nearly black #090C12 background. Crisp black ink, bone white shapes, varied brush linework, screentone dots and selective crosshatching. Strong silhouette readable at 240px. Everything monochrome except one restrained accent #91B9D9, sparingly on small eye details or a few edge highlights. No glow, sepia, broad color washes, new objects, border, logos or watermark. No text except preserving Hisagi's existing 69 cheek tattoo if present.",
+      "outputs": {
+        "color": {
+          "path": "~/.config/fastfetch/portraits/starrk.png",
+          "sha256": "f9545c8ace03edebf3f7301717375e994be6ecc463a2c8b673e063e4e83710ee"
+        },
+        "manga": {
+          "path": "~/.config/fastfetch/manga/starrk.png",
+          "sha256": "e47271658055776957d6c01fdcbb5691e09846102e195d28b3a78ad6031bff19"
+        }
+      }
+    },
+    {
+      "name": "harribel",
+      "label": "HARRIBEL",
+      "primary": "F0C674",
+      "secondary": "76E3A3",
+      "subject": "Tier Harribel from Bleach, adult woman with dark skin, short golden blonde hair with braided strands, green eyes, white high-collared Arrancar jacket zipped up to cover the lower face and chest, stern composed expression; modest shoulder-up framing",
+      "prompt": "Use case: illustration-story. Create one premium anime color portrait for a Bleach-themed Kitty terminal greeting. Subject: Tier Harribel from Bleach, adult woman with dark skin, short golden blonde hair with braided strands, green eyes, white high-collared Arrancar jacket zipped up to cover the lower face and chest, stern composed expression; modest shoulder-up framing. Square shoulder-up centered composition, head fully visible, clean silhouette readable at 240 pixels. Almost-black #090C12 plain background with very subtle texture. Polished cel shading, confident clean ink contours, restrained rim lighting in #F0C674. Canonical character colors, rich shadows, sharp facial features. No extra characters, text (except Hisagi's canonical small cheek tattoo), letters, border, logos or watermark. Fully clothed, no weapons pointed at viewer.",
+      "manga_prompt": "Use case: style-transfer. Edit target: the supplied color portrait of Tier Harribel from Bleach, adult woman with dark skin, short golden blonde hair with braided strands, green eyes, white high-collared Arrancar jacket zipped up to cover the lower face and chest, stern composed expression; modest shoulder-up framing. Convert this same portrait into a premium manga ink edition for Kitty. Keep character identity, face, expression, hairstyle, outfit coverage, accessories and pose unchanged. Square shoulder-up composition, nearly black #090C12 background. Crisp black ink, bone white shapes, varied brush linework, screentone dots and selective crosshatching. Strong silhouette readable at 240px. Everything monochrome except one restrained accent #F0C674, sparingly on small eye details or a few edge highlights. No glow, sepia, broad color washes, new objects, border, logos or watermark. No text except preserving Hisagi's existing 69 cheek tattoo if present.",
+      "outputs": {
+        "color": {
+          "path": "~/.config/fastfetch/portraits/harribel.png",
+          "sha256": "f3e13fa63e7bca260d59bdfeebf5aa89a6ab657205f37189310f1393bd8b5a9a"
+        },
+        "manga": {
+          "path": "~/.config/fastfetch/manga/harribel.png",
+          "sha256": "543df0c577a9ddf5a3ec6d32872eb7802fd09df616117c5af327cacb1f8986df"
+        }
+      }
+    },
+    {
+      "name": "hisagi",
+      "label": "HISAGI",
+      "primary": "83D9C4",
+      "secondary": "C5CFFF",
+      "subject": "Shuhei Hisagi from Bleach, adult man with spiky short black hair, dark eyes, distinctive 69 cheek tattoo and three thin parallel scars over the opposite eye, black sleeveless Shinigami uniform and black choker, serious expression",
+      "prompt": "Use case: illustration-story. Create one premium anime color portrait for a Bleach-themed Kitty terminal greeting. Subject: Shuhei Hisagi from Bleach, adult man with spiky short black hair, dark eyes, distinctive 69 cheek tattoo and three thin parallel scars over the opposite eye, black sleeveless Shinigami uniform and black choker, serious expression. Square shoulder-up centered composition, head fully visible, clean silhouette readable at 240 pixels. Almost-black #090C12 plain background with very subtle texture. Polished cel shading, confident clean ink contours, restrained rim lighting in #83D9C4. Canonical character colors, rich shadows, sharp facial features. No extra characters, text (except Hisagi's canonical small cheek tattoo), letters, border, logos or watermark. Fully clothed, no weapons pointed at viewer.",
+      "manga_prompt": "Use case: style-transfer. Edit target: the supplied color portrait of Shuhei Hisagi from Bleach, adult man with spiky short black hair, dark eyes, distinctive 69 cheek tattoo and three thin parallel scars over the opposite eye, black sleeveless Shinigami uniform and black choker, serious expression. Convert this same portrait into a premium manga ink edition for Kitty. Keep character identity, face, expression, hairstyle, outfit coverage, accessories and pose unchanged. Square shoulder-up composition, nearly black #090C12 background. Crisp black ink, bone white shapes, varied brush linework, screentone dots and selective crosshatching. Strong silhouette readable at 240px. Everything monochrome except one restrained accent #83D9C4, sparingly on small eye details or a few edge highlights. No glow, sepia, broad color washes, new objects, border, logos or watermark. No text except preserving Hisagi's existing 69 cheek tattoo if present.",
+      "outputs": {
+        "color": {
+          "path": "~/.config/fastfetch/portraits/hisagi.png",
+          "sha256": "1119aeaa8ffcf29e90b544d5a8872861b84ee87319891c7a913a745ee5024dbc"
+        },
+        "manga": {
+          "path": "~/.config/fastfetch/manga/hisagi.png",
+          "sha256": "67e998229372a3dbff8724adbc4c02cf69ebf5b7f367a48cb78b63452503809f"
+        }
+      }
+    },
+    {
+      "name": "komamura",
+      "label": "KOMAMURA",
+      "primary": "DDA66B",
+      "secondary": "E8EDF5",
+      "subject": "Sajin Komamura from Bleach, anthropomorphic adult wolf captain with reddish brown fur, upright ears, long canine muzzle, amber eyes, black Shinigami robes under a white captain's haori, dignified expression, no helmet",
+      "prompt": "Use case: illustration-story. Create one premium anime color portrait for a Bleach-themed Kitty terminal greeting. Subject: Sajin Komamura from Bleach, anthropomorphic adult wolf captain with reddish brown fur, upright ears, long canine muzzle, amber eyes, black Shinigami robes under a white captain's haori, dignified expression, no helmet. Square shoulder-up centered composition, head fully visible, clean silhouette readable at 240 pixels. Almost-black #090C12 plain background with very subtle texture. Polished cel shading, confident clean ink contours, restrained rim lighting in #DDA66B. Canonical character colors, rich shadows, sharp facial features. No extra characters, text (except Hisagi's canonical small cheek tattoo), letters, border, logos or watermark. Fully clothed, no weapons pointed at viewer.",
+      "manga_prompt": "Use case: style-transfer. Edit target: the supplied color portrait of Sajin Komamura from Bleach, anthropomorphic adult wolf captain with reddish brown fur, upright ears, long canine muzzle, amber eyes, black Shinigami robes under a white captain's haori, dignified expression, no helmet. Convert this same portrait into a premium manga ink edition for Kitty. Keep character identity, face, expression, hairstyle, outfit coverage, accessories and pose unchanged. Square shoulder-up composition, nearly black #090C12 background. Crisp black ink, bone white shapes, varied brush linework, screentone dots and selective crosshatching. Strong silhouette readable at 240px. Everything monochrome except one restrained accent #DDA66B, sparingly on small eye details or a few edge highlights. No glow, sepia, broad color washes, new objects, border, logos or watermark. No text except preserving Hisagi's existing 69 cheek tattoo if present.",
+      "outputs": {
+        "color": {
+          "path": "~/.config/fastfetch/portraits/komamura.png",
+          "sha256": "8e75f822fddb3b319e47ce08f3a476ffb284ff54a2aa1e536c102a9ac9760bfe"
+        },
+        "manga": {
+          "path": "~/.config/fastfetch/manga/komamura.png",
+          "sha256": "1c4ac67a4d9abafa6cee7429c0ea09382372a3886d2043cf92c82d272b39ca89"
+        }
+      }
+    }
+  ],
+  "status": "installed"
+}

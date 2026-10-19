@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Back up and restore the Bleach Kitty setup."""
+import argparse
+from datetime import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import stat
+import sys
+import tempfile
+
+TREES = ['.config/kitty', '.config/fastfetch', '.config/btop']
+FILES = ['.config/fish/config.fish', '.config/fish/functions/fish_prompt.fish',
+         '.config/fish/functions/fish_title.fish', '.config/fish/functions/fish_right_prompt.fish', '.local/bin/bankai-roster',
+         '.local/bin/bankai-preview', '.local/bin/bankai-history-store', '.local/bin/bankai-backup', '.local/bin/bankai-doctor',
+         '.local/share/applications/bleach-terminal.desktop',
+         '.local/share/applications/bleach-monitor.desktop',
+         '.local/share/icons/hicolor/scalable/apps/bleach-bankai.svg']
+PATTERNS = ['.config/fish/functions/bankai-*.fish', '.config/fish/completions/bankai-*.fish']
+
+
+def digest(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def allowed(relative):
+    p = Path(relative)
+    if p.is_absolute() or '..' in p.parts or str(p) != relative:
+        return False
+    return (relative in FILES or any(relative.startswith(t + '/') for t in TREES)
+            or any(p.match(pattern) for pattern in PATTERNS))
+
+
+def reject_links(path, root):
+    while path != root:
+        if path.is_symlink():
+            raise ValueError(f'Symlink cannot be backed up or restored: {path}')
+        path = path.parent
+
+
+def create(home, root):
+    root.mkdir(parents=True, exist_ok=True)
+    name = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
+    temporary = Path(tempfile.mkdtemp(prefix='.partial-', dir=root))
+    try:
+        paths = {home / p for p in FILES if (home / p).is_file()}
+        for pattern in PATTERNS:
+            paths.update(p for p in home.glob(pattern) if p.is_file())
+        for tree in TREES:
+            paths.update(p for p in (home / tree).rglob('*') if p.is_file())
+        if not paths:
+            raise ValueError('No Kitty theme files were found.')
+        entries = []
+        for path in sorted(paths):
+            reject_links(path, home)
+            relative = str(path.relative_to(home))
+            dest = temporary / 'files' / relative
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, dest)
+            entries.append({'path': relative, 'sha256': digest(dest),
+                            'mode': stat.S_IMODE(dest.stat().st_mode)})
+        (temporary / 'manifest.json').write_text(json.dumps({'version': 1, 'files': entries}, indent=2) + '\n')
+        final = root / name
+        temporary.rename(final)
+        return final, len(entries)
+    finally:
+        if temporary.exists():
+            shutil.rmtree(temporary)
+
+
+def verify(snapshot, home):
+    reject_links(snapshot, snapshot.parent)
+    manifest = snapshot / 'manifest.json'
+    reject_links(manifest, snapshot)
+    data = json.loads(manifest.read_text())
+    if not isinstance(data, dict) or data.get('version') != 1 or not isinstance(data.get('files'), list) or not data['files']:
+        raise ValueError('Invalid snapshot manifest.')
+    seen = set()
+    for entry in data['files']:
+        if not isinstance(entry, dict):
+            raise ValueError('Invalid file entry.')
+        relative = entry.get('path')
+        if not isinstance(relative, str) or not allowed(relative) or relative in seen:
+            raise ValueError(f'Invalid snapshot path: {relative}')
+        seen.add(relative)
+        mode = entry.get('mode')
+        if type(mode) is not int or not 0 <= mode <= 0o777:
+            raise ValueError('Invalid file permissions.')
+        src = snapshot / 'files' / relative
+        reject_links(src, snapshot)
+        reject_links(home / relative, home)
+        if (home / relative).exists() and not (home / relative).is_file():
+            raise ValueError(f'Restore destination is not a file: {relative}')
+        if not src.is_file() or digest(src) != entry.get('sha256'):
+            raise ValueError(f'Integrity check failed: {relative}')
+    return data['files']
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', nargs='?', default='create', choices=['create', 'list', 'verify', 'restore'])
+    parser.add_argument('snapshot', nargs='?')
+    args = parser.parse_args()
+    home = Path.home()
+    root = home / 'Backups/Bleach-Kitty'
+    if args.action in ['verify', 'restore']:
+        if not args.snapshot or Path(args.snapshot).name != args.snapshot or args.snapshot in ['.', '..']:
+            parser.error('Provide a snapshot name from bankai-backup list.')
+        snapshot = root / args.snapshot
+        entries = verify(snapshot, home)
+        if args.action == 'verify':
+            print(f'Verified {len(entries)} files: {snapshot.name}')
+            return
+        # Validate the whole snapshot before replacing files, and retain current settings.
+        previous, _ = create(home, root)
+        for entry in entries:
+            relative = entry['path']
+            dest = home / relative
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            fd, temporary = tempfile.mkstemp(prefix='.' + dest.name, dir=dest.parent)
+            os.close(fd)
+            try:
+                shutil.copy2(snapshot / 'files' / relative, temporary)
+                os.chmod(temporary, entry['mode'])
+                os.replace(temporary, dest)
+            finally:
+                if os.path.exists(temporary):
+                    os.unlink(temporary)
+        print(f'Restored {len(entries)} files. Open a new Kitty window.')
+        print(f'Previous settings saved: {previous.name}')
+    elif args.snapshot:
+        parser.error('This action does not accept a snapshot name.')
+    elif args.action == 'list':
+        for p in sorted(root.glob('*'), reverse=True):
+            if p.is_dir() and not p.name.startswith('.') and (p / 'manifest.json').is_file():
+                print(p.name)
+    else:
+        snapshot, count = create(home, root)
+        print(f'Saved {count} files: {snapshot}')
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (OSError, ValueError, TypeError) as error:
+        print(f'bankai-backup: {error}', file=sys.stderr)
+        sys.exit(1)

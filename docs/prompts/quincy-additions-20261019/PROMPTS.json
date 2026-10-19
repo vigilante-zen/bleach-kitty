@@ -1,0 +1,68 @@
+{
+  "tool": "built-in imagegen",
+  "jobs": [
+    {
+      "name": "jugram",
+      "display": "Jugram Haschwalth",
+      "label": "JUGRAM",
+      "primary": "E8D9A0",
+      "secondary": "91DCFF",
+      "subject": "Jugram Haschwalth from Bleach, adult man with long straight golden-blonde hair, calm green eyes, stern composed face, white high-collared double-breasted Wandenreich military coat with gold fasteners and white cape",
+      "prompt": "Use case: illustration-story. Create one premium anime color portrait for a Bleach-themed Kitty terminal greeting. Subject: Jugram Haschwalth from Bleach, adult man with long straight golden-blonde hair, calm green eyes, stern composed face, white high-collared double-breasted Wandenreich military coat with gold fasteners and white cape. Square shoulder-up centered composition, head and hat fully visible with margin, clean silhouette readable at 240px. Nearly black #090C12 plain background with subtle texture. Polished cel shading, confident clean ink contours, restrained rim lighting in #E8D9A0. Canonical character colors, rich shadows, sharp facial features. Single character, fully clothed. No text, letters, border, logos, watermark or weapons.",
+      "manga_prompt": "Use case: style-transfer. Edit target: the supplied color portrait of Jugram Haschwalth. Convert the same portrait into a premium manga ink edition for Kitty. Preserve character identity, face, expression, hairstyle, hat, uniform, coverage, accessories and pose. Square shoulder-up composition and nearly black #090C12 background. Crisp black ink, bone-white shapes, varied brush linework, screentone dots and selective crosshatching. Strong silhouette readable at 240px. Everything monochrome except one restrained accent #E8D9A0, sparingly in eye details or a few edge highlights. No glow, sepia, broad color washes, new objects, text, borders, logos or watermark.",
+      "outputs": {
+        "color": {
+          "path": "~/.config/fastfetch/portraits/jugram.png",
+          "sha256": "0f898a86cbbecfd26f710a50fb1fe8cc458e0578623466162a078842f7a76f51"
+        },
+        "manga": {
+          "path": "~/.config/fastfetch/manga/jugram.png",
+          "sha256": "58c2582b0e6fe21aa710e22024b69b4fd96d8e073b65b8e2a0eef6cdfdbc1302"
+        }
+      },
+      "color_correction_prompt": "Edit target: supplied anime portrait of Jugram Haschwalth. Remove only the white military hat and its insignia. Show his bare head with canonical long straight golden blonde hair, center-parted with face-framing strands, flowing naturally over his shoulders. Preserve the exact face, green eyes, expression, white high collar, cape, gold clasps, pose, framing, cel-shaded art style and dark background. No hat, headwear, crown, text, watermark or new objects.",
+      "manga_reference": "~/.config/fastfetch/quincy-additions-20261019/jugram-color-v2.png"
+    },
+    {
+      "name": "bazz-b",
+      "display": "Bazz-B",
+      "label": "BAZZ B",
+      "primary": "FF8C72",
+      "secondary": "F0C674",
+      "subject": "Bazz-B from Bleach, adult man with a vivid red upright mohawk, shaved sides, sharp eyebrows, a small eyebrow piercing, red eyes and confident smirk, wearing a white high-collared Wandenreich military uniform",
+      "prompt": "Use case: illustration-story. Create one premium anime color portrait for a Bleach-themed Kitty terminal greeting. Subject: Bazz-B from Bleach, adult man with a vivid red upright mohawk, shaved sides, sharp eyebrows, a small eyebrow piercing, red eyes and confident smirk, wearing a white high-collared Wandenreich military uniform. Square shoulder-up centered composition, head and hat fully visible with margin, clean silhouette readable at 240px. Nearly black #090C12 plain background with subtle texture. Polished cel shading, confident clean ink contours, restrained rim lighting in #FF8C72. Canonical character colors, rich shadows, sharp facial features. Single character, fully clothed. No text, letters, border, logos, watermark or weapons.",
+      "manga_prompt": "Use case: style-transfer. Edit target: the supplied color portrait of Bazz-B. Convert the same portrait into a premium manga ink edition for Kitty. Preserve character identity, face, expression, hairstyle, hat, uniform, coverage, accessories and pose. Square shoulder-up composition and nearly black #090C12 background. Crisp black ink, bone-white shapes, varied brush linework, screentone dots and selective crosshatching. Strong silhouette readable at 240px. Everything monochrome except one restrained accent #FF8C72, sparingly in eye details or a few edge highlights. No glow, sepia, broad color washes, new objects, text, borders, logos or watermark.",
+      "outputs": {
+        "color": {
+          "path": "~/.config/fastfetch/portraits/bazz-b.png",
+          "sha256": "4d1be884a715d4ea809d2ce8cfc604e9d97d45cc658d55f6481b3af7e257db1b"
+        },
+        "manga": {
+          "path": "~/.config/fastfetch/manga/bazz-b.png",
+          "sha256": "997308a404b7a034a613ce2bdd4540c8f181ce3e43be6ffedb80a17dbeab9462"
+        }
+      }
+    },
+    {
+      "name": "bambietta",
+      "display": "Bambietta Basterbine",
+      "label": "BAMBIETTA",
+      "primary": "D1A5FF",
+      "secondary": "FF8F85",
+      "subject": "Bambietta Basterbine from Bleach, adult woman with long straight dark brown hair and blunt bangs, brown eyes, white peaked military cap with dark brim and a small silver winged insignia, white high-collared buttoned Wandenreich uniform and cape, confident composed expression",
+      "prompt": "Use case: illustration-story. Create one premium anime color portrait for a Bleach-themed Kitty terminal greeting. Subject: Bambietta Basterbine from Bleach, adult woman with long straight dark brown hair and blunt bangs, brown eyes, white peaked military cap with dark brim and a small silver winged insignia, white high-collared buttoned Wandenreich uniform and cape, confident composed expression. Square shoulder-up centered composition, head and hat fully visible with margin, clean silhouette readable at 240px. Nearly black #090C12 plain background with subtle texture. Polished cel shading, confident clean ink contours, restrained rim lighting in #D1A5FF. Canonical character colors, rich shadows, sharp facial features. Single character, fully clothed. No text, letters, border, logos, watermark or weapons.",
+      "manga_prompt": "Use case: style-transfer. Edit target: the supplied color portrait of Bambietta Basterbine. Convert the same portrait into a premium manga ink edition for Kitty. Preserve character identity, face, expression, hairstyle, hat, uniform, coverage, accessories and pose. Square shoulder-up composition and nearly black #090C12 background. Crisp black ink, bone-white shapes, varied brush linework, screentone dots and selective crosshatching. Strong silhouette readable at 240px. Everything monochrome except one restrained accent #D1A5FF, sparingly in eye details or a few edge highlights. No glow, sepia, broad color washes, new objects, text, borders, logos or watermark.",
+      "outputs": {
+        "color": {
+          "path": "~/.config/fastfetch/portraits/bambietta.png",
+          "sha256": "a42b6f2a7631b9990c48b7aa5852dd2795a036ce9dad6f28e549f49af5e3a8cc"
+        },
+        "manga": {
+          "path": "~/.config/fastfetch/manga/bambietta.png",
+          "sha256": "41fc2a1fc970a81f5296fa567062f2f32e4887161e72c718d9f5cde2c38a51fd"
+        }
+      }
+    }
+  ],
+  "status": "installed"
+}

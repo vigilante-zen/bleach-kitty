@@ -1,0 +1,95 @@
+{
+  "logo": {
+    "type": "file",
+    "source": "~/.config/fastfetch/ichigo-tactical.txt",
+    "padding": {
+      "top": 0,
+      "right": 4
+    }
+  },
+  "display": {
+    "separator": "  ",
+    "key": {
+      "width": 9
+    },
+    "color": {
+      "keys": "#E8EDF5",
+      "title": "#C5CFFF"
+    }
+  },
+  "modules": [
+    {
+      "type": "custom",
+      "format": "\u001b[1;38;2;197;207;255mGIN\u001b[0m"
+    },
+    {
+      "type": "custom",
+      "format": "\u001b[38;2;129;144;166mBLEACH / SYSTEM BRIEF\u001b[0m"
+    },
+    "break",
+    {
+      "type": "title",
+      "format": "{user-name}@{host-name}"
+    },
+    {
+      "type": "os",
+      "key": "System",
+      "format": "{pretty-name}"
+    },
+    {
+      "type": "uptime",
+      "key": "Uptime"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[38;2;232;237;245mREIATSU / HARDWARE\u001b[0m"
+    },
+    {
+      "type": "cpu",
+      "key": "CPU",
+      "format": "{name} · {cores-logical} threads"
+    },
+    {
+      "type": "gpu",
+      "key": "GPU",
+      "format": "{name}"
+    },
+    {
+      "type": "memory",
+      "key": "Memory",
+      "format": "{used} / {total}  ({percentage})"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[38;2;232;237;245mSESSION\u001b[0m"
+    },
+    {
+      "type": "shell",
+      "key": "Shell",
+      "format": "{pretty-name} {version}"
+    },
+    {
+      "type": "wm",
+      "key": "Desktop",
+      "format": "{pretty-name} · {protocol-name}"
+    },
+    {
+      "type": "terminal",
+      "key": "Terminal",
+      "format": "{pretty-name} {version}"
+    },
+    {
+      "type": "disk",
+      "key": "Storage",
+      "folders": "/",
+      "format": "{size-used} / {size-total}"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[38;2;129;144;166mbankai-settings  ·  Ctrl+Shift+F12\u001b[0m"
+    }
+  ]
+}

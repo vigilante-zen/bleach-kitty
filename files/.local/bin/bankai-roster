@@ -1,0 +1,240 @@
+#!/usr/bin/env python3
+"""Persistent Bleach shuffle deck and favorites, shared across Kitty shells."""
+import argparse
+import fcntl
+import json
+import os
+from pathlib import Path
+import random
+import re
+import sys
+import tempfile
+
+ICHIGO = ['hollow-mask', 'split-ichigo', 'vasto-lorde', 'dangai-ichigo', 'mugetsu', 'white-ichigo']
+CHARACTER_FORMS = {
+    'ichigo': ICHIGO,
+    'urahara': ['urahara', 'urahara-bankai'],
+    'renji': ['renji', 'renji-bankai'],
+    'hitsugaya': ['hitsugaya', 'hitsugaya-bankai'],
+}
+CHARACTER_OWNER = {form: character for character, forms in CHARACTER_FORMS.items() for form in forms}
+DISPLAY_NAMES = {
+    'jugram': 'Jugram Haschwalth',
+    'bazz-b': 'Bazz-B',
+    'bambietta': 'Bambietta Basterbine',
+    'starrk': 'Coyote Starrk',
+    'harribel': 'Tier Harribel',
+    'hisagi': 'Shuhei Hisagi',
+    'komamura': 'Sajin Komamura',
+    'hollow-mask': 'Ichigo · Hollow mask',
+    'split-ichigo': 'Ichigo · Half Hollow',
+    'vasto-lorde': 'Ichigo · Vasto Lorde',
+    'dangai-ichigo': 'Ichigo · Dangai',
+    'mugetsu': 'Ichigo · Mugetsu',
+    'white-ichigo': 'Ichigo · White',
+    'rukia-bankai': 'Rukia · Bankai',
+    'urahara-bankai': 'Urahara · Bankai',
+    'renji-bankai': 'Renji · True Bankai',
+    'hitsugaya-bankai': 'Hitsugaya · Adult Bankai',
+    'ulquiorra': 'Ulquiorra · Segunda Etapa',
+}
+GROUPS = {
+    'new-arrivals': ['starrk', 'harribel', 'hisagi', 'komamura', 'jugram', 'bazz-b', 'bambietta'],
+    'soul-reapers': ICHIGO + ['urahara-bankai', 'renji-bankai', 'hitsugaya-bankai', 'rukia-bankai', 'renji', 'byakuya', 'urahara', 'yoruichi',
+        'hitsugaya', 'kenpachi', 'aizen', 'yamamoto', 'shunsui', 'ukitake', 'unohana',
+        'mayuri', 'soi-fon', 'shinji', 'rangiku', 'gin', 'hisagi', 'komamura'],
+    'arrancars': ['ulquiorra', 'grimmjow', 'nelliel', 'starrk', 'harribel'],
+    'quincy': ['uryu', 'yhwach', 'jugram', 'bazz-b', 'bambietta'],
+    'human-world': ['orihime', 'chad', 'uryu', 'urahara', 'urahara-bankai', 'yoruichi'],
+    'ichigo': ICHIGO,
+}
+
+
+def read_json(path, default):
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError):
+        return default
+
+
+def atomic_write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix='.' + path.name, dir=path.parent)
+    try:
+        with os.fdopen(fd, 'w') as stream:
+            stream.write(value)
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def draw_deck(path, pool):
+    deck = read_json(path, {})
+    if not isinstance(deck, dict):
+        deck = {}
+    remaining = deck.get('remaining', [])
+    if (deck.get('pool') != pool or not isinstance(remaining, list)
+            or any(not isinstance(n, str) or n not in pool for n in remaining)
+            or len(set(remaining)) != len(remaining)):
+        remaining = []
+    if not remaining:
+        remaining = pool.copy()
+        random.SystemRandom().shuffle(remaining)
+        if len(remaining) > 1 and remaining[0] == deck.get('last'):
+            remaining[0], remaining[1] = remaining[1], remaining[0]
+    selected = remaining.pop(0)
+    atomic_write(path, json.dumps({'pool': pool, 'remaining': remaining, 'last': selected}) + '\n')
+    return selected
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', choices=['next', 'list', 'status', 'add', 'remove', 'set', 'use', 'all', 'group', 'groups', 'shuffle', 'catalog', 'clear', 'toggle'])
+    parser.add_argument('names', nargs='*')
+    args = parser.parse_args()
+    if args.names and args.action not in ['add', 'remove', 'set', 'group', 'shuffle', 'toggle']:
+        parser.error('This action does not accept portrait names.')
+    if args.action == 'group' and (len(args.names) > 1 or
+            (args.names and args.names[0] not in ['all', *GROUPS])):
+        parser.error('Choose a group: all, ' + ', '.join(GROUPS))
+    if args.action == 'shuffle' and (len(args.names) > 1 or
+            (args.names and args.names[0] not in ['portrait', 'character'])):
+        parser.error('Choose a shuffle style: portrait or character.')
+    if args.action == 'toggle' and len(args.names) != 1:
+        parser.error('Provide exactly one portrait to toggle.')
+    config = Path.home() / '.config/fastfetch'
+    portraits = config / 'portraits'
+    available = sorted(p.stem for p in portraits.glob('*.png')
+                       if p.is_file() and re.fullmatch(r'[a-z0-9-]+', p.stem))
+    if args.action == 'catalog':
+        records = [(name, DISPLAY_NAMES.get(name, name.replace('-', ' ').title())) for name in available]
+        for name, label in sorted(records, key=lambda item: item[1].casefold()):
+            print(name + '\t' + label)
+        return
+    state = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'bleach'
+    state.mkdir(parents=True, exist_ok=True)
+    with (state / 'roster.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        shuffle_file = config / 'shuffle-mode'
+        try:
+            shuffle = shuffle_file.read_text().strip()
+        except OSError:
+            shuffle = 'portrait'
+        if shuffle not in ['portrait', 'character']:
+            shuffle = 'portrait'
+        if args.action == 'shuffle':
+            if args.names:
+                shuffle = args.names[0]
+                atomic_write(shuffle_file, shuffle + '\n')
+            print('Shuffle: ' + shuffle)
+            return
+        favorites_file = config / 'portrait-favorites.json'
+        favorites = read_json(favorites_file, {})
+        if not isinstance(favorites, dict):
+            favorites = {}
+        saved = favorites.get('portraits', [])
+        if not isinstance(saved, list):
+            saved = []
+        saved = sorted(set(n for n in saved if isinstance(n, str) and n in available))
+        enabled = favorites.get('enabled') is True and bool(saved)
+        group = favorites.get('group', 'all')
+        if not isinstance(group, str) or group not in GROUPS:
+            group = 'all'
+        grouped = [n for n in available if n in GROUPS.get(group, available)]
+        rotation = 'favorites' if enabled else ('all portraits' if group == 'all' else group)
+        if args.action == 'groups':
+            print('all')
+            print('\n'.join(GROUPS))
+            return
+        if args.action == 'group' and not args.names:
+            print('Rotation: ' + rotation)
+            print('Groups: all, ' + ', '.join(GROUPS))
+            return
+        if args.action == 'next':
+            pool = saved if enabled else grouped
+            if not pool:
+                parser.error('No portrait images are available.')
+            if shuffle == 'character':
+                characters = {}
+                for name in pool:
+                    character = CHARACTER_OWNER.get(name, name)
+                    characters.setdefault(character, []).append(name)
+                character = draw_deck(state / 'character-deck.json', sorted(characters))
+                forms = characters[character]
+                selected = draw_deck(state / ('forms-' + character + '.json'), forms)
+            else:
+                selected = draw_deck(state / 'shuffle-deck.json', pool)
+            path = str(portraits / (selected + '.png'))
+            atomic_write(state / 'last-portrait', path + '\n')
+            print(path)
+            return
+        if args.action == 'list':
+            if saved:
+                print('\n'.join(saved))
+            return
+        if args.action == 'status':
+            print('Rotation: ' + rotation)
+            print(f'Favorites saved: {len(saved)}')
+            print('Shuffle: ' + shuffle)
+            if saved:
+                print('\n'.join(saved))
+            return
+        toggled = None
+        if args.action in ['add', 'remove', 'set', 'toggle']:
+            if not args.names:
+                parser.error('Provide at least one portrait name.')
+            unknown = [n for n in args.names if n not in available]
+            if unknown:
+                parser.error('Unknown portrait: ' + ', '.join(unknown))
+            if args.action == 'add':
+                saved = sorted(set(saved + args.names))
+                enabled = True
+            elif args.action == 'set':
+                saved = sorted(set(args.names))
+                enabled = True
+            elif args.action == 'toggle':
+                name = args.names[0]
+                if name in saved:
+                    saved.remove(name)
+                    enabled = enabled and bool(saved)
+                    toggled = 'Removed favorite: ' + name
+                else:
+                    saved = sorted(saved + [name])
+                    toggled = 'Saved favorite: ' + name
+            else:
+                saved = [n for n in saved if n not in args.names]
+                enabled = enabled and bool(saved)
+        elif args.action == 'use':
+            if not saved:
+                parser.error('Save favorites first with bankai-favorites add <names>.')
+            enabled = True
+        elif args.action == 'all':
+            enabled = False
+            group = 'all'
+        elif args.action == 'clear':
+            saved = []
+            enabled = False
+        elif args.action == 'group':
+            selected_group = args.names[0]
+            if selected_group != 'all' and not any(n in available for n in GROUPS[selected_group]):
+                parser.error('No installed portraits in this group.')
+            group = selected_group
+            enabled = False
+        if args.action in ['add', 'set', 'use']:
+            group = 'all'
+        atomic_write(favorites_file, json.dumps({'enabled': enabled, 'portraits': saved, 'group': group}, indent=2) + '\n')
+        if args.action in ['add', 'set', 'use', 'all', 'group', 'clear']:
+            atomic_write(config / 'portrait-choice', 'random\n')
+        if toggled:
+            print(toggled)
+        print('Rotation: ' + ('favorites' if enabled else ('all portraits' if group == 'all' else group)))
+        print(f'Favorites saved: {len(saved)}')
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except OSError as error:
+        print(f'bankai-roster: {error}', file=sys.stderr)
+        sys.exit(1)

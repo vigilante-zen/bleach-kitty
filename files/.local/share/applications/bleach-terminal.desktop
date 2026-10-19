@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Soul Society Terminal
+Comment=Bleach TYBW command center
+Exec=kitty
+TryExec=kitty
+Icon=bleach-bankai
+Terminal=false
+Categories=System;TerminalEmulator;
+Keywords=Bleach;Bankai;Soul Society;TYBW;
+StartupNotify=true

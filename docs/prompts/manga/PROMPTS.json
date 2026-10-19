@@ -1,0 +1,336 @@
+{
+  "tool": "built-in imagegen",
+  "created": "2026-10-19T12:12:58.462461",
+  "jobs": [
+    {
+      "name": "aizen",
+      "reference": "~/.config/fastfetch/portraits/aizen.png",
+      "destination": "~/.config/fastfetch/manga/aizen.png",
+      "accent": "#C5A0FF",
+      "prompt": "Transform the referenced portrait of Aizen into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #C5A0FF, sparingly on tiny eye highlights and a thin clothing edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "5d5a0d5008a1e48a23ba25beb43079822c6b909ed828e871a67a02f51ef68848",
+      "status": "installed",
+      "output_sha256": "61c7987830fa49e48eab61b6163c6bc2e23779999d9b35d747e115ae0bcceb08"
+    },
+    {
+      "name": "byakuya",
+      "reference": "~/.config/fastfetch/portraits/byakuya.png",
+      "destination": "~/.config/fastfetch/manga/byakuya.png",
+      "accent": "#F2A6CF",
+      "prompt": "Transform the referenced portrait of Byakuya into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #F2A6CF, sparingly on a few cherry-blossom petals; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "36716ff3991b227676fdf4df2696e779c3a1641d56eb314d54cc9d8a50f867e4",
+      "status": "installed",
+      "output_sha256": "45d06b862df51afd276a165e36a497ede01eb3cf021b9763c8d259c2717a9f41"
+    },
+    {
+      "name": "chad",
+      "reference": "~/.config/fastfetch/portraits/chad.png",
+      "destination": "~/.config/fastfetch/manga/chad.png",
+      "accent": "#FF8F85",
+      "prompt": "Transform the referenced portrait of Chad into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF8F85, sparingly on small markings on the armored shoulder; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "de063beff4bdae08a846af7a5d08cd4a2623f3c29231e4a2bc983a275a9862d0",
+      "status": "installed",
+      "output_sha256": "66f6f9676dbda853ea06153b6a111e20870af63e5291073562bf7be0a3bba1c6"
+    },
+    {
+      "name": "dangai-ichigo",
+      "reference": "~/.config/fastfetch/portraits/dangai-ichigo.png",
+      "destination": "~/.config/fastfetch/manga/dangai-ichigo.png",
+      "accent": "#FF8C42",
+      "prompt": "Transform the referenced portrait of Ichigo \u00b7 Dangai into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF8C42, sparingly on a few tiny hair and chain highlights; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "2fbc3c068f812adc65ca55bd038391ea94be42888e9e3c67cb400c37ccf27d6c",
+      "status": "installed",
+      "output_sha256": "ae4211b7b4214f2a09c53ebbf0207c61cfa6732fe1cfa244f489449c8cae2ef3"
+    },
+    {
+      "name": "gin",
+      "reference": "~/.config/fastfetch/portraits/gin.png",
+      "destination": "~/.config/fastfetch/manga/gin.png",
+      "accent": "#C5CFFF",
+      "prompt": "Transform the referenced portrait of Gin into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #C5CFFF, sparingly on tiny eye highlights and a thin clothing edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "d89046e27bc535a666adf9809d240d06138d2f10c1ae383ec94c7eb108030ef0",
+      "status": "installed",
+      "output_sha256": "197df007b6a1892eff28b2828fa29e27b267e388f3b7f426e88867531136fd47"
+    },
+    {
+      "name": "grimmjow",
+      "reference": "~/.config/fastfetch/portraits/grimmjow.png",
+      "destination": "~/.config/fastfetch/manga/grimmjow.png",
+      "accent": "#65C9FF",
+      "prompt": "Transform the referenced portrait of Grimmjow into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #65C9FF, sparingly on the eyes and a few restrained hair highlights; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "725c325280b7ad18df4817c10f8ec0d77b07c9eebd33546c8ef7f2627deba39f",
+      "status": "installed",
+      "output_sha256": "32dd4035b6f362835092697e1e3020e9a695e78b1515fcbe2222f70ed408989f"
+    },
+    {
+      "name": "hitsugaya-bankai",
+      "reference": "~/.config/fastfetch/portraits/hitsugaya-bankai.png",
+      "destination": "~/.config/fastfetch/manga/hitsugaya-bankai.png",
+      "accent": "#76D7E8",
+      "prompt": "Transform the referenced portrait of Hitsugaya \u00b7 Adult Bankai into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #76D7E8, sparingly on the eyes and a few crystal edges; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "8e7f0417d6cf69d13a2bda0c2269cd8edf8436bec2a9a62478b89b35ab7cb781",
+      "status": "installed",
+      "output_sha256": "e18ea6e8fc6167c2ca2fc2b5f82e693fb3baaec741058bb97ebc1ca8eaf6eb71"
+    },
+    {
+      "name": "hitsugaya",
+      "reference": "~/.config/fastfetch/portraits/hitsugaya.png",
+      "destination": "~/.config/fastfetch/manga/hitsugaya.png",
+      "accent": "#91DCFF",
+      "prompt": "Transform the referenced portrait of Hitsugaya into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #91DCFF, sparingly on the eyes and a few ice edges; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "fa6806d2a1f84ee186d8be96c67f8565c4b4ecc0649263ab712ddf255349b18b",
+      "status": "installed",
+      "output_sha256": "0a8a222dc9ef3a45769cf84fc704dfbd098f3456cf1423dd13ff4dccbddedb9b"
+    },
+    {
+      "name": "hollow-mask",
+      "reference": "~/.config/fastfetch/portraits/hollow-mask.png",
+      "destination": "~/.config/fastfetch/manga/hollow-mask.png",
+      "accent": "#E63946",
+      "prompt": "Transform the referenced portrait of Ichigo \u00b7 Hollow mask into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #E63946, sparingly on the iconic mask stripes; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "64c9779f81c7cb125e6fdda6746db489e18bc027bbdbdabfccbe68e29d523c80",
+      "status": "installed",
+      "output_sha256": "5606e8e5d420e521a7c41c4709042c6947fc03d18edb9e23e29d748fe19ce761"
+    },
+    {
+      "name": "kenpachi",
+      "reference": "~/.config/fastfetch/portraits/kenpachi.png",
+      "destination": "~/.config/fastfetch/manga/kenpachi.png",
+      "accent": "#F0C674",
+      "prompt": "Transform the referenced portrait of Kenpachi into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #F0C674, sparingly on the visible eye and a thin haori edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "4f2865139c45b6c4faa2be10d644d65ad389ba7f02951948ae0028f480b85470",
+      "status": "installed",
+      "output_sha256": "98e13f2cf6d928f34c6b802839a52ff120fcdacee447c9effc7c077f47f6e536"
+    },
+    {
+      "name": "mayuri",
+      "reference": "~/.config/fastfetch/portraits/mayuri.png",
+      "destination": "~/.config/fastfetch/manga/mayuri.png",
+      "accent": "#D1A5FF",
+      "prompt": "Transform the referenced portrait of Mayuri into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #D1A5FF, sparingly on a narrow collar edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "ce145977c8365723ea932a593da542acdc1e8c4089ba58018e45678fa3daa9d5",
+      "status": "installed",
+      "output_sha256": "0f9ba0379de5f22419c57b4c37cd6f22fca050b010480b4344cb784c6691046c"
+    },
+    {
+      "name": "mugetsu",
+      "reference": "~/.config/fastfetch/portraits/mugetsu.png",
+      "destination": "~/.config/fastfetch/manga/mugetsu.png",
+      "accent": "#FF6270",
+      "prompt": "Transform the referenced portrait of Ichigo \u00b7 Mugetsu into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF6270, sparingly on the eyes only; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "b30dc2d38f409748a33544e8ad0b6b01578ee1983a3e31f747fca9350f01d966",
+      "status": "installed",
+      "output_sha256": "1d84ef755da0e8b8b113159a8d7058ac46f86b1514f89d49bd9abfd9e417f231"
+    },
+    {
+      "name": "nelliel",
+      "reference": "~/.config/fastfetch/portraits/nelliel.png",
+      "destination": "~/.config/fastfetch/manga/nelliel.png",
+      "accent": "#8EE3BE",
+      "prompt": "Transform the referenced portrait of Nelliel into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #8EE3BE, sparingly on a few tiny hair highlights and the eyes; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "89cfa1efde8dbeab70c83e0d652c1d9a11bbc13e6a64d027054d2049efffbba8",
+      "status": "installed",
+      "output_sha256": "72a244c1fee0d8d09a2831bcf756734d3e24c3bf2ec537e886cce22cc9ede1b9"
+    },
+    {
+      "name": "orihime",
+      "reference": "~/.config/fastfetch/portraits/orihime.png",
+      "destination": "~/.config/fastfetch/manga/orihime.png",
+      "accent": "#FFB56B",
+      "prompt": "Transform the referenced portrait of Orihime into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FFB56B, sparingly on a few tiny hair highlights; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "7778e0b426e11654c0a412856617312eb6afe4f0deed2d430034fc71920e6dd7",
+      "status": "installed",
+      "output_sha256": "20beeecca1f4f884299fb75cd008c8b7695716e73d272862c2a9096529cea43b"
+    },
+    {
+      "name": "rangiku",
+      "reference": "~/.config/fastfetch/portraits/rangiku.png",
+      "destination": "~/.config/fastfetch/manga/rangiku.png",
+      "accent": "#FFB56B",
+      "prompt": "Transform the referenced portrait of Rangiku into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FFB56B, sparingly on a thin scarf edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "d7f6998334508936b59e18d0cc960718600fc143a142ee4a8e5f58e2592baf16",
+      "status": "installed",
+      "output_sha256": "7282d9db3a57470a7c3d42dc4fc3b5f51026b605096a819f07d2da95ecd1917b"
+    },
+    {
+      "name": "renji-bankai",
+      "reference": "~/.config/fastfetch/portraits/renji-bankai.png",
+      "destination": "~/.config/fastfetch/manga/renji-bankai.png",
+      "accent": "#FF6270",
+      "prompt": "Transform the referenced portrait of Renji \u00b7 True Bankai into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF6270, sparingly on a few hair-tie and armor details; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "33b0cf2d14b1138e9c2fec750937630d44c9066b1747b66677017cc793e93b79",
+      "status": "installed",
+      "output_sha256": "e9aacd801451a58c3dd4c71fb2a4b034a83e470e7627443e36b01ced6907e736"
+    },
+    {
+      "name": "renji",
+      "reference": "~/.config/fastfetch/portraits/renji.png",
+      "destination": "~/.config/fastfetch/manga/renji.png",
+      "accent": "#FF6270",
+      "prompt": "Transform the referenced portrait of Renji into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF6270, sparingly on the hair tie and a few hair highlights; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "8cc8b85925d667287050ec1d7040f7e3329af3683da7af16827a72de9cf48826",
+      "status": "installed",
+      "output_sha256": "c0e834d99aa5b6d7db29b168e4d5c0a0c3e7f08b1fecfec9170e084da05a344a"
+    },
+    {
+      "name": "rukia-bankai",
+      "reference": "~/.config/fastfetch/portraits/rukia-bankai.png",
+      "destination": "~/.config/fastfetch/manga/rukia-bankai.png",
+      "accent": "#91DCFF",
+      "prompt": "Transform the referenced portrait of Rukia \u00b7 Bankai into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #91DCFF, sparingly on tiny crystal edges; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "c92274a4e4ed96289f822dc3cf60878b332ba470d77d46f021e4ee5dfb4f2e4c",
+      "status": "installed",
+      "output_sha256": "e02405721f14973e827d262aa8fc40e924bcb7b9fce7cf4f7fba254f3472351f"
+    },
+    {
+      "name": "shinji",
+      "reference": "~/.config/fastfetch/portraits/shinji.png",
+      "destination": "~/.config/fastfetch/manga/shinji.png",
+      "accent": "#F0C674",
+      "prompt": "Transform the referenced portrait of Shinji into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #F0C674, sparingly on a few tiny hair highlights; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "c02b43eaead9be7f200ca64de85087af96db2966a71a8d782857143e18e5354a",
+      "status": "installed",
+      "output_sha256": "9e96375f1623663eaa8e786822e6736d9389043653923a81580844112d68e454"
+    },
+    {
+      "name": "shunsui",
+      "reference": "~/.config/fastfetch/portraits/shunsui.png",
+      "destination": "~/.config/fastfetch/manga/shunsui.png",
+      "accent": "#F2A6CF",
+      "prompt": "Transform the referenced portrait of Shunsui into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #F2A6CF, sparingly on a few flowers in the patterned haori; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "cea802a94382aff0368c59f54254e494a42ad779d60f49eb54d20882b80f70ce",
+      "status": "installed",
+      "output_sha256": "f66d8eb9e94cdf21166131208608c133218ec00338816f3123b9550acc9b139c"
+    },
+    {
+      "name": "soi-fon",
+      "reference": "~/.config/fastfetch/portraits/soi-fon.png",
+      "destination": "~/.config/fastfetch/manga/soi-fon.png",
+      "accent": "#F0C674",
+      "prompt": "Transform the referenced portrait of Soi Fon into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #F0C674, sparingly on the braid rings; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "e2dd4dd7d2147df66ef097fadffaa70f0b2bfc08bf8c36f80f9f0c49e2de0980",
+      "status": "installed",
+      "output_sha256": "7cd1c63f7d40c17db922daab3cbfc0e8ad026a16c66c2fca68e75c4fb4c650e4"
+    },
+    {
+      "name": "split-ichigo",
+      "reference": "~/.config/fastfetch/portraits/split-ichigo.png",
+      "destination": "~/.config/fastfetch/manga/split-ichigo.png",
+      "accent": "#FF8C42",
+      "prompt": "Transform the referenced portrait of Ichigo \u00b7 Half Hollow into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF8C42, sparingly on the visible eye and a few tiny hair highlights; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "e77b51d872a04c3e355dda39925e4b9ad6ecc09856c420a98884a0512a1c2ed4",
+      "status": "installed",
+      "output_sha256": "deb21d0c1a5636923f772b95b1e9f0fe4fad24fa80aaf0fd42d9b8d607b04a78"
+    },
+    {
+      "name": "ukitake",
+      "reference": "~/.config/fastfetch/portraits/ukitake.png",
+      "destination": "~/.config/fastfetch/manga/ukitake.png",
+      "accent": "#B5F5EA",
+      "prompt": "Transform the referenced portrait of Ukitake into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #B5F5EA, sparingly on tiny eye highlights and a thin clothing edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "ff1520bb3bbf14819dc8c4057fd43bb00c4b0edcad55dc6695379cdae0e4f396",
+      "status": "installed",
+      "output_sha256": "306d6649fdb408ff1ab310f65b548af610eee1397a2f7d9500ef2e4fb513a692"
+    },
+    {
+      "name": "ulquiorra",
+      "reference": "~/.config/fastfetch/portraits/ulquiorra.png",
+      "destination": "~/.config/fastfetch/manga/ulquiorra.png",
+      "accent": "#76E3A3",
+      "prompt": "Transform the referenced portrait of Ulquiorra \u00b7 Segunda Etapa into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #76E3A3, sparingly on the eyes only; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "18e10cf68b9b86a4ae405acea4236397a1a349234cd7cefca429b138d3cd7cc7",
+      "status": "installed",
+      "output_sha256": "994c107d90ef3c7eeb32d3f8584cecb624268dbdd317aedf92af9ab263df1b8c"
+    },
+    {
+      "name": "unohana",
+      "reference": "~/.config/fastfetch/portraits/unohana.png",
+      "destination": "~/.config/fastfetch/manga/unohana.png",
+      "accent": "#F2A6CF",
+      "prompt": "Transform the referenced portrait of Unohana into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #F2A6CF, sparingly on a thin robe edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "ff9219aa260848c87ba989036db1dffc45851cc17ef9c7d49a81e34c2b44bc23",
+      "status": "installed",
+      "output_sha256": "d4fc01e75bd3e92658f00b55c905f2eaf0fd83101c3c1df5cedb263d4ea79f7d"
+    },
+    {
+      "name": "urahara-bankai",
+      "reference": "~/.config/fastfetch/portraits/urahara-bankai.png",
+      "destination": "~/.config/fastfetch/manga/urahara-bankai.png",
+      "accent": "#FF8F85",
+      "prompt": "Transform the referenced portrait of Urahara \u00b7 Bankai into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF8F85, sparingly on a few of the background thread motifs; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "431322598fa763409ff805c393ceb1648a4ecc1921ebd399fe73661d40ec4650",
+      "status": "installed",
+      "output_sha256": "e9177e789eeb34af0759f7ee3ddd3287dfd0604cf0d3b6a2dfd5640c0ab2671c"
+    },
+    {
+      "name": "uryu",
+      "reference": "~/.config/fastfetch/portraits/uryu.png",
+      "destination": "~/.config/fastfetch/manga/uryu.png",
+      "accent": "#91DCFF",
+      "prompt": "Transform the referenced portrait of Uryu into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #91DCFF, sparingly on small glasses reflections and the cross pendant; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "37abfbae43b5b6bc78951ca3de1f4529237f23ed8f590ddc6eda47e5667d3d0c",
+      "status": "installed",
+      "output_sha256": "8b654ac3da9d56d997e1d80fcbaf80870620b185d05992e4a599a5e086869e08"
+    },
+    {
+      "name": "vasto-lorde",
+      "reference": "~/.config/fastfetch/portraits/vasto-lorde.png",
+      "destination": "~/.config/fastfetch/manga/vasto-lorde.png",
+      "accent": "#FF6270",
+      "prompt": "Transform the referenced portrait of Ichigo \u00b7 Vasto Lorde into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF6270, sparingly on a few mask markings; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "41b11063c9d9c38ff05d19521178cd8f55cc20f07d6d5ca705eede0c2a44944e",
+      "status": "installed",
+      "output_sha256": "c2b2965b65fa93ebac2837d450aedf58207be7383205432e12caec60aac5bd68"
+    },
+    {
+      "name": "white-ichigo",
+      "reference": "~/.config/fastfetch/portraits/white-ichigo.png",
+      "destination": "~/.config/fastfetch/manga/white-ichigo.png",
+      "accent": "#F0C674",
+      "prompt": "Transform the referenced portrait of Ichigo \u00b7 White into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #F0C674, sparingly on the irises only; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "3e76e74b2bd233d6db395dc7305409fc46e88b6864385ae5afdde648704754aa",
+      "status": "installed",
+      "output_sha256": "88a06dcee2a7ce212daaa59520483caee9f09949d5d67ef2ea3a05b25509c3a7",
+      "attempts": 2,
+      "retry_note": "Initial output was blocked; identical prompt retry succeeded."
+    },
+    {
+      "name": "yamamoto",
+      "reference": "~/.config/fastfetch/portraits/yamamoto.png",
+      "destination": "~/.config/fastfetch/manga/yamamoto.png",
+      "accent": "#FFB56B",
+      "prompt": "Transform the referenced portrait of Yamamoto into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FFB56B, sparingly on a few tiny ember specks; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "809c865bc35300fd9eda51d4fb35b4ee3e492c1c343097c610d2ef1c0da28d6c",
+      "status": "installed",
+      "output_sha256": "762dc584871a986b8779be599f4307b273cc4180043c1e4bb282cf12183fc5cf"
+    },
+    {
+      "name": "yhwach",
+      "reference": "~/.config/fastfetch/portraits/yhwach.png",
+      "destination": "~/.config/fastfetch/manga/yhwach.png",
+      "accent": "#FF8F85",
+      "prompt": "Transform the referenced portrait of Yhwach into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #FF8F85, sparingly on a thin cloak edge; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "62e9f690826ae252c469e5926523702e076ca75d7cdd764ccfe35be953461ac3",
+      "status": "installed",
+      "output_sha256": "acb573de6664f079e4f8cd26fd6147c3bc952cac7857e58e7abd74aaf47971da"
+    },
+    {
+      "name": "yoruichi",
+      "reference": "~/.config/fastfetch/portraits/yoruichi.png",
+      "destination": "~/.config/fastfetch/manga/yoruichi.png",
+      "accent": "#C5A0FF",
+      "prompt": "Transform the referenced portrait of Yoruichi into a premium black-and-white manga edition for a Kitty terminal greeting. Preserve the same recognizable character, face, expression, hairstyle, outfit, masks, hats, accessories, pose, framing and important identifying details. Keep the square composition and almost-black #090C12 background. Replace colored anime shading with crisp black ink, bone-white shapes, confident varied brush linework, delicate screentone dots and selective crosshatching. High contrast, simple readable silhouette at 240 pixels. Use exactly ONE restrained accent hue #C5A0FF, sparingly on the ponytail tie and a tiny lightning trace; everything else, including skin, clothing and hair, should be monochrome black, white and screentone. Keep all facial features and expressions consistent with the source. No neon glow, no broad color washes, no sepia, no new objects, no text, letters, borders, signatures or watermark. This is a manga ink reinterpretation, not a grayscale photo filter. Keep clothing coverage and composition unchanged.",
+      "original_sha256": "b46dd0ad3b5ad4567e601b1e6bdac9f641a9fb113b9c020b3620cfe4f29f9c89",
+      "status": "installed",
+      "output_sha256": "290b638ab25b90afe351833718210b127076871d3c4571ca78ef833b83be4298"
+    }
+  ],
+  "completed": "2026-10-19T16:24:07.770421+00:00",
+  "status": "complete",
+  "total_manga_editions": 33,
+  "existing_edition": {
+    "name": "urahara",
+    "path": "~/.config/fastfetch/manga/urahara.png",
+    "output_sha256": "28d73131448e50f0701665cb0e093ee413f5e8f75561c00072f6fa6bf950c6e3"
+  }
+}

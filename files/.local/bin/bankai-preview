@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Image rendering uses fzf's installed Kitty-aware preview helper.
+set -eu
+choice=${1:-random}
+if [[ "$choice" == reset ]]; then
+    printf 'USE SAVED DEFAULTS\n\nRemove this shell portrait override.\nFuture greetings follow saved settings.\n'
+    exit 0
+fi
+if [[ "$choice" == random ]]; then
+    printf 'SHUFFLE DECK\n\nPortrait mode: every image once.\nCharacter mode: equal character turns.\nCharacter accents follow the portrait.\n\n'
+    "$HOME/.local/bin/bankai-roster" status
+    printf '\nPress Enter to enable shuffle mode.\n'
+    exit 0
+fi
+if [[ ! "$choice" =~ ^[a-z0-9-]+$ ]]; then
+    printf 'Unknown portrait.\n' >&2
+    exit 2
+fi
+portrait="$HOME/.config/fastfetch/portraits/$choice.png"
+if [[ ! -f "$portrait" ]]; then
+    printf 'Portrait unavailable: %s\n' "$choice" >&2
+    exit 1
+fi
+art=color
+if [[ -f "$HOME/.config/fastfetch/portrait-art-mode" ]]; then
+    art=$(<"$HOME/.config/fastfetch/portrait-art-mode")
+fi
+if [[ $# -ge 2 ]]; then
+    case "$2" in color|manga) art=$2 ;; *) exit 2 ;; esac
+fi
+manga="$HOME/.config/fastfetch/manga/$choice.png"
+if [[ -f "$manga" ]]; then
+    if [[ "$art" == manga ]] || { [[ "$art" == mixed ]] && ((RANDOM % 2)); }; then
+        portrait="$manga"
+    fi
+fi
+if [[ -x /usr/share/fzf/fzf-preview.sh ]]; then
+    exec /usr/share/fzf/fzf-preview.sh "$portrait"
+fi
+printf '%s\n\nImage preview helper unavailable.\nPress Enter to select this portrait.\n' "$choice"

@@ -1,0 +1,55 @@
+{
+  "logo": {
+    "type": "file",
+    "source": "~/.config/fastfetch/ichigo-tactical.txt",
+    "padding": {
+      "top": 0,
+      "right": 3
+    }
+  },
+  "display": {
+    "separator": "  ",
+    "key": {
+      "width": 9
+    },
+    "color": {
+      "keys": "#F0C674",
+      "title": "#E63946"
+    }
+  },
+  "modules": [
+    {
+      "type": "custom",
+      "format": "\u001b[1;38;2;230;57;70mICHIGO · HOLLOW MASK\u001b[0m"
+    },
+    {
+      "type": "custom",
+      "format": "\u001b[38;2;129;144;166mBLEACH / SYSTEM BRIEF\u001b[0m"
+    },
+    "break",
+    {
+      "type": "os",
+      "key": "System",
+      "format": "{pretty-name}"
+    },
+    {
+      "type": "uptime",
+      "key": "Uptime"
+    },
+    {
+      "type": "memory",
+      "key": "Memory",
+      "format": "{used} / {total}  ({percentage})"
+    },
+    {
+      "type": "terminal",
+      "key": "Terminal",
+      "format": "{pretty-name}"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[38;2;129;144;166mbankai-settings\u001b[0m"
+    }
+  ]
+}

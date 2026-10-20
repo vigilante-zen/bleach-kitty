@@ -111,3 +111,11 @@ QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 Disable the Rust login-startup checkbox if enabled and quit Bankai Rust. Remove `~/.local/bin/bankai-rust`, `~/.local/share/applications/bleach-bankai-rust.desktop`, `~/.config/fish/completions/bankai-rust.fish`, `~/.local/share/icons/hicolor/scalable/apps/bleach-bankai-rust.svg`, and `~/.local/share/bankai-rust`. The project can be retained for future builds. The existing Python command, artwork and shared desktop settings remain available.
 
 The benchmark measurements above are historical results from the original eight-preset build. The expanded twelve-preset build and appearance options have not been re-benchmarked.
+
+## Lightweight interface polish
+
+The main preview decodes to at most 1024 × 640 pixels and reuses its scaled image between repaints. Original wallpaper files remain full resolution. Character cards switch between three and four columns as the window resizes. Ctrl+1, Ctrl+2 and Ctrl+3 open Appearance, Backups & restore and Terminal & tools.
+
+Backup scanning starts when Backups & restore is opened. Status checks retain unsaved portrait choices and skip decoding portrait previews when saved preferences and the desktop character are unchanged.
+
+A local three-run offscreen check on the twelve-character build measured median Rust startup at 353 ms versus 420 ms before this pass, with resident memory around 66 MiB versus 67 MiB. These are development-machine measurements, not live Wayland or steady-state CPU measurements. Startup now defers backup scanning, so it performs less work before showing the window than the historical benchmark above.

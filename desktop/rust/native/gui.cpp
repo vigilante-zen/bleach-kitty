@@ -78,12 +78,17 @@ static QIcon svgIcon(QByteArray source, const QString &accent = {}) {
 }
 class Artwork : public QWidget {
 public:
-  QPixmap image;
+  QPixmap image, scaledPreview;
+  QSize previewSize;
   QJsonObject preset;
   Artwork() { setMinimumHeight(200); }
   void select(const QJsonObject &p, const QString &wallpapers) {
     preset = p;
-    image = QPixmap(wallpapers + "/" + p.value("image").toString());
+    QImageReader reader(wallpapers + "/" + p.value("image").toString());
+    if (reader.size().isValid())
+      reader.setScaledSize(reader.size().scaled(1024, 640, Qt::KeepAspectRatio));
+    image = QPixmap::fromImage(reader.read());
+    previewSize = QSize();
     update();
   }
 
@@ -96,8 +101,11 @@ protected:
     painter.setClipPath(clip);
     painter.fillRect(rect(), QColor("#111925"));
     if (!image.isNull()) {
-      auto scaled =
-          image.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+      if (previewSize != size()) {
+        scaledPreview = image.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        previewSize = size();
+      }
+      const auto &scaled = scaledPreview;
       painter.drawPixmap((width() - scaled.width()) / 2,
                          (height() - scaled.height()) / 2, scaled);
     }
@@ -128,6 +136,8 @@ public:
   QString home, data, wallpapers, selected, trayPreset;
   QListWidget *navigation;
   QStackedWidget *pages;
+  QGridLayout *presetGrid = nullptr;
+  int presetColumns = 4;
   Artwork *art;
   QLabel *saved, *notice, *previewNote, *storage, *snapshotDetails;
   QComboBox *snapshots, *portraitChoice, *portraitArt;
@@ -197,7 +207,7 @@ public:
     pages->addWidget(toolsPage());
     right->addWidget(pages, 1);
     notice =
-        label("Ready. Rust controls your presets and snapshots.", "notice");
+        label("Choose a character to preview. Click Apply when you are ready.", "notice");
     right->addWidget(notice);
     logButton = new QPushButton("Show activity");
     logButton->setMaximumWidth(140);
@@ -212,9 +222,18 @@ public:
       logButton->setText(log->isVisible() ? "Hide activity" : "Show activity");
     });
     layout->addWidget(content, 1);
-    connect(navigation, &QListWidget::currentRowChanged, pages,
-            &QStackedWidget::setCurrentIndex);
+    connect(navigation, &QListWidget::currentRowChanged, this, [this](int row) {
+      pages->setCurrentIndex(row);
+      if (row == 1) refreshSnapshots();
+    });
     navigation->setCurrentRow(0);
+    for (int row = 0; row < navigation->count(); ++row) {
+      auto key = QString("Ctrl+%1").arg(row + 1);
+      auto *shortcut = new QShortcut(QKeySequence(key), this);
+      connect(shortcut, &QShortcut::activated, this,
+              [this, row] { navigation->setCurrentRow(row); });
+      navigation->item(row)->setToolTip(key);
+    }
     slowTimer.setSingleShot(true);
     slowTimer.setInterval(120000);
     connect(&slowTimer, &QTimer::timeout, this, [this] {
@@ -235,9 +254,22 @@ public:
     connect(&poll, &QTimer::timeout, this, [this] { refreshStatus(); });
     poll.start();
     refreshStatus();
-    selectPreset(
-        rpc({{"op", "status"}}).toObject().value("current").toString("tybw"));
-    refreshSnapshots();
+    selectPreset(savedDesktop);
+  }
+  void resizeEvent(QResizeEvent *event) override {
+    QMainWindow::resizeEvent(event);
+    int columns = qBound(1, (width() - 290) / 160, 4);
+    if (!presetGrid || columns == presetColumns)
+      return;
+    presetColumns = columns;
+    for (auto *card : cards) presetGrid->removeWidget(card);
+    int index = 0;
+    for (auto value : presets) {
+      auto *card = cards.value(value.toObject().value("id").toString());
+      presetGrid->addWidget(card, index / columns, index % columns);
+      ++index;
+    }
+    presetGrid->parentWidget()->layout()->activate();
   }
   QPushButton *button(const QString &text, std::function<void()> fn,
                       bool primary = false) {
@@ -273,6 +305,8 @@ public:
   QWidget *appearancePage() {
     auto *page = new QWidget;
     auto *layout = new QVBoxLayout(page);
+    layout->setSizeConstraint(QLayout::SetNoConstraint);
+    page->setMinimumWidth(0);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(13);
     auto *header = new QHBoxLayout;
@@ -285,6 +319,7 @@ public:
     art = new Artwork;
     layout->addWidget(art, 1);
     auto *grid = new QGridLayout;
+    presetGrid = grid;
     auto *group = new QButtonGroup(this);
     group->setExclusive(true);
     int i = 0;
@@ -505,7 +540,8 @@ public:
       auto artwork = rpc({{"op", "portraits"}}).toObject();
       // Keep unsaved selections while polling; reload when saved preferences change.
       auto signature = QJsonDocument(artwork).toJson(QJsonDocument::Compact);
-      if (portraitChoice->property("savedArtwork").toByteArray() != signature) {
+      bool artworkChanged = portraitChoice->property("savedArtwork").toByteArray() != signature;
+      if (artworkChanged) {
         QSignalBlocker choiceBlock(portraitChoice), artBlock(portraitArt), followBlock(matchDesktop);
         portraitChoice->clear();
         portraitChoice->addItem("Random characters", "random");
@@ -522,8 +558,10 @@ public:
       }
       auto status = rpc({{"op", "status"}}).toObject();
       auto id = status.value("current").toString();
+      bool desktopChanged = savedDesktop != id;
       savedDesktop = id;
-      updatePortraitPreview();
+      if (artworkChanged || desktopChanged)
+        updatePortraitPreview();
       auto p = preset(id);
       saved->setText("SAVED PRESET\n" + p.value("title").toString() +
                      (status.value("pending").toBool()
@@ -937,6 +975,8 @@ static int smoke(Window &window, const QString &directory) {
     window.selectPreset(p.value("id").toString());
     if (window.art->image.isNull())
       throw std::runtime_error("Missing native preview wallpaper");
+    if (window.art->image.width() > 1024 || window.art->image.height() > 640)
+      throw std::runtime_error("Native preview exceeds its memory bound");
     auto image = svgIcon(window.bootstrap.value("mask_svg").toString().toUtf8(),
                          p.value("accent").toString())
                      .pixmap(64, 64)

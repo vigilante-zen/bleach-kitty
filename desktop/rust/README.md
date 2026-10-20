@@ -1,5 +1,7 @@
 # Bankai Rust — experimental native edition
 
+**[Install the Rust edition →](INSTALL.md)** · [Compare editions](../README.md) · [Install Python instead](../python/INSTALL.md)
+
 A separately installed, compiled edition of the Bankai desktop control center. Application logic is Rust; a Qt Widgets C++ presentation layer provides the window, SVG rendering, tray integration, file watching and background-process plumbing. The main app does not start a Python interpreter. It is not an all-Rust GUI toolkit.
 
 ## Try it
@@ -67,7 +69,7 @@ python3 scripts/benchmark.py --runs 7
 The first release executable was successfully built with Rust/Cargo 1.99.1, Qt 6.12, and the installed C++ compiler, using only cached build dependencies. The package registry could not be resolved from this session.
 
 ```sh
-cargo build --release --locked --offline
+cargo build --release --locked
 ```
 
 Requirements: Rust and Cargo, a C++17 compiler, pkg-config, and Qt 6 Widgets, SVG and Network development packages. Rust `cc` and `pkg-config` are build-only dependencies. The JSON codec is local and strict, with duplicate-key, UTF-8, nesting and size checks. Snapshot SHA-256 uses Qt's established `QCryptographicHash` through the narrow native bridge rather than a custom hash implementation.

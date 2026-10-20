@@ -1,11 +1,34 @@
-# Bankai desktop editions
+# Choose your Bankai edition
 
-Both implementations are published as source alongside the terminal theme:
+Install the edition you prefer. Both use the same terminal artwork and KDE desktop assets.
 
-- [Python + PySide6](python/README.md): original desktop control center, tray, presets and snapshot management.
-- [Rust + Qt Widgets](rust/README.md): experimental compiled edition with a Rust core and C++ Qt view.
-- `shared/`: eight matching wallpapers, KDE color schemes and artwork prompts. See the repository artwork documentation for provenance and character ownership.
+| | Python + PySide6 | Rust + Qt Widgets |
+| --- | --- | --- |
+| Install guide | **[Install Python](python/INSTALL.md)** | **[Install Rust](rust/INSTALL.md)** |
+| Source and details | [Python overview](python/README.md) | [Rust overview](rust/README.md) |
+| App command | `bankai` | `bankai-rust` |
+| App runtime | Python and PySide6 | Compiled Rust core and Qt C++ view |
+| Build required | No | Yes: Rust/Cargo, C++17 and Qt development libraries |
+| Terminal artwork controls | Fish settings menu | In-app selection and live color/manga preview |
+| Portrait follows desktop | Presets select their matching portrait | Optional; independent rotation is preserved by default |
+| Status | Original edition | Experimental edition |
 
-Install the terminal theme from the repository root first. Both desktop editions use the same installed artwork, settings and snapshots. Select one tray app for login startup. This folder contains source and shared assets, without personal preferences, snapshots, build output or login-screen modifications.
+The Rust edition has a smaller measured startup footprint on the development machine; [benchmark details and limitations](rust/README.md#measured-comparison) explain the comparison. Choose Python for the original implementation without a compilation step, or Rust for the compiled app and its portrait controls.
 
-For the Rust edition, install the shared assets at the paths described in the Python README, build from `rust/` with `cargo build --release --locked`, and copy `target/release/bankai-rust` to `~/.local/bin/`. Its terminal helpers are supplied by the root theme. Some compatibility and benchmark scripts additionally require the Python edition to be installed.
+Each install guide is self-contained. You do not need to install the other control-center edition. Both need the shared terminal theme, whose Python/Fish helpers also run when using the Rust edition.
+
+## Switching editions
+
+1. Disable login startup in the currently running edition and quit its tray app.
+2. Follow the other edition's installation guide.
+3. Launch the new edition and enable its login startup if desired.
+
+The two commands can coexist. Their desktop presets, terminal preferences and snapshots are shared, so changes made by either edition affect the same desktop. Avoid applying changes from both at the same time. Python presets always select a matching terminal portrait; Rust's optional matching preference applies to Rust preset changes.
+
+## Repository layout
+
+- `python/`: Python source, command scripts, requirements and its own install guide.
+- `rust/`: Rust/C++ source, build files and its own install guide.
+- `shared/`: wallpapers, KDE color schemes and artwork prompts used by either edition.
+
+[Back to the repository](../README.md) · [Artwork ownership and provenance](../docs/ARTWORK.md)

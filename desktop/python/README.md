@@ -1,5 +1,7 @@
 # Bankai Python + PySide6
 
+**[Install the Python edition →](INSTALL.md)** · [Compare editions](../README.md) · [Install Rust instead](../rust/INSTALL.md)
+
 Source for the original Bankai desktop control center. Requires Linux/KDE Plasma 6, Python 3, PySide6, and the Bleach Kitty terminal theme from the repository root.
 
 `control_center.py` provides the window and tray; `snapshot_manager.py` manages verified snapshots and cleanup. `bin/` contains the four installed command scripts. Both editions share desktop preferences and backups.

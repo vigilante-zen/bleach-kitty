@@ -1,4 +1,4 @@
-# Bleach Kitty · Bankai terminal theme
+# Bankai · Bleach desktop and terminal
 
 A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **32 characters, 40 portraits and 80 art editions**, with matching shell, cursor, greeting and monitor accents.
 
@@ -7,6 +7,19 @@ A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **
 | Color | Manga |
 | --- | --- |
 | ![Urahara in color](files/.config/fastfetch/portraits/urahara.png) | ![Urahara in manga ink](files/.config/fastfetch/manga/urahara.png) |
+
+## Choose your edition
+
+| Python edition | Rust edition |
+| --- | --- |
+| Original Python + PySide6 desktop app | Experimental compiled Rust + Qt desktop app |
+| No compilation step | Live portrait previews and optional desktop matching |
+| **[Install Python →](desktop/python/INSTALL.md)** | **[Install Rust →](desktop/rust/INSTALL.md)** |
+| [Python source and details](desktop/python/README.md) | [Rust source and details](desktop/rust/README.md) |
+
+Pick one desktop edition. Each guide includes its requirements, shared theme setup, installation, launcher, updates and validation. [Compare editions or switch later](desktop/README.md).
+
+For the terminal theme on its own, follow [Terminal theme installation](#install) below.
 
 ## Features
 
@@ -18,10 +31,6 @@ A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **
 - Recent-art history with exact-edition previews and replay.
 - Settings overlay on **Ctrl+Shift+F12**.
 - Setup diagnostics and verified theme snapshots.
-
-## Bankai desktop apps
-
-The [desktop source collection](desktop/README.md) includes both the original [Python + PySide6](desktop/python/README.md) control center and the experimental [Rust + Qt](desktop/rust/README.md) edition, with eight matching wallpapers and KDE color schemes. Desktop installation is separate from the terminal theme installer below.
 
 ## Requirements
 
@@ -95,9 +104,11 @@ python3 -m unittest discover -s tests -v
 
 The installer can target an isolated directory via `--home /absolute/test/home`. That option is for staging/testing; desktop launchers and config references are expanded for that directory. Validation on the original setup covered all portraits/palettes, Fish/Kitty configuration, full shuffle cycles, groups and exact-edition replay. No real desktop session is launched by the automated installer tests.
 
-## Publishing to GitHub
+## GitHub repository
 
-This directory is the repository root. Create an empty GitHub repository, then follow its “push an existing repository” instructions from here. No remote is preconfigured. The artwork is committed as regular PNG files; every individual file is below GitHub's 100 MiB limit. The complete payload is about 180 MiB, so initial cloning is substantial. The gallery HTML is intended to be opened locally; GitHub displays its source, while the README images render directly.
+Both desktop editions live in this repository with separate install guides and source directories. Shared assets are stored once in `desktop/shared/`. The terminal payload remains in `files/`, with checksums in `MANIFEST.json`. GitHub's repository ZIP contains both source editions; follow only your chosen edition's setup guide.
+
+The artwork is committed as regular PNG files, so cloning includes a substantial artwork download. The gallery HTML is intended to be opened locally; GitHub displays its source, while README images render directly.
 
 ## License and artwork
 

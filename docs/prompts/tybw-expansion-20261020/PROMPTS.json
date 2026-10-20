@@ -37,30 +37,30 @@
       "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition only; replace Uryu with Yhwach. Reference 2 is Yhwach's identity. TYBW Quincy Emperor Yhwach: mature tall imposing man, long thick black hair, distinctive heavy black moustache, stern face, dark high-collared military tunic with silver buttons and white accents, long dark burgundy cloak fastened with a round medallion, sword held low. Canonical Thousand-Year Blood War monarch design, no invented armor or helmet. Full figure far right, looming Silbern/Wahrwelt palace silhouettes across lower edge, subtle silver Quincy geometry at far edges, mostly empty black sky. Palette charcoal navy, muted imperial burgundy, bone white, sparse silver light. Original unofficial fan art."
     },
     {
-      "id": "ichigo",
-      "refs": [
-        "desktop/shared/wallpapers/ichigo-desktop.png"
-      ],
-      "prompt": "Use case: identity-preserve. Edit this existing full desktop wallpaper. Keep the entire wide landscape composition, right-side full-body character placement, landscape, architecture, deep near-black sky, and restrained orange embers. Update ONLY Ichigo Kurosaki's outfit and weapons to his Thousand-Year Blood War POST-ROYAL-PALACE true Shikai design: short spiky orange hair, sleeveless black shihakusho with distinctive white crisscross chest straps and white shoulder armor details, black hakama, TWO separate Zangetsu blades: a large broad black cleaver in one hand and a smaller black knife-like blade in the other. Clear two-arm anatomy; both blades recognizable. Do not use Dangai, Fullbring Bankai, Hollow mask or an orange long-haired form. Painterly anime ink with same existing lighting and quality, full landscape scene not portrait. No text, panels, logos, watermark or UI."
-    },
-    {
       "id": "yamamoto",
       "refs": [
         "desktop/shared/wallpapers/yamamoto-desktop.png"
       ],
       "prompt": "Use case: identity-preserve. Correct this existing full desktop wallpaper to Genryusai Yamamoto's Thousand-Year Blood War design while preserving the scene, camera, far-right full-body position, beard, bald scarred head, robes, sword pose, fiery ground and dark negative space. Crucial canonical correction: he is MISSING HIS LEFT ARM; the left sleeve hangs empty, and he holds his scorched Zanka no Tachi katana with his RIGHT hand only. Do not depict a second forearm or left hand. Subtle furnace-like heat and embers, charred blade rather than a gigantic flaming sword. Maintain refined painterly anime ink, restrained orange-charcoal palette. No graphic injury, no blood, no gore; missing arm covered by empty robe sleeve. No text, panels, logo or watermark."
+    },
+    {
+      "id": "ichigo",
+      "refs": [
+        "desktop/shared/wallpapers/ichigo-desktop.png"
+      ],
+      "prompt": "Use case: identity-preserve. Edit this existing full desktop wallpaper. Keep the entire wide landscape composition, right-side full-body character placement, landscape, architecture, deep near-black sky, and restrained orange embers. Update ONLY Ichigo Kurosaki's outfit and weapons to his Thousand-Year Blood War POST-ROYAL-PALACE true Shikai design: short spiky orange hair, sleeveless black shihakusho with distinctive white crisscross chest straps and white shoulder armor details, black hakama, TWO separate Zangetsu blades: a large broad black cleaver in one hand and a smaller black knife-like blade in the other. Clear two-arm anatomy; both blades recognizable. Do not use Dangai, Fullbring Bankai, Hollow mask or an orange long-haired form. Painterly anime ink with same existing lighting and quality, full landscape scene not portrait. No text, panels, logos, watermark or UI."
     }
   ],
   "color_portrait_jobs": [
     {
-      "id": "ichigo-tybw",
-      "ref": "files/.config/fastfetch/portraits/dangai-ichigo.png",
-      "prompt": "Use case: identity-preserve. Edit the supplied square Ichigo portrait into a NEW separate Thousand-Year Blood War post-Royal-Palace true Shikai portrait. Preserve the same premium anime-ink rendering, expressive face, centered chest-up framing and near-black plain background. Replace long Dangai hair with Ichigo's SHORT spiky orange hair; replace torn Dangai robes with sleeveless black shihakusho with white crossing chest straps and white shoulder details of his TYBW Royal Palace outfit. Hint of his two black Zangetsu blade hilts at lower frame. Canonical TYBW face, focused determined expression. Restrained orange rim accent, canonical skin/hair colors, crisp fine black linework and cel shading. No text, logo, panel, scenery, watermark or border. Single square portrait, 1024x1024 or larger."
-    },
-    {
       "id": "kenpachi-bankai",
       "ref": "files/.config/fastfetch/portraits/kenpachi.png",
       "prompt": "Use case: identity-preserve. Edit the supplied square Kenpachi portrait into a NEW separate TYBW Bankai portrait. Keep recognizable facial structure and scar, square chest-up framing, near-black plain background and premium crisp anime-ink illustration style. Transform him to his Thousand-Year Blood War BANKAI DEMON FORM: red skin, long wild black hair, two short forehead horns, black markings around eyes, no eyepatch, fierce focused expression with sharp teeth, torn black robes and white haori remnants. Adult muscular man, no graphic wounds or blood. Canonical Bankai cues rather than fantasy armor. Restrained deep-crimson rim light. No text, logo, panel, watermark, background scenery or border. Single square 1024x1024 or larger portrait."
+    },
+    {
+      "id": "ichigo-tybw",
+      "ref": "files/.config/fastfetch/portraits/dangai-ichigo.png",
+      "prompt": "Use case: identity-preserve. Edit the supplied square Ichigo portrait into a NEW separate Thousand-Year Blood War post-Royal-Palace true Shikai portrait. Preserve the same premium anime-ink rendering, expressive face, centered chest-up framing and near-black plain background. Replace long Dangai hair with Ichigo's SHORT spiky orange hair; replace torn Dangai robes with sleeveless black shihakusho with white crossing chest straps and white shoulder details of his TYBW Royal Palace outfit. Hint of his two black Zangetsu blade hilts at lower frame. Canonical TYBW face, focused determined expression. Restrained orange rim accent, canonical skin/hair colors, crisp fine black linework and cel shading. No text, logo, panel, scenery, watermark or border. Single square portrait, 1024x1024 or larger."
     }
   ],
   "manga_scene_prompt": "Use case: style-transfer. Convert this exact full TYBW desktop wallpaper scene into a refined BLACK-AND-WHITE MANGA ink edition. Preserve the complete scene, landscape framing, character identity, anatomy, costume, TYBW transformation, every weapon, pose and architectural landmarks. Do not crop to a headshot. Preserve the source aspect ratio, full wide scene, character at far right and quiet dark central negative space. Crisp varied brush ink, detailed screentones and crosshatching, bone-white highlights, black shadows. Convert all colored energy to white ink/halftone. Neutral black, white and gray ONLY, no accent colors, no sepia. No text, panels, logos, watermark or UI. Single standalone image.",
@@ -198,85 +198,23 @@
       "sha256": "06e67b47a0bef1b6d653df92c83dd623326fd2d929ed43db1705e481f1cfd5d0",
       "width": 1672,
       "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-ichigo.png",
+      "sha256": "bb174e4c7a1095ddb252dad65199572f61847eb28efb91b6648c6c1d86a355e1",
+      "width": 1672,
+      "height": 941
     }
   ],
   "corrections": [
     {
-      "id": "ichigo-wallpaper-arm-correction",
+      "id": "ichigo-desktop-no-sword-standing-pose",
       "date": "2026-10-20",
-      "reference": "desktop/shared/wallpapers/ichigo-desktop.png (before correction)",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop.png (restored pre-revision composition)",
       "reference_sha256": "fd1ecfdecc1077f5838e742f33a2d2941531c34f378533b4f32ba902d17ac5ad",
-      "prompt": "Edit this existing wide 16:9 anime-inspired Bleach TYBW True Shikai Ichigo desktop wallpaper. Make a visible pose correction to Ichigo's right arm (on viewer's right): bring it clearly outward from the right shoulder, with a distinct natural elbow and forearm silhouette in front of the robe, ending in a clearly visible hand holding the hilt of the shorter sword at his right side. Keep the left arm extended down to hold the large long blade angled toward the lower left. Ensure exactly two anatomically connected arms and hands. Preserve Ichigo's face, orange hair, black shihakusho, white crossed straps, overall composition, dark negative space across the left and center, orange ember lighting, storm and ruined Soul Society skyline. No text or watermark.",
+      "method": "Built-in image_gen edit. Kept the dark negative space, stormy Soul Society skyline and ember palette. Reposed Ichigo upright in a calm three-quarter profile facing the skyline, with relaxed shoulders and empty hands; removed all swords and weapons.",
       "output": "desktop/shared/wallpapers/ichigo-desktop.png",
-      "output_sha256": "4cdc52c3801431e09952605e50b4a8610f8e8529d18bf5ef302229dd5a1d375a",
-      "width": 1672,
-      "height": 941
-    },
-    {
-      "id": "ichigo-desktop-v3-arm-correction",
-      "date": "2026-10-20",
-      "reference": "previous corrected Ichigo wallpaper (output of ichigo-wallpaper-arm-correction)",
-      "reference_sha256": "4cdc52c3801431e09952605e50b4a8610f8e8529d18bf5ef302229dd5a1d375a",
-      "prompt": "Edit this Bleach TYBW desktop wallpaper while preserving the overall 16:9 composition, dark smoky Soul Society battlefield, orange ember lighting, Ichigo's design and clothing, and his long black sword. Correct the arm pose clearly: his arms should hang naturally at his sides and be visibly in front of his torso silhouette, with both shoulders, upper arms, forearms, wrists, and hands anatomically connected and readable. In particular, do not place either arm behind his back or hidden behind his torso; bring the arm on the right side of the image slightly forward so its full contour and hand are visible. Keep Ichigo facing away/three-quarter profile and keep the large empty dark space on the left. No extra limbs, no changes to face, outfit, sword, or background.",
-      "output": "desktop/shared/wallpapers/ichigo-desktop-v3.png",
-      "output_sha256": "c50fdd32758e0c1d6e7fd7fa21bad3dfa04ea2ca4c589d581b2a653d57547842",
-      "width": 1672,
-      "height": 941
-    },
-    {
-      "id": "ichigo-login-scene-v3-arm-correction",
-      "date": "2026-10-20",
-      "references": [
-        "desktop/shared/wallpapers/ichigo-desktop-v3.png",
-        "login/theme/assets/scene-ichigo.png (prior monochrome scene, style reference; SHA-256 1d586dec9489609c864ff4d32a23d8552f0f6a3e6d56d969d4e61bc21630cca5)"
-      ],
-      "prompt": "Create a corrected monochrome manga login wallpaper using the two provided landscape images. The color Ichigo wallpaper is the authoritative reference for the corrected pose and composition; the black-and-white image is the style reference to preserve. Produce a full-scene 16:9 black, white, and neutral-gray manga ink rendering with the same Soul Society battlefield, dark central negative space, and Ichigo positioned on the far right. Preserve his identity, clothing, sword, camera angle, and scene. Correct the arm anatomy so both arms are clearly connected and naturally hang beside the torso, with both forearms and hands visibly in front of the body silhouette. In particular, the arm on the right side of the image must not appear behind his back or merge into his torso. No extra limbs, no text, no UI, no color, no cropping.",
-      "output": "login/theme/assets/scene-ichigo.png",
-      "output_sha256": "b072315fecee26c185458df3bc6cffb830717c11c2251ae22d19ddd2bbadcd3e",
-      "width": 1672,
-      "height": 941
-    },
-    {
-      "id": "ichigo-desktop-v4-new-two-handed-pose",
-      "date": "2026-10-20",
-      "reference": "desktop/shared/wallpapers/ichigo-desktop-v3.png (style and mood reference)",
-      "reference_sha256": "c50fdd32758e0c1d6e7fd7fa21bad3dfa04ea2ca4c589d581b2a653d57547842",
-      "prompt": "Create a new 16:9 desktop wallpaper inspired by the supplied reference's dark TYBW Bleach mood, charcoal storm sky, ember-orange fire, distant ruined Japanese city, and high-contrast anime painting. Make this a clearly different pose and composition: Ichigo Kurosaki stands on the right third, facing three-quarter toward the viewer in a grounded forward stance, gripping one oversized black zanpakuto with both hands across his body in a deliberate two-handed guard. Both arms are visibly in front of his torso, with clear shoulder-to-elbow-to-wrist anatomy and both hands visibly wrapped around the same sword hilt. No arm behind his back, no dangling free arm, no extra arms, no hidden hand. His face and orange hair are visible; black shihakusho with white torn straps and sash moves in the wind. The sword blade runs diagonally down toward the lower left, not obscuring his hands. Preserve broad quiet dark negative space on the left. Distant firelit skyline along the bottom. Polished cinematic anime wallpaper, crisp anatomy, strong readable silhouette, no text, no logos, no watermark.",
-      "output": "desktop/shared/wallpapers/ichigo-desktop-v4.png",
-      "output_sha256": "43b3366da0abf6a36f0117adb981cc10b773179cfaf9dd462de2ea5357ce11d1",
-      "width": 1672,
-      "height": 941
-    },
-    {
-      "id": "ichigo-login-scene-v4-local-monochrome-conversion",
-      "date": "2026-10-20",
-      "reference": "desktop/shared/wallpapers/ichigo-desktop-v4.png",
-      "reference_sha256": "43b3366da0abf6a36f0117adb981cc10b773179cfaf9dd462de2ea5357ce11d1",
-      "method": "Local Pillow conversion: grayscale, autocontrast with 1% cutoff, contrast enhancement 1.16x, unsharp mask radius 1.2 / percent 115 / threshold 3. The lockscreen uses the exact same pose; no additional image-generation call was used.",
-      "output": "login/theme/assets/scene-ichigo.png",
-      "output_sha256": "43b1330b2af4e988a95d8f3c400ad61ac476ccb0a03f7128de7de1b780c3af25",
-      "width": 1672,
-      "height": 941
-    },
-    {
-      "id": "ichigo-desktop-v5-local-zangetsu-hilt-retouch",
-      "date": "2026-10-20",
-      "reference": "desktop/shared/wallpapers/ichigo-desktop-v4.png (two-handed pose)",
-      "reference_sha256": "43b3366da0abf6a36f0117adb981cc10b773179cfaf9dd462de2ea5357ce11d1",
-      "method": "Local Pillow overlay only; no image generation. Added five pale diagonal tsuka-wrap bands on the exposed hilt between coordinates (1344,454) and (1383,428), plus five dark oval chain links with warm metal edging from the pommel at (1385,429) along a short curve to (1417,453). The current full-size source and final output are both 1672x941.",
-      "output": "desktop/shared/wallpapers/ichigo-desktop-v5.png",
-      "output_sha256": "64dd9143f302fc7f045b8e3626d4415e5e987462447233b29bd387af370a4549",
-      "width": 1672,
-      "height": 941
-    },
-    {
-      "id": "ichigo-login-scene-v5-local-monochrome-conversion",
-      "date": "2026-10-20",
-      "reference": "desktop/shared/wallpapers/ichigo-desktop-v5.png",
-      "reference_sha256": "64dd9143f302fc7f045b8e3626d4415e5e987462447233b29bd387af370a4549",
-      "method": "Local Pillow conversion: grayscale, autocontrast with 1% cutoff, contrast enhancement 1.16x, unsharp mask radius 1.2 / percent 115 / threshold 3. The lockscreen uses the exact same pose and sword details; no additional image-generation call was used.",
-      "output": "login/theme/assets/scene-ichigo.png",
-      "output_sha256": "06e67b47a0bef1b6d653df92c83dd623326fd2d929ed43db1705e481f1cfd5d0",
+      "output_sha256": "c25fe57308ddb7c3bd8a54925407c35e0c8268c682bdcd2db22e57f1fc1de2ab",
       "width": 1672,
       "height": 941
     }

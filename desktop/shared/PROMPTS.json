@@ -2,12 +2,12 @@
   "tool": "built-in image_gen.imagegen",
   "transparent_background": false,
   "prompts": {
-    "ichigo": "Create a polished 16:9 TYBW desktop and KDE lockscreen wallpaper: Ichigo Kurosaki in black True Shikai robes, orange hair, holding the larger Zangetsu blade with both hands in a forward guard. Make the sword read as Zangetsu with its broad black cleaver-like blade, wrapped grip, and dark chain at the hilt. Keep Ichigo on the right, dark empty space across the left, and the ember-lit Soul Society skyline along the bottom. No text, logos or UI.",
+    "ichigo": "Edit the existing TYBW wallpaper. Keep the 16:9 composition, Ichigo in black robes at far right, dark negative space on the left and center, stormy navy sky, fiery Soul Society skyline and embers. Change Ichigo to an upright calm three-quarter profile facing the distant skyline, relaxed shoulders, empty hands naturally at his sides. Remove all swords and weapons entirely. Refined anime illustration, no text, logos, watermark or UI.",
     "rukia": "Use case: stylized-concept. Asset: polished 2560x1440 landscape KDE desktop/lockscreen wallpaper. Bleach TYBW anime fan art of Rukia Kuchiki in Hakka no Togame Bankai, white hair, elaborate flowing white kimono and ice sword. Full figure placed ONLY in far right quarter. Restrained premium painterly manga ink aesthetic, deep almost black navy background, luminous ice blue spiritual snow and subtle ice architecture at outer edges and lower edge. Center 55 percent is extremely dark almost empty negative space, including top center and middle center, for OS clock and password controls. Beautiful icy blue and charcoal palette, delicate silver highlights. No text, logos, panels or UI. Edge to edge artwork.",
     "quincy": "Use case: stylized-concept. Asset: 2560x1440 landscape KDE desktop and lock-screen wallpaper. Bleach TYBW anime fan art of Uryu Ishida, black hair, thin glasses, white Quincy uniform and blue luminous spirit bow, standing ONLY in far right quarter. Elegant painterly manga ink aesthetic. Vast near-black navy central negative space; faint Soul Society skyline at bottom, crisp cobalt energy particles at far edges. Center 55 percent is very dark, empty and quiet, especially top-center and middle-center, for OS white clock and password controls. Premium restrained cinematic composition. Cobalt blue, white and charcoal. No text, lettering, logos, UI, frames or panels. Edge to edge artwork."
   },
   "saved_files": {
-    "ichigo": "~/Pictures/Bleach-TYBW/Wallpapers/ichigo-desktop-v5.png",
+    "ichigo": "~/Pictures/Bleach-TYBW/Wallpapers/ichigo-desktop.png",
     "rukia": "~/Pictures/Bleach-TYBW/Wallpapers/rukia-desktop.png",
     "quincy": "~/Pictures/Bleach-TYBW/Wallpapers/quincy-desktop.png"
   }

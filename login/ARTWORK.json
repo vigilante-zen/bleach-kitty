@@ -1,23 +1,22 @@
 {
   "date": "2026-10-20",
-  "generator": "Built-in image_gen.imagegen with local Pillow sword-detail overlay; local monochrome conversion for Ichigo login scene",
+  "generator": "Built-in image_gen.imagegen; local Pillow monochrome conversion for Ichigo login scene",
   "use_case": "style-transfer",
   "prompt": "Use case: style-transfer. Edit target: the supplied full desktop wallpaper. Convert this SAME full scene into a refined black-and-white manga ink illustration for a login screen. Preserve character identities, facial features, costume designs, poses, camera, all major architecture and environmental elements, and the complete wide landscape composition. This is a style conversion of the full wallpaper, NOT a headshot or cropped portrait. Keep the subject positions and generous dark central negative space. Use expressive crisp black brush ink, bone-white highlights, varied crosshatching and fine screentones; convert colored energy effects into white ink and halftone. Strictly black, white and neutral gray, no colored accents, no sepia. No typography, no text, no speech bubbles, no panels, no logo, no watermark, no UI. Output one standalone landscape image preserving the source aspect ratio and full scene.",
   "transparent_background": false,
-  "notes": "Twelve full manga wallpaper scenes. Four TYBW presets and corrected Ichigo/Yamamoto designs were added in the TYBW expansion. Ichigo now uses a two-handed pose with locally retouched Zangetsu hilt details; the matching monochrome login scene is derived locally from the same v5 wallpaper. Exact prompts, local edits, conversion details and output hashes are in docs/prompts/tybw-expansion-20261020/PROMPTS.json. All are unofficial AI-generated fan art, excluded from the code MIT license.",
+  "notes": "Twelve full manga wallpaper scenes. Four TYBW presets and corrected Ichigo/Yamamoto designs were added in the TYBW expansion. Ichigo now has a weapon-free standing pose; the matching monochrome login scene is derived locally from the same wallpaper. Exact prompts, conversion details and output hashes are in docs/prompts/tybw-expansion-20261020/PROMPTS.json. All are unofficial AI-generated fan art, excluded from the code MIT license.",
   "assets": [
     {
       "preset": "ichigo",
-      "reference": "desktop/shared/wallpapers/ichigo-desktop-v5.png",
-      "reference_sha256": "64dd9143f302fc7f045b8e3626d4415e5e987462447233b29bd387af370a4549",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop.png",
+      "reference_sha256": "c25fe57308ddb7c3bd8a54925407c35e0c8268c682bdcd2db22e57f1fc1de2ab",
       "path": "login/theme/assets/scene-ichigo.png",
-      "sha256": "06e67b47a0bef1b6d653df92c83dd623326fd2d929ed43db1705e481f1cfd5d0",
+      "sha256": "bb174e4c7a1095ddb252dad65199572f61847eb28efb91b6648c6c1d86a355e1",
       "width": 1672,
       "height": 941,
       "prompt_record": "docs/prompts/tybw-expansion-20261020/PROMPTS.json",
-      "previous_sha256": "29819329d1ce08c26623aeb274db3885f841cb96032c2d8baf7a26773340414c",
-      "conversion": "Derived locally from the full-color v5 wallpaper using grayscale, autocontrast (1% cutoff), contrast enhancement (1.16x), and unsharp mask (radius 1.2, percent 115, threshold 3); no additional image-generation call.",
-      "retouch": "The exposed hilt was locally detailed with pale tsuka-wrap bands and a short dark chain, based on the existing Ichigo portrait asset. No image-generation call."
+      "previous_sha256": "1d586dec9489609c864ff4d32a23d8552f0f6a3e6d56d969d4e61bc21630cca5",
+      "conversion": "Derived locally from the full-color wallpaper using grayscale, autocontrast with 1% cutoff, contrast enhancement 1.16x, and unsharp mask radius 1.2 / percent 115 / threshold 3. No additional image-generation call."
     },
     {
       "preset": "rukia",

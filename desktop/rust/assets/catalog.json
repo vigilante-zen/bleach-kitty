@@ -3,16 +3,16 @@
     {
       "id": "ichigo",
       "title": "Ichigo",
-      "subtitle": "Ember orange \u00b7 TYBW True Shikai",
+      "subtitle": "Ember orange · TYBW True Shikai",
       "accent": "#ff9d52",
-      "image": "ichigo-desktop-v3.png",
+      "image": "ichigo-desktop-v4.png",
       "portrait": "ichigo-tybw",
       "manga": "ichigo-manga.png"
     },
     {
       "id": "rukia",
       "title": "Rukia",
-      "subtitle": "Ice blue \u00b7 Hakka no Togame",
+      "subtitle": "Ice blue · Hakka no Togame",
       "accent": "#a9dfff",
       "image": "rukia-desktop.png",
       "portrait": "rukia-bankai",
@@ -21,7 +21,7 @@
     {
       "id": "quincy",
       "title": "Quincy",
-      "subtitle": "Spirit blue \u00b7 Uryu",
+      "subtitle": "Spirit blue · Uryu",
       "accent": "#4baaff",
       "image": "quincy-desktop.png",
       "portrait": "uryu",
@@ -30,7 +30,7 @@
     {
       "id": "tybw",
       "title": "TYBW",
-      "subtitle": "Crimson & blue \u00b7 Shuffle",
+      "subtitle": "Crimson & blue · Shuffle",
       "accent": "#e63946",
       "image": "bleach-tybw.png",
       "portrait": "random",
@@ -39,7 +39,7 @@
     {
       "id": "urahara",
       "title": "Urahara",
-      "subtitle": "Emerald \u00b7 21:9 ultrawide",
+      "subtitle": "Emerald · 21:9 ultrawide",
       "accent": "#a8d18d",
       "image": "urahara-desktop.png",
       "portrait": "urahara",
@@ -48,7 +48,7 @@
     {
       "id": "byakuya",
       "title": "Byakuya",
-      "subtitle": "Cherry blossom \u00b7 21:9 ultrawide",
+      "subtitle": "Cherry blossom · 21:9 ultrawide",
       "accent": "#f2a6cf",
       "image": "byakuya-desktop.png",
       "portrait": "byakuya",
@@ -57,7 +57,7 @@
     {
       "id": "yamamoto",
       "title": "Yamamoto",
-      "subtitle": "Ember gold \u00b7 21:9 ultrawide",
+      "subtitle": "Ember gold · 21:9 ultrawide",
       "accent": "#ffb56b",
       "image": "yamamoto-desktop.png",
       "portrait": "yamamoto",
@@ -66,7 +66,7 @@
     {
       "id": "ulquiorra",
       "title": "Ulquiorra",
-      "subtitle": "Emerald moon \u00b7 21:9 ultrawide",
+      "subtitle": "Emerald moon · 21:9 ultrawide",
       "accent": "#76e3a3",
       "image": "ulquiorra-desktop.png",
       "portrait": "ulquiorra",
@@ -75,7 +75,7 @@
     {
       "id": "renji",
       "title": "Renji",
-      "subtitle": "Crimson \u00b7 True Bankai",
+      "subtitle": "Crimson · True Bankai",
       "accent": "#e76a73",
       "image": "renji-desktop.png",
       "portrait": "renji-bankai",
@@ -84,7 +84,7 @@
     {
       "id": "hitsugaya",
       "title": "Hitsugaya",
-      "subtitle": "Frost \u00b7 Adult Bankai",
+      "subtitle": "Frost · Adult Bankai",
       "accent": "#a8e6ef",
       "image": "hitsugaya-desktop.png",
       "portrait": "hitsugaya-bankai",
@@ -93,7 +93,7 @@
     {
       "id": "kenpachi",
       "title": "Kenpachi",
-      "subtitle": "Scarlet \u00b7 Bankai",
+      "subtitle": "Scarlet · Bankai",
       "accent": "#e45462",
       "image": "kenpachi-desktop.png",
       "portrait": "kenpachi-bankai",
@@ -102,7 +102,7 @@
     {
       "id": "yhwach",
       "title": "Yhwach",
-      "subtitle": "Imperial \u00b7 TYBW",
+      "subtitle": "Imperial · TYBW",
       "accent": "#b68fce",
       "image": "yhwach-desktop.png",
       "portrait": "yhwach",

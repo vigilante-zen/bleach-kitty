@@ -174,6 +174,18 @@
       "sha256": "b072315fecee26c185458df3bc6cffb830717c11c2251ae22d19ddd2bbadcd3e",
       "width": 1672,
       "height": 941
+    },
+    {
+      "path": "desktop/shared/wallpapers/ichigo-desktop-v4.png",
+      "sha256": "43b3366da0abf6a36f0117adb981cc10b773179cfaf9dd462de2ea5357ce11d1",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-ichigo.png",
+      "sha256": "43b1330b2af4e988a95d8f3c400ad61ac476ccb0a03f7128de7de1b780c3af25",
+      "width": 1672,
+      "height": 941
     }
   ],
   "corrections": [
@@ -209,6 +221,28 @@
       "prompt": "Create a corrected monochrome manga login wallpaper using the two provided landscape images. The color Ichigo wallpaper is the authoritative reference for the corrected pose and composition; the black-and-white image is the style reference to preserve. Produce a full-scene 16:9 black, white, and neutral-gray manga ink rendering with the same Soul Society battlefield, dark central negative space, and Ichigo positioned on the far right. Preserve his identity, clothing, sword, camera angle, and scene. Correct the arm anatomy so both arms are clearly connected and naturally hang beside the torso, with both forearms and hands visibly in front of the body silhouette. In particular, the arm on the right side of the image must not appear behind his back or merge into his torso. No extra limbs, no text, no UI, no color, no cropping.",
       "output": "login/theme/assets/scene-ichigo.png",
       "output_sha256": "b072315fecee26c185458df3bc6cffb830717c11c2251ae22d19ddd2bbadcd3e",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "ichigo-desktop-v4-new-two-handed-pose",
+      "date": "2026-10-20",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop-v3.png (style and mood reference)",
+      "reference_sha256": "c50fdd32758e0c1d6e7fd7fa21bad3dfa04ea2ca4c589d581b2a653d57547842",
+      "prompt": "Create a new 16:9 desktop wallpaper inspired by the supplied reference's dark TYBW Bleach mood, charcoal storm sky, ember-orange fire, distant ruined Japanese city, and high-contrast anime painting. Make this a clearly different pose and composition: Ichigo Kurosaki stands on the right third, facing three-quarter toward the viewer in a grounded forward stance, gripping one oversized black zanpakuto with both hands across his body in a deliberate two-handed guard. Both arms are visibly in front of his torso, with clear shoulder-to-elbow-to-wrist anatomy and both hands visibly wrapped around the same sword hilt. No arm behind his back, no dangling free arm, no extra arms, no hidden hand. His face and orange hair are visible; black shihakusho with white torn straps and sash moves in the wind. The sword blade runs diagonally down toward the lower left, not obscuring his hands. Preserve broad quiet dark negative space on the left. Distant firelit skyline along the bottom. Polished cinematic anime wallpaper, crisp anatomy, strong readable silhouette, no text, no logos, no watermark.",
+      "output": "desktop/shared/wallpapers/ichigo-desktop-v4.png",
+      "output_sha256": "43b3366da0abf6a36f0117adb981cc10b773179cfaf9dd462de2ea5357ce11d1",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "ichigo-login-scene-v4-local-monochrome-conversion",
+      "date": "2026-10-20",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop-v4.png",
+      "reference_sha256": "43b3366da0abf6a36f0117adb981cc10b773179cfaf9dd462de2ea5357ce11d1",
+      "method": "Local Pillow conversion: grayscale, autocontrast with 1% cutoff, contrast enhancement 1.16x, unsharp mask radius 1.2 / percent 115 / threshold 3. The lockscreen uses the exact same pose; no additional image-generation call was used.",
+      "output": "login/theme/assets/scene-ichigo.png",
+      "output_sha256": "43b1330b2af4e988a95d8f3c400ad61ac476ccb0a03f7128de7de1b780c3af25",
       "width": 1672,
       "height": 941
     }

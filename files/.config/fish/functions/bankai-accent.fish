@@ -4,6 +4,22 @@ function bankai-accent --description "Set this shell's Bleach portrait accents"
     set -g bankai_prompt_secondary 65C9FF
     set -g bankai_prompt_label BANKAI
     switch "$argv[1]"
+        case nemu
+            set -g bankai_prompt_primary 83D9C4
+            set -g bankai_prompt_secondary C5CFFF
+            set -g bankai_prompt_label NEMU
+        case askin
+            set -g bankai_prompt_primary C5A0FF
+            set -g bankai_prompt_secondary A8D18D
+            set -g bankai_prompt_label ASKIN
+        case lille
+            set -g bankai_prompt_primary A8D18D
+            set -g bankai_prompt_secondary E8D9A0
+            set -g bankai_prompt_label LILLE
+        case yachiru
+            set -g bankai_prompt_primary F2A6CF
+            set -g bankai_prompt_secondary FFE29A
+            set -g bankai_prompt_label YACHIRU
         case jugram
             set -g bankai_prompt_primary E8D9A0
             set -g bankai_prompt_secondary 91DCFF

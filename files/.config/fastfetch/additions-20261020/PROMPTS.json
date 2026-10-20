@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-20",
+  "generator": "Built-in image_gen tool",
+  "notes": "Original color fan art plus matching manga edits. Canonical design cues checked against the official character site and character references. Artwork is excluded from the code MIT license.",
+  "references": [
+    "https://bleach-anime.com/en/character/",
+    "https://bleach.fandom.com/wiki/Nemu_Kurotsuchi",
+    "https://bleach.fandom.com/wiki/Askin_Nakk_Le_Vaar",
+    "https://bleach.fandom.com/wiki/Lille_Barro",
+    "https://bleach.fandom.com/wiki/Yachiru_Kusajishi"
+  ],
+  "characters": [
+    {
+      "id": "nemu",
+      "name": "Nemu Kurotsuchi",
+      "accent": "#83D9C4",
+      "secondary": "#C5CFFF",
+      "editions": {
+        "color": {
+          "path": "files/.config/fastfetch/portraits/nemu.png",
+          "prompt": "Create ONE square color character portrait of Nemu Kurotsuchi from Bleach. Character design: adult woman with pale skin, green eyes, long straight black hair tied into a single thick braid, straight bangs, calm reserved expression, black shinigami uniform with white collar and white lieutenant armband; modest shoulder-up framing. Premium anime ink illustration, confident fine black linework, cel shaded original fan art; crisp silhouette recognizable at 240 pixels. Composition: centered bust/head-and-shoulders, entire hairstyle visible, roomy square framing, face upper-middle, nearly black solid #090C12 background with no scenery, no frame. Character's canonical hair/skin/outfit colors, restrained accent #83D9C4 only in very subtle rim lighting and uniform details. Calm clean terminal portrait, no glow effects, no collage, no text, no letters, no symbols as text, no logos, no watermarks, no signature. One character only. Output square 1024x1024 image.",
+          "sha256": "8867cd04d6ae02cb469fc92efb059b21bb6f63269a8b2caffc5fb7f69ce85dd5"
+        },
+        "manga": {
+          "path": "files/.config/fastfetch/manga/nemu.png",
+          "prompt": "Transform the referenced color portrait of Nemu Kurotsuchi into a matching black-and-white manga ink edition for a terminal greeting. Preserve precisely the character identity, facial features, skin tone identity through screentone, expression, hairstyle, outfit, pose and square framing. Nearly black #090C12 background. Crisp black brush ink, bone-white highlights, detailed varied linework, restrained screentones and crosshatching, clear silhouette at 240 pixels. Use only one very restrained accent hue #83D9C4 on a tiny iris or uniform detail; everything else including hair and clothing should be monochrome. No broad color wash, no neon, no sepia, no new objects, no text, no watermark. Preserve modest outfit coverage. One standalone square portrait only.",
+          "sha256": "b9042a713f77f0920c57186d7c50899ea11360fe4f2ad3d99cc93e9b332a4b91",
+          "reference": "files/.config/fastfetch/portraits/nemu.png"
+        }
+      }
+    },
+    {
+      "id": "askin",
+      "name": "Askin Nakk Le Vaar",
+      "accent": "#C5A0FF",
+      "secondary": "#A8D18D",
+      "editions": {
+        "color": {
+          "path": "files/.config/fastfetch/portraits/askin.png",
+          "prompt": "Create ONE square color character portrait of Askin Nakk Le Vaar from Bleach. Character design: adult lean man with light olive skin, long asymmetrical dark brown hair swept back with a prominent curled forelock, narrow violet eyes and pronounced lips, sardonic expression, white high-collared Quincy military uniform. Premium anime ink illustration, confident fine black linework, cel shaded original fan art; crisp silhouette recognizable at 240 pixels. Composition: centered bust/head-and-shoulders, entire hairstyle visible, roomy square framing, face upper-middle, nearly black solid #090C12 background with no scenery, no frame. Character's canonical hair/skin/outfit colors, restrained accent #C5A0FF only in very subtle rim lighting and uniform details. Calm clean terminal portrait, no glow effects, no collage, no text, no letters, no symbols as text, no logos, no watermarks, no signature. One character only. Output square 1024x1024 image.",
+          "sha256": "4a39b24987be39a063b78ad845e89eadd548d18df92bb377b15d332937201da7"
+        },
+        "manga": {
+          "path": "files/.config/fastfetch/manga/askin.png",
+          "prompt": "Transform the referenced color portrait of Askin Nakk Le Vaar into a matching black-and-white manga ink edition for a terminal greeting. Preserve precisely the character identity, facial features, skin tone identity through screentone, expression, hairstyle, outfit, pose and square framing. Nearly black #090C12 background. Crisp black brush ink, bone-white highlights, detailed varied linework, restrained screentones and crosshatching, clear silhouette at 240 pixels. Use only one very restrained accent hue #C5A0FF on a tiny iris or uniform detail; everything else including hair and clothing should be monochrome. No broad color wash, no neon, no sepia, no new objects, no text, no watermark. Preserve modest outfit coverage. One standalone square portrait only.",
+          "sha256": "e888c271d9c469d795801b72abcd6b1c706f9d9460b27486d69d9add711df0d2",
+          "reference": "files/.config/fastfetch/portraits/askin.png"
+        }
+      }
+    },
+    {
+      "id": "lille",
+      "name": "Lille Barro",
+      "accent": "#A8D18D",
+      "secondary": "#E8D9A0",
+      "editions": {
+        "color": {
+          "path": "files/.config/fastfetch/portraits/lille.png",
+          "prompt": "Create ONE square color character portrait of Lille Barro from Bleach. Character design: adult dark-skinned man with short pale blond hair, one eye closed with distinctive crosshair-like marking, serious expression, green fur-trimmed military cap with asymmetric brim, white high-collared Quincy military uniform and green cloak collar. Premium anime ink illustration, confident fine black linework, cel shaded original fan art; crisp silhouette recognizable at 240 pixels. Composition: centered bust/head-and-shoulders, entire hairstyle visible, roomy square framing, face upper-middle, nearly black solid #090C12 background with no scenery, no frame. Character's canonical hair/skin/outfit colors, restrained accent #A8D18D only in very subtle rim lighting and uniform details. Calm clean terminal portrait, no glow effects, no collage, no text, no letters, no symbols as text, no logos, no watermarks, no signature. One character only. Output square 1024x1024 image.",
+          "sha256": "0d327b5abb3bc1adc7cc36ecc3e986e36d8d13ac2b52a2a28654ebdd6f9045b9"
+        },
+        "manga": {
+          "path": "files/.config/fastfetch/manga/lille.png",
+          "prompt": "Transform the referenced color portrait of Lille Barro into a matching black-and-white manga ink edition for a terminal greeting. Preserve precisely the character identity, facial features, skin tone identity through screentone, expression, hairstyle, outfit, pose and square framing. Nearly black #090C12 background. Crisp black brush ink, bone-white highlights, detailed varied linework, restrained screentones and crosshatching, clear silhouette at 240 pixels. Use only one very restrained accent hue #A8D18D on a tiny iris or uniform detail; everything else including hair and clothing should be monochrome. No broad color wash, no neon, no sepia, no new objects, no text, no watermark. Preserve modest outfit coverage. One standalone square portrait only.",
+          "sha256": "898ead8bb5d66b19106405642c95ae0fbb54f617958ead4abd4de7eb5a13b7de",
+          "reference": "files/.config/fastfetch/portraits/lille.png"
+        }
+      }
+    },
+    {
+      "id": "yachiru",
+      "name": "Yachiru Kusajishi",
+      "accent": "#F2A6CF",
+      "secondary": "#FFE29A",
+      "editions": {
+        "color": {
+          "path": "files/.config/fastfetch/portraits/yachiru.png",
+          "prompt": "Create ONE square color character portrait of Yachiru Kusajishi from Bleach. Character design: small child girl, bright pink chin-length bob haircut with bangs, dark pink eyes, cheerful mischievous smile, black shinigami uniform with white collar and lieutenant armband, innocent fully clothed head-and-shoulders portrait. Premium anime ink illustration, confident fine black linework, cel shaded original fan art; crisp silhouette recognizable at 240 pixels. Composition: centered bust/head-and-shoulders, entire hairstyle visible, roomy square framing, face upper-middle, nearly black solid #090C12 background with no scenery, no frame. Character's canonical hair/skin/outfit colors, restrained accent #F2A6CF only in very subtle rim lighting and uniform details. Calm clean terminal portrait, no glow effects, no collage, no text, no letters, no symbols as text, no logos, no watermarks, no signature. One character only. Output square 1024x1024 image.",
+          "sha256": "4b5294ae859d1a3c1d7925fb3582178996d49efc80d385dfa905a1e8d1657f52"
+        },
+        "manga": {
+          "path": "files/.config/fastfetch/manga/yachiru.png",
+          "prompt": "Transform the referenced color portrait of Yachiru Kusajishi into a matching black-and-white manga ink edition for a terminal greeting. Preserve precisely the character identity, facial features, skin tone identity through screentone, expression, hairstyle, outfit, pose and square framing. Nearly black #090C12 background. Crisp black brush ink, bone-white highlights, detailed varied linework, restrained screentones and crosshatching, clear silhouette at 240 pixels. Use only one very restrained accent hue #F2A6CF on a tiny iris or uniform detail; everything else including hair and clothing should be monochrome. No broad color wash, no neon, no sepia, no new objects, no text, no watermark. Preserve modest outfit coverage. One standalone square portrait only.",
+          "sha256": "abb486fe67e958c5b65d6b7c02e7e91b24a3edae3181f096d89356c14c12eeba",
+          "reference": "files/.config/fastfetch/portraits/yachiru.png"
+        }
+      }
+    }
+  ]
+}

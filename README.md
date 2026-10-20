@@ -1,6 +1,6 @@
 # Bankai · Bleach desktop and terminal
 
-A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **32 characters, 40 portraits and 80 art editions**, with matching shell, cursor, greeting and monitor accents.
+A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **36 characters, 44 portraits and 88 art editions**, with matching shell, cursor, greeting and monitor accents.
 
 [Browse all color and manga artwork](docs/GALLERY.md) · [Full command guide](files/.config/fastfetch/portraits/ROTATION.md) · [Artwork provenance and prompts](docs/ARTWORK.md)
 
@@ -69,7 +69,7 @@ bankai-art mixed                 # color | manga | mixed
 bankai-pick                      # visual portrait picker
 bankai-pick --session urahara    # pin a character in this shell
 bankai-pick --session reset      # follow saved settings
-bankai-group new-arrivals        # seven recent additions
+bankai-group new-arrivals        # eleven recent additions
 bankai-group quincy              # five Quincy portraits
 bankai-group all                 # full roster
 bankai-shuffle character         # equal character turns

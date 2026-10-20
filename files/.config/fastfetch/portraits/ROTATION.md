@@ -31,9 +31,9 @@ Run `bankai-settings` in Kitty for portraits with previews, character groups, fa
 
 ## Character-balanced shuffle
 
-`bankai-shuffle character` gives each character one turn per cycle, treating the six Ichigo portraits as forms of one character. Ichigo's available forms use a separate shuffle deck so every form appears before repeating. With the full roster this is 32 character turns per cycle. Favorites and groups limit the eligible portraits before balancing.
+`bankai-shuffle character` gives each character one turn per cycle, treating the six Ichigo portraits as forms of one character. Ichigo's available forms use a separate shuffle deck so every form appears before repeating. With the full roster this is 36 character turns per cycle. Favorites and groups limit the eligible portraits before balancing.
 
-`bankai-shuffle portrait` restores the original every-image-once deck (40 images in the full roster). `bankai-shuffle` reports the saved style. Both styles avoid immediate repeats at cycle boundaries where possible and persist across tabs. The style is also available under Shuffle style in `bankai-settings`. Fixed portraits remain fixed; choose `bankai-pick random` to resume rotation. The default style remains portrait.
+`bankai-shuffle portrait` restores the original every-image-once deck (44 images in the full roster). `bankai-shuffle` reports the saved style. Both styles avoid immediate repeats at cycle boundaries where possible and persist across tabs. The style is also available under Shuffle style in `bankai-settings`. Fixed portraits remain fixed; choose `bankai-pick random` to resume rotation. The default style remains portrait.
 
 ## Kitty settings shortcut
 
@@ -45,7 +45,7 @@ Run `bankai-doctor`, or choose Check setup in `bankai-settings`, to validate req
 
 ## Bankai variants
 
-Urahara, Renji, and Hitsugaya each have base and Bankai portraits. Select `urahara-bankai`, `renji-bankai`, or `hitsugaya-bankai` in the picker. Portrait shuffle rotates all 40 images. Character shuffle gives the 32 characters equal turns, with separate form decks for Ichigo, Urahara, Renji, and Hitsugaya. Favorites can include either form or both.
+Urahara, Renji, and Hitsugaya each have base and Bankai portraits. Select `urahara-bankai`, `renji-bankai`, or `hitsugaya-bankai` in the picker. Portrait shuffle rotates all 44 images. Character shuffle gives the 36 characters equal turns, with separate form decks for Ichigo, Urahara, Renji, and Hitsugaya. Favorites can include either form or both.
 
 ## Readable portrait names
 
@@ -67,7 +67,7 @@ Run `bankai-pick --session urahara` in the shell you want to pin. `bankai-pick -
 
 The redesigned full greeting uses a bold character heading, system identity, hardware and session sections, aligned labels and a short settings hint. The compact greeting shows system, uptime, memory and terminal. Auto selects the full view at 104+ columns and 28+ rows; smaller windows get a compact layout with a scaled or stacked portrait.
 
-`bankai-art color|manga|mixed` saves the art edition. Mixed randomly selects an available art edition after choosing the character, so art editions do not change shuffle fairness. All 40 portraits now have matching color and manga editions (80 images across 32 characters). Manga uses monochrome ink and screentones with a restrained character accent. Missing manga falls back to the original color image. The selected character, prompt, cursor, favorites and monitor palette remain tied to the same character. The Portrait art item in `bankai-settings` controls this too. Color and manga images live in separate folders.
+`bankai-art color|manga|mixed` saves the art edition. Mixed randomly selects an available art edition after choosing the character, so art editions do not change shuffle fairness. All 44 portraits now have matching color and manga editions (88 images across 36 characters). Manga uses monochrome ink and screentones with a restrained character accent. Missing manga falls back to the original color image. The selected character, prompt, cursor, favorites and monitor palette remain tied to the same character. The Portrait art item in `bankai-settings` controls this too. Color and manga images live in separate folders.
 
 `bankai-manga-preview` shows Urahara's redesigned compact manga greeting once without changing preferences or consuming the shuffle deck. The local color/manga layout comparison is `~/.config/fastfetch/previews/redesign.html`.
 
@@ -81,10 +81,14 @@ Run `bankai-history`, or choose Recent art in `bankai-settings`, to browse with 
 
 ## Additional characters
 
-Coyote Starrk (`starrk`), Tier Harribel (`harribel`), Shuhei Hisagi (`hisagi`) and Sajin Komamura (`komamura`) each have color and manga editions, matching greeting/prompt/monitor palettes and history support. Starrk and Harribel join Arrancars; Hisagi and Komamura join Soul Reapers. The roster now has 40 portraits, 32 characters and 80 art editions. The addition prompts are in `~/.config/fastfetch/additions-20261019/PROMPTS.json`.
+Coyote Starrk (`starrk`), Tier Harribel (`harribel`), Shuhei Hisagi (`hisagi`) and Sajin Komamura (`komamura`) each have color and manga editions, matching greeting/prompt/monitor palettes and history support. Starrk and Harribel join Arrancars; Hisagi and Komamura join Soul Reapers. The roster now has 44 portraits, 36 characters and 88 art editions. The addition prompts are in `~/.config/fastfetch/additions-20261019/PROMPTS.json`.
 
 ## New arrivals and Quincy expansion
 
-`bankai-group new-arrivals` rotates Starrk, Harribel, Hisagi, Komamura, Jugram, Bazz-B and Bambietta. This group also appears in settings and tab completion. Mixed mode continues to select color or manga after selecting the portrait. `bankai-group all` restores the full roster.
+`bankai-group new-arrivals` rotates Nemu, Askin, Lille, Yachiru, Starrk, Harribel, Hisagi, Komamura, Jugram, Bazz-B and Bambietta. This group also appears in settings and tab completion. Mixed mode continues to select color or manga after selecting the portrait. `bankai-group all` restores the full roster.
 
-Jugram Haschwalth (`jugram`), Bazz-B (`bazz-b`) and Bambietta Basterbine (`bambietta`) join the Quincy group with matching color/manga art, greetings, prompt/monitor accents and history support. The complete roster has 40 portraits, 32 characters and 80 art editions. Prompts: `~/.config/fastfetch/quincy-additions-20261019/PROMPTS.json`.
+Jugram Haschwalth (`jugram`), Bazz-B (`bazz-b`) and Bambietta Basterbine (`bambietta`) join the Quincy group with matching color/manga art, greetings, prompt/monitor accents and history support. The complete roster has 44 portraits, 36 characters and 88 art editions. Prompts: `~/.config/fastfetch/quincy-additions-20261019/PROMPTS.json`.
+
+## October 20 additions
+
+Nemu Kurotsuchi (`nemu`) and Yachiru Kusajishi (`yachiru`) join Soul Reapers; Askin Nakk Le Vaar (`askin`) and Lille Barro (`lille`) join Quincy. All four are in New Arrivals, with color/manga portraits, full/compact greeting themes, shell accents and monitor palettes. Use `bankai-pick nemu` for a fixed portrait or `bankai-group new-arrivals` for rotation. The Rust app discovers the installed portraits automatically. Prompt records are in `~/.config/fastfetch/additions-20261020/PROMPTS.json`.

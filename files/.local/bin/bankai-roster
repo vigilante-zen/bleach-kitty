@@ -19,6 +19,11 @@ CHARACTER_FORMS = {
 }
 CHARACTER_OWNER = {form: character for character, forms in CHARACTER_FORMS.items() for form in forms}
 DISPLAY_NAMES = {
+    'nemu': 'Nemu Kurotsuchi',
+    'askin': 'Askin Nakk Le Vaar',
+    'lille': 'Lille Barro',
+    'yachiru': 'Yachiru Kusajishi',
+
     'jugram': 'Jugram Haschwalth',
     'bazz-b': 'Bazz-B',
     'bambietta': 'Bambietta Basterbine',
@@ -39,12 +44,12 @@ DISPLAY_NAMES = {
     'ulquiorra': 'Ulquiorra · Segunda Etapa',
 }
 GROUPS = {
-    'new-arrivals': ['starrk', 'harribel', 'hisagi', 'komamura', 'jugram', 'bazz-b', 'bambietta'],
+    'new-arrivals': ['nemu', 'askin', 'lille', 'yachiru', 'starrk', 'harribel', 'hisagi', 'komamura', 'jugram', 'bazz-b', 'bambietta'],
     'soul-reapers': ICHIGO + ['urahara-bankai', 'renji-bankai', 'hitsugaya-bankai', 'rukia-bankai', 'renji', 'byakuya', 'urahara', 'yoruichi',
         'hitsugaya', 'kenpachi', 'aizen', 'yamamoto', 'shunsui', 'ukitake', 'unohana',
-        'mayuri', 'soi-fon', 'shinji', 'rangiku', 'gin', 'hisagi', 'komamura'],
+        'mayuri', 'soi-fon', 'shinji', 'rangiku', 'gin', 'hisagi', 'komamura', 'nemu', 'yachiru'],
     'arrancars': ['ulquiorra', 'grimmjow', 'nelliel', 'starrk', 'harribel'],
-    'quincy': ['uryu', 'yhwach', 'jugram', 'bazz-b', 'bambietta'],
+    'quincy': ['uryu', 'yhwach', 'jugram', 'bazz-b', 'bambietta', 'askin', 'lille'],
     'human-world': ['orihime', 'chad', 'uryu', 'urahara', 'urahara-bankai', 'yoruichi'],
     'ichigo': ICHIGO,
 }

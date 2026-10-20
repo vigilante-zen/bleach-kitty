@@ -29,8 +29,8 @@ class InstallationTests(unittest.TestCase):
             self.assertLess(len(data), 100 * 1024 * 1024)
             if not name.endswith('.png'):
                 self.assertNotIn(b'/home/zen', data, name)
-        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/portraits').glob('*.png'))), 40)
-        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/manga').glob('*.png'))), 40)
+        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/portraits').glob('*.png'))), 44)
+        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/manga').glob('*.png'))), 44)
 
     def test_install_relocate_and_restore(self):
         with tempfile.TemporaryDirectory(prefix='bankai home ') as temp:

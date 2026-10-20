@@ -265,9 +265,9 @@ class ControlCenter(QMainWindow):
         self.tray_menu.addSeparator()
         self.tray_menu.addAction(QIcon(str(ICONS / 'bleach-terminal.svg')), 'Soul Society Terminal', lambda: self.launch_terminal())
         self.tray_menu.addAction(QIcon(str(ICONS / 'bleach-monitor.svg')), 'Reiatsu Monitor', lambda: self.launch_terminal('bankai-monitor', 'Reiatsu Monitor'))
-        self.tray_actions.append(self.tray_menu.addAction('Create snapshot', lambda: self.run_task(
+        self.tray_actions.append(self.tray_menu.addAction(QIcon(str(ICONS / 'bleach-backups.svg')), 'Create snapshot', lambda: self.run_task(
             [str(BIN / 'bankai-desktop-backup')], 'Creating a snapshot…', 'Snapshot saved.')))
-        self.tray_menu.addAction('Backups && restore', lambda: self.show_window(backups=True))
+        self.tray_menu.addAction(QIcon(str(ICONS / 'bleach-backups.svg')), 'Backups && restore', lambda: self.show_window(backups=True))
         self.tray_menu.addSeparator()
         self.tray_menu.addAction('Quit Bankai', self.quit_app)
         self.tray.setContextMenu(self.tray_menu)
@@ -396,8 +396,10 @@ class ControlCenter(QMainWindow):
         layout.setSpacing(16)
         layout.addWidget(label('Keep a way back', 'heading'))
         layout.addWidget(label('Save the desktop and terminal together. Restore checks file integrity and saves your current settings first.', 'muted'))
-        layout.addWidget(self.button('Create snapshot', lambda: self.run_task(
-            [str(BIN / 'bankai-desktop-backup')], 'Creating a snapshot…', 'Snapshot saved.'), primary=True))
+        snapshot_button = self.button('Create snapshot', lambda: self.run_task(
+            [str(BIN / 'bankai-desktop-backup')], 'Creating a snapshot…', 'Snapshot saved.'), primary=True)
+        snapshot_button.setIcon(QIcon(str(ICONS / 'bleach-backups.svg')))
+        layout.addWidget(snapshot_button)
         layout.addSpacing(8)
         layout.addWidget(label('SAVED SNAPSHOTS', 'eyebrow'))
         self.snapshots = QComboBox()
@@ -441,8 +443,12 @@ class ControlCenter(QMainWindow):
         layout.addWidget(label('At your command', 'heading'))
         layout.addWidget(label('Portraits, favorites, greetings and system monitoring.', 'muted'))
         layout.addWidget(self.button('Terminal settings', lambda: self.launch_terminal('bankai-settings', 'Bankai settings'), True))
-        layout.addWidget(self.button('Open Soul Society Terminal', lambda: self.launch_terminal()))
-        layout.addWidget(self.button('Reiatsu Monitor', lambda: self.launch_terminal('bankai-monitor', 'Reiatsu Monitor')))
+        terminal_button = self.button('Open Soul Society Terminal', lambda: self.launch_terminal())
+        terminal_button.setIcon(QIcon(str(ICONS / 'bleach-terminal.svg')))
+        layout.addWidget(terminal_button)
+        monitor_button = self.button('Reiatsu Monitor', lambda: self.launch_terminal('bankai-monitor', 'Reiatsu Monitor'))
+        monitor_button.setIcon(QIcon(str(ICONS / 'bleach-monitor.svg')))
+        layout.addWidget(monitor_button)
         layout.addWidget(self.button('Check setup', lambda: self.run_task(
             [str(BIN / 'bankai-doctor')], 'Checking your setup…', 'Setup check complete. See activity for results.')))
         layout.addWidget(self.button('Browse artwork', self.browse_artwork))

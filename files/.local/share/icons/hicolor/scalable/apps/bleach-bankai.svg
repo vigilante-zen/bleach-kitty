@@ -1,20 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <title>Bankai — Hollow mask</title>
+  <title>Bankai — Substitute Soul Reaper badge</title>
+  <desc>A warm ivory, beveled identification badge with a black skull and four diagonal spokes.</desc>
   <defs>
-    <clipPath id="face">
-      <path d="M32 3C17 3 8 13 9 29c1 13 9 24 23 32 14-8 22-19 23-32C56 13 47 3 32 3Z"/>
-    </clipPath>
+    <linearGradient id="ivory" x1="0" y1="0" x2="0.6" y2="1">
+      <stop stop-color="#f6e7c7"/>
+      <stop offset="1" stop-color="#c3a878"/>
+    </linearGradient>
   </defs>
-  <path d="M32 3C17 3 8 13 9 29c1 13 9 24 23 32 14-8 22-19 23-32C56 13 47 3 32 3Z"
-        fill="#f4f1e8" stroke="#11151c" stroke-width="2.5" stroke-linejoin="round"/>
-  <g clip-path="url(#face)" fill="#d72f43">
-    <path d="m34 1 7 1 2 19-5 10Z"/>
-    <path d="m47 5 7 5-8 16-5 4Z"/>
-    <path d="m58 17 4 9-15 10-6 1Z"/>
-    <path d="m59 35-4 10-13-5-4-5Z"/>
+  <path d="M25 11V5c0-2 2-3 4-3h6c2 0 4 1 4 3v6" fill="#c3a878" stroke="#171b22" stroke-width="2.5"/>
+  <path d="M29 7h6" fill="none" stroke="#171b22" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="m16 9 32 0 12 12-4 25-24 15L8 46 4 21Z" fill="#171b22" stroke="#171b22" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m17 11 30 0 11 11-4 23-22 13L10 45 6 22Z" fill="url(#ivory)"/>
+  <path d="m18 14 28 0 9 9-4 20-19 12-19-12-4-20Z" fill="none" stroke="#866f4d" stroke-width="1"/>
+  <g fill="#171b22">
+    <path d="m13 20 12 6-3 5-10-5 3-1Z m38 0-12 6 3 5 10-5-3-1Z"/>
+    <path d="m13 40 11-8 3 5-12 10 1-5Z m38 0-11-8-3 5 12 10-1-5Z"/>
+    <path d="M32 18c-8 0-13 5-13 12 0 5 3 8 6 10v6l7 4 7-4v-6c3-2 6-5 6-10 0-7-5-12-13-12Z"/>
   </g>
-  <path d="m14 24 14 6-2 7-9-3Z M50 24l-14 6 2 7 9-3Z" fill="#11151c"/>
-  <path d="m32 33-4 10h8Z" fill="#11151c"/>
-  <path d="m21 44 11 3 11-3-3 8-8 5-8-5Z" fill="#11151c"/>
-  <path d="M28 47v7m8-7v7" fill="none" stroke="#f4f1e8" stroke-width="2.5"/>
+  <path d="M23 28c0-2 2-3 4-2l3 3-2 5c-4 1-6-2-5-6Z m18 0c0-2-2-3-4-2l-3 3 2 5c4 1 6-2 5-6Z" fill="#eddbb8"/>
+  <path d="m32 33-2 5h4Z" fill="#eddbb8"/>
+  <path d="M27 41h10v4l-5 3-5-3Z" fill="#eddbb8"/>
+  <path d="M30 41v5m4-5v5" fill="none" stroke="#171b22" stroke-width="1.5"/>
+  <circle cx="32" cy="54" r="2" fill="#d72f43"/>
 </svg>

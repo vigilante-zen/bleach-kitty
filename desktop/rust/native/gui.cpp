@@ -377,9 +377,11 @@ public:
     layout->addWidget(label("Compatible snapshots, verified restores, and "
                             "protection for your favorites.",
                             "muted"));
-    layout->addWidget(button(
-        "Create snapshot",
-        [this] { startTask({{"op", "backup"}}, "Creating snapshot…"); }, true));
+    auto *createSnapshot = button("Create snapshot", [this] {
+      startTask({{"op", "backup"}}, "Creating snapshot…");
+    }, true);
+    createSnapshot->setIcon(svgIcon(bootstrap.value("backups_svg").toString().toUtf8()));
+    layout->addWidget(createSnapshot);
     layout->addSpacing(8);
     layout->addWidget(label("SAVED SNAPSHOTS", "eyebrow"));
     snapshots = new QComboBox;

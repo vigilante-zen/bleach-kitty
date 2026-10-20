@@ -116,6 +116,14 @@ def payload(edition, home, binary=None, dry=False):
         command, icon = 'bankai-rust', 'bleach-bankai-rust'
         icon_source = source / 'assets/bleach-tray.svg'
     add(icon_source, '.local/share/icons/hicolor/scalable/apps/' + icon + '.svg')
+    for companion in ['terminal', 'monitor', 'backups']:
+        companion_icon = ROOT / 'files/.local/share/icons/hicolor/scalable/apps' / f'bleach-{companion}.svg'
+        if companion_icon.is_file():
+            add(companion_icon, f'.local/share/icons/hicolor/scalable/apps/bleach-{companion}.svg')
+    for companion in ['terminal', 'monitor']:
+        launcher = ROOT / 'files/.local/share/applications' / f'bleach-{companion}.desktop'
+        if launcher.is_file():
+            add(launcher, f'.local/share/applications/bleach-{companion}.desktop')
     executable = str(home / '.local/bin' / command)
     escaped = executable.replace('\\', '\\\\').replace('"', '\\"').replace('`', '\\`').replace('$', '\\$').replace('%', '%%')
     exec_line = f'"{escaped}"'

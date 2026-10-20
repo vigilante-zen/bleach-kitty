@@ -4,9 +4,7 @@
 
 44 portraits, with color and manga editions side by side. Click a portrait to view the original image. Manga uses ink, screentones and restrained character accents.
 
-## Latest additions
-
-Nemu, Askin, Lille and Yachiru — added October 20, 2026.
+Newest first: Nemu, Askin, Lille and Yachiru — added October 20, 2026.
 
 | Character | Color | Manga |
 | --- | --- | --- |
@@ -14,11 +12,6 @@ Nemu, Askin, Lille and Yachiru — added October 20, 2026.
 | Askin Nakk Le Vaar | [<img src="../files/.config/fastfetch/portraits/askin.png" alt="Askin Nakk Le Vaar — Color" width="220">](../files/.config/fastfetch/portraits/askin.png) | [<img src="../files/.config/fastfetch/manga/askin.png" alt="Askin Nakk Le Vaar — Manga" width="220">](../files/.config/fastfetch/manga/askin.png) |
 | Lille Barro | [<img src="../files/.config/fastfetch/portraits/lille.png" alt="Lille Barro — Color" width="220">](../files/.config/fastfetch/portraits/lille.png) | [<img src="../files/.config/fastfetch/manga/lille.png" alt="Lille Barro — Manga" width="220">](../files/.config/fastfetch/manga/lille.png) |
 | Yachiru Kusajishi | [<img src="../files/.config/fastfetch/portraits/yachiru.png" alt="Yachiru Kusajishi — Color" width="220">](../files/.config/fastfetch/portraits/yachiru.png) | [<img src="../files/.config/fastfetch/manga/yachiru.png" alt="Yachiru Kusajishi — Manga" width="220">](../files/.config/fastfetch/manga/yachiru.png) |
-
-## Earlier portraits
-
-| Character | Color | Manga |
-| --- | --- | --- |
 | Aizen | [<img src="../files/.config/fastfetch/portraits/aizen.png" alt="Aizen — Color" width="220">](../files/.config/fastfetch/portraits/aizen.png) | [<img src="../files/.config/fastfetch/manga/aizen.png" alt="Aizen — Manga" width="220">](../files/.config/fastfetch/manga/aizen.png) |
 | Bambietta Basterbine | [<img src="../files/.config/fastfetch/portraits/bambietta.png" alt="Bambietta Basterbine — Color" width="220">](../files/.config/fastfetch/portraits/bambietta.png) | [<img src="../files/.config/fastfetch/manga/bambietta.png" alt="Bambietta Basterbine — Manga" width="220">](../files/.config/fastfetch/manga/bambietta.png) |
 | Bazz-B | [<img src="../files/.config/fastfetch/portraits/bazz-b.png" alt="Bazz-B — Color" width="220">](../files/.config/fastfetch/portraits/bazz-b.png) | [<img src="../files/.config/fastfetch/manga/bazz-b.png" alt="Bazz-B — Manga" width="220">](../files/.config/fastfetch/manga/bazz-b.png) |

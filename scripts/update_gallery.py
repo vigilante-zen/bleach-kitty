@@ -24,12 +24,10 @@ def main():
     rows.sort(key=lambda row: (0, latest.index(row[0])) if row[0] in latest else (1, row[1].casefold()))
     markdown = ['# Color and manga portrait gallery', '', '[Back to Bankai](../README.md) · [Artwork provenance](ARTWORK.md)', '',
                 f'{len(ids)} portraits, with color and manga editions side by side. Click a portrait to view the original image. Manga uses ink, screentones and restrained character accents.', '',
-                '## Latest additions', '', 'Nemu, Askin, Lille and Yachiru — added October 20, 2026.', '',
+                'Newest first: Nemu, Askin, Lille and Yachiru — added October 20, 2026.', '',
                 '| Character | Color | Manga |', '| --- | --- | --- |']
     articles = []
-    for index, (name, label) in enumerate(rows):
-        if index == len(latest):
-            markdown.extend(['', '## Earlier portraits', '', '| Character | Color | Manga |', '| --- | --- | --- |'])
+    for name, label in rows:
         cells = []; images = []
         for folder, edition in [('portraits', 'Color'), ('manga', 'Manga')]:
             target = f'../files/.config/fastfetch/{folder}/{name}.png'

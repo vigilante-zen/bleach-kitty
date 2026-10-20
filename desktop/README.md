@@ -37,7 +37,7 @@ python3 desktop/python/install.py  # Python edition
 python3 desktop/rust/install.py    # Rust edition; builds source if needed
 ```
 
-Both bundle the optional Ichigo manga SDDM login theme. Open **Login screen setup** in either app to preview it and copy activation or restore commands. Activation requires administrator access and stays separate from desktop presets.
+Both bundle the optional manga-scene SDDM login theme. Open **Login screen setup** in either app to preview it and copy activation or restore commands. One-time administrator setup lets the login scene follow the selected desktop background in either edition.
 
 Both support `--dry-run`, upgrades, `uninstall`, original-file backups and shared-asset ownership. Read the selected edition's install guide before running. No system dependencies are installed automatically.
 

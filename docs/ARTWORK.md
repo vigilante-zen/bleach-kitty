@@ -12,6 +12,6 @@ Nemu Kurotsuchi, Askin Nakk Le Vaar, Lille Barro and Yachiru Kusajishi were adde
 
 ## Login and boot artwork
 
-The [manga login screen](../login/README.md) reuses `files/.config/fastfetch/manga/dangai-ichigo.png` unchanged as `login/theme/assets/ichigo.png`. It is an existing unofficial AI-generated portrait, with the same artwork terms above. The paper layout, ink borders and lettering are drawn by QML; `login/preview.png` is a rendered UI preview using dummy login data.
+The [manga login screen](../login/README.md) includes eight black-and-white manga scene conversions of the full desktop wallpapers. [Exact prompt, source references, dimensions and hashes](../login/ARTWORK.json) are preserved. The built-in imagegen tool produced these scene edits; color desktop wallpapers and terminal portraits are unchanged. The original Dangai portrait asset remains for migration compatibility. The paper layout, ink borders and lettering are drawn by QML; `login/preview.png` uses dummy login data. These unofficial fan-art scenes follow the same separate artwork terms above.
 
 The [Ichigo boot splash](../boot/README.md) has its own [asset and prompt record](../boot/ARTWORK.json). Its character cutout is also excluded from the code MIT license. Aura, particle and loading-bar assets are generated from code-native geometry. Hollow-mask boot assets have been removed; the current splash always uses Ichigo.

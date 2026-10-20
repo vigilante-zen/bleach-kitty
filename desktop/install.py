@@ -76,6 +76,10 @@ def payload(edition, home, binary=None, dry=False):
             add(source, target + '/' + source.name)
     add(ROOT / 'desktop/README.md', '.local/share/bleach-desktop/README.md')
     add(ROOT / 'login/install.py', '.local/share/bleach-desktop/install-login.py')
+    add(ROOT / 'login/greeter_preview.py', '.local/share/bleach-desktop/preview-login.py')
+    for name in ['sync.py', 'legacy-theme.json']:
+        add(ROOT / 'login' / name, '.local/share/bleach-desktop/' + name)
+    add(ROOT / 'login/ARTWORK.json', '.local/share/bleach-desktop/login-ARTWORK.json')
     add(ROOT / 'login/README.md', '.local/share/bleach-desktop/login-README.md')
     for item in sorted((ROOT / 'login/theme').rglob('*')):
         if item.is_file():

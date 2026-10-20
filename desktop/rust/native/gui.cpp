@@ -765,16 +765,17 @@ public:
     }
     QMessageBox dialog(this);
     dialog.setWindowTitle("Manga login screen");
-    dialog.setText("Ichigo manga login screen");
+    dialog.setText("Manga login scene follows your desktop character");
     const QString install = "sudo python3 ~/.local/share/bleach-desktop/install-login.py install";
     const QString restore = "sudo python3 ~/.local/share/bleach-desktop/install-login.py restore";
     dialog.setInformativeText("Preview without logging out. To activate or update, run:\n" + install +
         "\n\nTo restore the previous theme:\n" + restore +
-        "\n\nAdministrator access is required. Changes apply at next login; desktop presets are independent.");
+        "\n\nOne-time administrator setup enables automatic matching for your account. Changes appear at the next login screen.");
     dialog.setStandardButtons(QMessageBox::Close);
     auto *preview = dialog.addButton("Preview", QMessageBox::ActionRole);
     connect(preview, &QPushButton::clicked, this, [this, theme] {
-      if (!QProcess::startDetached("sddm-greeter-qt6", QStringList{"--test-mode", "--theme", theme}))
+      if (QStandardPaths::findExecutable("sddm-greeter-qt6").isEmpty() ||
+          !QProcess::startDetached("python3", QStringList{QDir::homePath() + "/.local/share/bleach-desktop/preview-login.py"}))
         QMessageBox::information(this, "Login preview", "Could not start sddm-greeter-qt6. Install SDDM with Qt 6 to preview this theme.");
     });
     auto *copy = dialog.addButton("Copy install command", QMessageBox::ActionRole);

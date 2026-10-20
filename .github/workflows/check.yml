@@ -21,8 +21,11 @@ jobs:
       - run: python -m pip install -r desktop/python/requirements.txt
       - name: Install selected edition in an isolated home
         run: python desktop/python/install.py --home "$RUNNER_TEMP/bankai-home"
-      - name: Render manga login theme with dummy data
-        run: python login/preview.py
+      - name: Render all manga login scenes with dummy data
+        run: |
+          for preset in ichigo rukia quincy tybw urahara byakuya yamamoto ulquiorra; do
+            python login/preview.py --preset "$preset" --output "$RUNNER_TEMP/login-$preset.png"
+          done
       - name: Snapshot manager checks
         run: python desktop/python/check_snapshot_manager.py
       - name: Offscreen UI checks

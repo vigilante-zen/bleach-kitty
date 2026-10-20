@@ -1,8 +1,8 @@
 [SddmGreeterTheme]
 Name=Bankai Manga
-Description=Ink and paper Ichigo login screen
+Description=Ink and paper login screen with matching manga wallpaper scenes
 Type=sddm-theme
-Version=1.0
+Version=1.1
 MainScript=Main.qml
 ConfigFile=theme.conf
 Theme-Id=bankai-manga

@@ -5,6 +5,8 @@ Rectangle {
     id: root
     width: 1280; height: 720
     color: "#f2f0e9"
+    property var characterNames: ({ichigo: "黒崎 一護", rukia: "朽木 ルキア", quincy: "石田 雨竜", tybw: "千年血戦篇", urahara: "浦原 喜助", byakuya: "朽木 白哉", yamamoto: "山本 元柳斎", ulquiorra: "ウルキオラ"})
+    property string selectedCharacter: typeof config !== "undefined" && characterNames[config.Character] ? config.Character : "ichigo"
     property bool busy: false
     function submit() {
         if (!busy && username.text.length && session.currentIndex >= 0) {
@@ -28,11 +30,11 @@ Rectangle {
         Image {
             id: portrait
             anchors.fill: parent; anchors.margins: 4
-            source: "assets/ichigo.png"; fillMode: Image.PreserveAspectCrop
+            source: "assets/scene-" + root.selectedCharacter + ".png"; fillMode: Image.PreserveAspectFit
         }
         Rectangle {
             x: 20; y: 20; width: 170; height: 45; color: "#f2f0e9"; border.width: 3
-            Text { anchors.centerIn: parent; text: "黒崎 一護"; font.pixelSize: 25; font.bold: true }
+            Text { anchors.fill: parent; anchors.margins: 6; text: root.characterNames[root.selectedCharacter]; font.pixelSize: 25; minimumPixelSize: 14; fontSizeMode: Text.Fit; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.bold: true }
         }
         Rectangle {
             anchors { bottom: parent.bottom; right: parent.right; margins: 20 }

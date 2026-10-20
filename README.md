@@ -29,7 +29,7 @@ For the terminal theme on its own, follow [Terminal theme installation](#install
 
 ## Optional manga login screen
 
-Both desktop installers include the [Ichigo manga SDDM theme](login/README.md). Open **Login screen setup** in either Bankai app to preview it, then copy the administrator install or restore command.
+Both desktop installers include the [matching manga-scene SDDM theme](login/README.md). Open **Login screen setup** in either Bankai app to preview the matching full manga wallpaper scene. One-time administrator setup lets it follow later background changes automatically; the same screen provides a restore command.
 
 ## Features
 

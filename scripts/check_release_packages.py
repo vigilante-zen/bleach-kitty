@@ -38,7 +38,7 @@ def check(archive):
         if home.exists():
             raise ValueError('Dry run wrote to the staging home')
         login = root / 'login/install.py'
-        required = ['login/README.md', 'login/theme/Main.qml', 'login/theme/metadata.desktop',
+        required = ['login/README.md', 'login/ARTWORK.json', 'login/sync.py', 'login/greeter_preview.py', 'login/legacy-theme.json', 'login/theme/Main.qml', 'login/theme/metadata.desktop',
                     'login/theme/theme.conf', 'login/theme/assets/ichigo.png']
         if not login.is_file() or any(not (root / name).is_file() for name in required):
             raise ValueError('Package is missing the optional login theme')

@@ -4,6 +4,7 @@ from datetime import datetime
 import argparse
 import json
 import os
+import shutil
 from pathlib import Path
 import sys
 
@@ -680,10 +681,10 @@ class ControlCenter(QMainWindow):
         dialog.setWindowTitle('Manga login screen')
         install = 'sudo python3 ~/.local/share/bleach-desktop/install-login.py install'
         restore = 'sudo python3 ~/.local/share/bleach-desktop/install-login.py restore'
-        dialog.setText('Ichigo manga login screen')
+        dialog.setText('Manga login scene follows your desktop character')
         dialog.setInformativeText('Preview without logging out. To activate or update, run:\n' + install +
                                   '\n\nTo restore the previous theme:\n' + restore +
-                                  '\n\nAdministrator access is required. Changes apply at next login; desktop presets are independent.')
+                                  '\n\nOne-time administrator setup enables automatic matching for your account. Changes appear at the next login screen.')
         dialog.setStandardButtons(QMessageBox.StandardButton.Close)
         preview = dialog.addButton('Preview', QMessageBox.ButtonRole.ActionRole)
         preview.clicked.connect(lambda: self.preview_login(theme))
@@ -694,7 +695,10 @@ class ControlCenter(QMainWindow):
         dialog.exec()
 
     def preview_login(self, theme):
-        success, _ = QProcess.startDetached('sddm-greeter-qt6', ['--test-mode', '--theme', str(theme)])
+        if not shutil.which('sddm-greeter-qt6'):
+            QMessageBox.information(self, 'Login preview', 'Install SDDM with Qt 6 to preview this theme.')
+            return
+        success, _ = QProcess.startDetached(sys.executable, [str(DATA / 'preview-login.py')])
         if not success:
             QMessageBox.information(self, 'Login preview', 'Could not start sddm-greeter-qt6. Install SDDM with Qt 6 to preview this theme.')
 

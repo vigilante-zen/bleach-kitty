@@ -18,7 +18,7 @@ class PackageChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / 'repo'; root.mkdir()
             for name in ['install.py', 'MANIFEST.json', 'LICENSE', 'files/.config/theme', 'docs/ARTWORK.md',
-                         'login/install.py', 'login/README.md', 'login/preview.py', 'login/preview.png', 'login/theme/Main.qml', 'login/theme/assets/ichigo.png',
+                         'login/ARTWORK.json', 'login/install.py', 'login/sync.py', 'login/greeter_preview.py', 'login/legacy-theme.json', 'login/README.md', 'login/preview.py', 'login/preview.png', 'login/theme/Main.qml', 'login/theme/assets/ichigo.png',
                          'desktop/install.py', 'desktop/README.md', 'desktop/shared/wallpapers/art.png',
                          'desktop/python/install.py', 'desktop/rust/install.py',
                          'desktop/rust/target/release/leaked', 'desktop/rust/bin/bankai-rust', 'desktop/python/__pycache__/leaked.pyc']:

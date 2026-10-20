@@ -136,8 +136,9 @@ NoNewPrivileges=true
 [Install]
 WantedBy=multi-user.target
 '''
+        # PathChanged takes a literal absolute path, without JSON/shell quotes.
         marker = str(Path(home) / '.local/share/bleach-desktop/current').replace('%', '%%')
-        files[WATCH] = ('[Unit]\nDescription=Watch Bankai desktop character\n\n[Path]\nPathChanged=' + json.dumps(marker) + '\nPathChanged=' + json.dumps(str(Path(home) / '.local/share/bleach-desktop/appearance.json').replace('%', '%%')) + '\n\n[Install]\nWantedBy=multi-user.target\n').encode()
+        files[WATCH] = ('[Unit]\nDescription=Watch Bankai desktop character\n\n[Path]\nPathChanged=' + marker + '\nPathChanged=' + str(Path(home) / '.local/share/bleach-desktop/appearance.json').replace('%', '%%') + '\n\n[Install]\nWantedBy=multi-user.target\n').encode()
     for name in files: check(root / name)
     print(('Would install/update' if dry else 'Installing/updating') + ' Bankai Manga' + (f', following {home}' if home else ', fixed Ichigo scene'))
     if dry: return

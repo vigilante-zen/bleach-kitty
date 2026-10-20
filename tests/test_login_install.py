@@ -80,6 +80,19 @@ class LoginInstallChecks(unittest.TestCase):
             self.assertFalse((root / login.WATCH).exists())
             self.assertFalse((root / login.SERVICE).exists())
 
+    def test_watcher_paths_are_absolute_without_literal_quotes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / 'system'
+            home = Path(temp) / 'home with spaces%'
+            login.apply('install', root, home=home)
+            paths = [line.removeprefix('PathChanged=') for line in
+                     (root / login.WATCH).read_text().splitlines()
+                     if line.startswith('PathChanged=')]
+            self.assertEqual(paths, [str(home).replace('%', '%%') + suffix for suffix in
+                ('/.local/share/bleach-desktop/current',
+                 '/.local/share/bleach-desktop/appearance.json')])
+            self.assertTrue(all(path.startswith('/') for path in paths))
+
     def test_legacy_standalone_theme_can_upgrade(self):
         # The currently installed original theme has no receipt.
         with tempfile.TemporaryDirectory() as temp:

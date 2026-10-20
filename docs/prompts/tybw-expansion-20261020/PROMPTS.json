@@ -1,0 +1,167 @@
+{
+  "date": "2026-10-20",
+  "generator": "Built-in image_gen.imagegen",
+  "reference_revision": "e99b5c4",
+  "reference_site": "https://bleach-anime.com/en/character/",
+  "color_scene_jobs": [
+    {
+      "id": "renji",
+      "refs": [
+        "desktop/shared/wallpapers/ichigo-desktop.png",
+        "files/.config/fastfetch/portraits/renji-bankai.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition/lighting only, replace Ichigo with Renji Abarai. Reference 2 is Renji's identity reference. Depict his Thousand-Year Blood War TRUE BANKAI S\u014d\u014d Zabimaru: adult muscular man, long red ponytail, black zigzag forehead tattoos; black shinigami robes, large white fur mantle over the left shoulder, bony snake skull gauntlet over his right wrist, huge broad black cleaver blade extending from the gauntlet. Recognizable stylized baboon skeletal arm structure at the opposite side. Clear anatomy, two arms. Confident determined expression. Ruined Seireitei rooftops and scattered masonry below, sparse crimson reiatsu at edges. Palette charcoal, deep burgundy, restrained crimson, bone ivory. Original unofficial fan art, preserve canonical TYBW costume cues."
+    },
+    {
+      "id": "hitsugaya",
+      "refs": [
+        "desktop/shared/wallpapers/rukia-desktop.png",
+        "files/.config/fastfetch/portraits/hitsugaya-bankai.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition/landscape mood only; replace Rukia with Toshiro Hitsugaya. Reference 2 is identity reference for his Thousand-Year Blood War MATURED DAIGUREN HY\u014cRINMARU form: ADULT tall lean man with swept-back long white hair and teal eyes, recognizable mature masculine face, black shinigami robes and torn white captain haori, crystalline ice dragon wings and ice gauntlets/greaves, long katana. Not his child form, not a female kimono. Full adult figure on far right. Frozen ruined Seireitei skyline and shards of ice across lower edge, sparse frost at outer edges. Palette charcoal navy, silver white, pale cyan. Original unofficial fan art with canonical TYBW design cues."
+    },
+    {
+      "id": "kenpachi",
+      "refs": [
+        "desktop/shared/wallpapers/yamamoto-desktop.png",
+        "files/.config/fastfetch/portraits/kenpachi.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition/landscape mood only. Reference 2 is Kenpachi Zaraki's facial identity before transformation; update him to his Thousand-Year Blood War BANKAI DEMON FORM: huge muscular adult man with red skin, long wild black hair, black markings around the eyes, two small forehead horns, no eyepatch, torn black shinigami robes exposing powerful shoulders, tattered white haori remnants, gigantic jagged cleaver sword held low. Fierce determined expression with sharp teeth. Full figure at far right over shattered Seireitei rocks, dark battlefield skyline low along bottom, sparse deep crimson reiatsu at outer edges. Non-graphic action fan art; no wounds, no blood spray. Palette charcoal, dark oxblood, restrained scarlet and ivory. Canonical TYBW Bankai silhouette, not standard eyepatch Kenpachi."
+    },
+    {
+      "id": "yhwach",
+      "refs": [
+        "desktop/shared/wallpapers/quincy-desktop.png",
+        "files/.config/fastfetch/portraits/yhwach.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition only; replace Uryu with Yhwach. Reference 2 is Yhwach's identity. TYBW Quincy Emperor Yhwach: mature tall imposing man, long thick black hair, distinctive heavy black moustache, stern face, dark high-collared military tunic with silver buttons and white accents, long dark burgundy cloak fastened with a round medallion, sword held low. Canonical Thousand-Year Blood War monarch design, no invented armor or helmet. Full figure far right, looming Silbern/Wahrwelt palace silhouettes across lower edge, subtle silver Quincy geometry at far edges, mostly empty black sky. Palette charcoal navy, muted imperial burgundy, bone white, sparse silver light. Original unofficial fan art."
+    },
+    {
+      "id": "ichigo",
+      "refs": [
+        "desktop/shared/wallpapers/ichigo-desktop.png"
+      ],
+      "prompt": "Use case: identity-preserve. Edit this existing full desktop wallpaper. Keep the entire wide landscape composition, right-side full-body character placement, landscape, architecture, deep near-black sky, and restrained orange embers. Update ONLY Ichigo Kurosaki's outfit and weapons to his Thousand-Year Blood War POST-ROYAL-PALACE true Shikai design: short spiky orange hair, sleeveless black shihakusho with distinctive white crisscross chest straps and white shoulder armor details, black hakama, TWO separate Zangetsu blades: a large broad black cleaver in one hand and a smaller black knife-like blade in the other. Clear two-arm anatomy; both blades recognizable. Do not use Dangai, Fullbring Bankai, Hollow mask or an orange long-haired form. Painterly anime ink with same existing lighting and quality, full landscape scene not portrait. No text, panels, logos, watermark or UI."
+    },
+    {
+      "id": "yamamoto",
+      "refs": [
+        "desktop/shared/wallpapers/yamamoto-desktop.png"
+      ],
+      "prompt": "Use case: identity-preserve. Correct this existing full desktop wallpaper to Genryusai Yamamoto's Thousand-Year Blood War design while preserving the scene, camera, far-right full-body position, beard, bald scarred head, robes, sword pose, fiery ground and dark negative space. Crucial canonical correction: he is MISSING HIS LEFT ARM; the left sleeve hangs empty, and he holds his scorched Zanka no Tachi katana with his RIGHT hand only. Do not depict a second forearm or left hand. Subtle furnace-like heat and embers, charred blade rather than a gigantic flaming sword. Maintain refined painterly anime ink, restrained orange-charcoal palette. No graphic injury, no blood, no gore; missing arm covered by empty robe sleeve. No text, panels, logo or watermark."
+    }
+  ],
+  "color_portrait_jobs": [
+    {
+      "id": "ichigo-tybw",
+      "ref": "files/.config/fastfetch/portraits/dangai-ichigo.png",
+      "prompt": "Use case: identity-preserve. Edit the supplied square Ichigo portrait into a NEW separate Thousand-Year Blood War post-Royal-Palace true Shikai portrait. Preserve the same premium anime-ink rendering, expressive face, centered chest-up framing and near-black plain background. Replace long Dangai hair with Ichigo's SHORT spiky orange hair; replace torn Dangai robes with sleeveless black shihakusho with white crossing chest straps and white shoulder details of his TYBW Royal Palace outfit. Hint of his two black Zangetsu blade hilts at lower frame. Canonical TYBW face, focused determined expression. Restrained orange rim accent, canonical skin/hair colors, crisp fine black linework and cel shading. No text, logo, panel, scenery, watermark or border. Single square portrait, 1024x1024 or larger."
+    },
+    {
+      "id": "kenpachi-bankai",
+      "ref": "files/.config/fastfetch/portraits/kenpachi.png",
+      "prompt": "Use case: identity-preserve. Edit the supplied square Kenpachi portrait into a NEW separate TYBW Bankai portrait. Keep recognizable facial structure and scar, square chest-up framing, near-black plain background and premium crisp anime-ink illustration style. Transform him to his Thousand-Year Blood War BANKAI DEMON FORM: red skin, long wild black hair, two short forehead horns, black markings around eyes, no eyepatch, fierce focused expression with sharp teeth, torn black robes and white haori remnants. Adult muscular man, no graphic wounds or blood. Canonical Bankai cues rather than fantasy armor. Restrained deep-crimson rim light. No text, logo, panel, watermark, background scenery or border. Single square 1024x1024 or larger portrait."
+    }
+  ],
+  "manga_scene_prompt": "Use case: style-transfer. Convert this exact full TYBW desktop wallpaper scene into a refined BLACK-AND-WHITE MANGA ink edition. Preserve the complete scene, landscape framing, character identity, anatomy, costume, TYBW transformation, every weapon, pose and architectural landmarks. Do not crop to a headshot. Preserve the source aspect ratio, full wide scene, character at far right and quiet dark central negative space. Crisp varied brush ink, detailed screentones and crosshatching, bone-white highlights, black shadows. Convert all colored energy to white ink/halftone. Neutral black, white and gray ONLY, no accent colors, no sepia. No text, panels, logos, watermark or UI. Single standalone image.",
+  "manga_portrait_prompt": "Use case: style-transfer. Convert this exact square TYBW character portrait into a matching manga edition. Preserve character identity, canonical TYBW outfit/form, hairstyle, face, horns if present, features, composition and square framing exactly. Near-black plain background; crisp expressive brush ink, fine varied linework, bone-white highlights, rich crosshatching and screentones. Red skin if present becomes gray screentone, not a different identity. Strict neutral black/white/gray with only a tiny restrained character accent at the iris, no broad color washes. No new objects, text, symbols, logo, panels or watermark. One square portrait, not collage, 1024x1024 or larger.",
+  "notes": "Original unofficial AI-generated fan art. Existing references were inspected before editing. Final visual designs interpret TYBW costume/form cues, rather than reproducing official animation assets. Color and manga files are excluded from the code MIT license.",
+  "outputs": [
+    {
+      "path": "desktop/shared/wallpapers/renji-desktop.png",
+      "sha256": "db4fb6df259d5f2fe9f40d4a7572088574df7d64960720c46c6233b83dca7e50",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-renji.png",
+      "sha256": "defbd9c5449ccba3449dce80de8752c3729f7769eaf005b0fefd35c0bebe8b3d",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "desktop/shared/wallpapers/hitsugaya-desktop.png",
+      "sha256": "d77e650e42091f3da4db9ce8c41f623398e3a39bc49824d5ae71e15f4838997d",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-hitsugaya.png",
+      "sha256": "f70ecc0aec10f0b5bd26f88e0a0d0fdf17187a142809beefc6ad2dfaeb5f155e",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "desktop/shared/wallpapers/kenpachi-desktop.png",
+      "sha256": "f1ad3fa1942db9000b4f605d20ec96e6937c0d82cb66e2924c0847609996759f",
+      "width": 1672,
+      "height": 940
+    },
+    {
+      "path": "login/theme/assets/scene-kenpachi.png",
+      "sha256": "b844eda9f309a3dc73ebd89445bbe8ff8c4a227c84d5ab17fabf2a0cd69c8be3",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "desktop/shared/wallpapers/yhwach-desktop.png",
+      "sha256": "632e7b56d7666687a9e297194c38ffde31a916957d20de2339b26d2ee4a0537b",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-yhwach.png",
+      "sha256": "6a0747a091ed19159719647fe71f90234f2ecd9f7175b48bf3cc9e0c09748f7d",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "desktop/shared/wallpapers/ichigo-desktop.png",
+      "sha256": "fd1ecfdecc1077f5838e742f33a2d2941531c34f378533b4f32ba902d17ac5ad",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-ichigo.png",
+      "sha256": "1d586dec9489609c864ff4d32a23d8552f0f6a3e6d56d969d4e61bc21630cca5",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "desktop/shared/wallpapers/yamamoto-desktop.png",
+      "sha256": "539958becb9eedf399f2663765c6bae251ab73fa50264d4dd9a08f88d001b653",
+      "width": 1932,
+      "height": 814
+    },
+    {
+      "path": "login/theme/assets/scene-yamamoto.png",
+      "sha256": "89e9efd45178b2f62a7cc26e6a5e067656c0f29739f012c5458d56e00742502c",
+      "width": 1932,
+      "height": 814
+    },
+    {
+      "path": "files/.config/fastfetch/portraits/ichigo-tybw.png",
+      "sha256": "31e0b21fe6aafb9a225d2f5c91bbd0c80686747a0436e92b79d66e345ee8770b",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "path": "files/.config/fastfetch/manga/ichigo-tybw.png",
+      "sha256": "b39bd3bf12c083d75070a3374f9828c09adef923d16ad4be07fdbd57c6830bb7",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "path": "files/.config/fastfetch/portraits/kenpachi-bankai.png",
+      "sha256": "f743e9d1dcb46f7f02e3cab91f7a82ef60cd5d8d8fa08113776aa7eacf67b7d0",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "path": "files/.config/fastfetch/manga/kenpachi-bankai.png",
+      "sha256": "932cdd8ab9115af6639d4bfba0062d129fdc1bf4234359d6324667904ba13bcc",
+      "width": 1254,
+      "height": 1254
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Bankai Manga login screen
 
-The existing paper background, ink borders, lettering and controls now frame a **manga version of the complete selected desktop wallpaper scene**. Eight bundled scenes cover Ichigo, Rukia, Quincy/Uryu, TYBW, Urahara, Byakuya, Yamamoto and Ulquiorra. Color desktop wallpapers and terminal portraits are unchanged. [Artwork prompts, references and hashes](ARTWORK.json) · [Artwork terms](../docs/ARTWORK.md).
+The existing paper background, ink borders, lettering and controls now frame a **manga version of the complete selected desktop wallpaper scene**. Twelve bundled scenes cover Ichigo, Rukia, Quincy/Uryu, TYBW, Urahara, Byakuya, Yamamoto Ulquiorra, TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. Color desktop wallpapers and terminal portraits are unchanged. [Artwork prompts, references and hashes](ARTWORK.json) · [Artwork terms](../docs/ARTWORK.md).
 
 ![Ichigo login preview](preview.png)
 
@@ -34,9 +34,9 @@ When invoked with sudo, setup follows the sudo caller's desktop preset. A root s
 
 After setup, selecting a background in either Bankai app changes the scene for the **next login screen**, without another sudo prompt. It also follows preset changes from the command line and snapshot restores. The TYBW preset uses the manga edition of the full ensemble wallpaper. The currently displayed greeter is not live-reloaded.
 
-Matching reads `~/.local/share/bleach-desktop/current`. A systemd path unit starts a short-lived root-owned helper when that marker changes. Only eight recognized preset names are accepted; the helper never executes code or loads artwork from the user's home. It selects preinstalled scene files using SDDM's `theme.conf.user`. Missing, invalid, oversized or linked markers keep the previous scene. An enabled one-shot service refreshes the selection before the display manager at boot; an unavailable/encrypted home retains the last saved scene.
+Matching reads `~/.local/share/bleach-desktop/current`. A systemd path unit starts a short-lived root-owned helper when that marker changes. Only twelve recognized preset names are accepted; the helper never executes code or loads artwork from the user's home. It selects preinstalled scene files using SDDM's `theme.conf.user`. Missing, invalid, oversized or linked markers keep the previous scene. An enabled one-shot service refreshes the selection before the display manager at boot; an unavailable/encrypted home retains the last saved scene.
 
-The login screen is machine-wide: one chosen desktop account controls its scene, even on a multi-user machine. This follows the desktop background preset, independently of terminal portrait rotation or favorites.
+The login screen is machine-wide: one chosen desktop account controls its scene, even on a multi-user machine. By default it follows the desktop background preset, independently of terminal portrait rotation or favorites. **Appearance options** in either app can instead pin any of the twelve login scenes. The watcher also monitors the shared appearance preferences; only a recognized login character is read from that file. The existing monochrome paper layout remains unchanged.
 
 ## Fixed scene and restore
 

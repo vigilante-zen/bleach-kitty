@@ -136,6 +136,14 @@ function bankai-accent --description "Set this shell's Bleach portrait accents"
             set -g bankai_prompt_primary 91DCFF
             set -g bankai_prompt_secondary B5F5EA
             set -g bankai_prompt_label HITSUGAYA
+        case kenpachi-bankai
+            set -g bankai_prompt_primary E45462
+            set -g bankai_prompt_secondary FFB1B8
+            set -g bankai_prompt_label 'BANKAI KENPACHI'
+        case ichigo-tybw
+            set -g bankai_prompt_primary FF9D52
+            set -g bankai_prompt_secondary FFE0B5
+            set -g bankai_prompt_label 'TYBW ICHIGO'
         case kenpachi
             set -g bankai_prompt_primary F0C674
             set -g bankai_prompt_secondary FF8C42

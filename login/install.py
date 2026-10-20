@@ -20,7 +20,7 @@ SERVICE = 'etc/systemd/system/bankai-login-sync.service'
 WATCH = 'etc/systemd/system/bankai-login-sync.path'
 FOLLOW = 'var/lib/bankai-login/follow.json'
 DYNAMIC = PREFIX + '/theme.conf.user'
-PRESETS = ('ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra')
+PRESETS = ('ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach')
 THEME_FILES = ('Main.qml', 'metadata.desktop', 'theme.conf', 'assets/ichigo.png') + tuple(f'assets/scene-{key}.png' for key in PRESETS)
 
 def sha(data): return hashlib.sha256(data).hexdigest()
@@ -137,7 +137,7 @@ NoNewPrivileges=true
 WantedBy=multi-user.target
 '''
         marker = str(Path(home) / '.local/share/bleach-desktop/current').replace('%', '%%')
-        files[WATCH] = ('[Unit]\nDescription=Watch Bankai desktop character\n\n[Path]\nPathChanged=' + json.dumps(marker) + '\n\n[Install]\nWantedBy=multi-user.target\n').encode()
+        files[WATCH] = ('[Unit]\nDescription=Watch Bankai desktop character\n\n[Path]\nPathChanged=' + json.dumps(marker) + '\nPathChanged=' + json.dumps(str(Path(home) / '.local/share/bleach-desktop/appearance.json').replace('%', '%%')) + '\n\n[Install]\nWantedBy=multi-user.target\n').encode()
     for name in files: check(root / name)
     print(('Would install/update' if dry else 'Installing/updating') + ' Bankai Manga' + (f', following {home}' if home else ', fixed Ichigo scene'))
     if dry: return

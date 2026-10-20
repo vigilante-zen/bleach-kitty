@@ -70,10 +70,14 @@ def payload(edition, home, binary=None, dry=False):
     for folder, target in [('wallpapers', 'Pictures/Bleach-TYBW/Wallpapers'),
                            ('color-schemes', '.local/share/color-schemes')]:
         sources = sorted((ROOT / 'desktop/shared' / folder).glob('*'))
-        if len(sources) != 8:
-            raise ValueError(f'Expected eight shared {folder} files')
+        if len(sources) != 12:
+            raise ValueError(f'Expected twelve shared {folder} files')
         for source in sources:
             add(source, target + '/' + source.name)
+    for name in ['appearance_settings.py', 'presets.json']:
+        add(ROOT / 'desktop/shared' / name, '.local/share/bleach-desktop/' + name)
+    for item in sorted((ROOT / 'login/theme/assets').glob('scene-*.png')):
+        add(item, 'Pictures/Bleach-TYBW/Wallpapers/' + item.stem.removeprefix('scene-') + '-manga.png')
     add(ROOT / 'desktop/README.md', '.local/share/bleach-desktop/README.md')
     add(ROOT / 'login/install.py', '.local/share/bleach-desktop/install-login.py')
     add(ROOT / 'login/greeter_preview.py', '.local/share/bleach-desktop/preview-login.py')
@@ -234,6 +238,9 @@ def main():
                 confined(theme_receipt, home)
                 if not theme_receipt.exists():
                     command = [sys.executable, str(ROOT / 'install.py'), '--home', str(home)]
+                    subprocess.run(command + (['--dry-run'] if args.dry_run else []), check=True)
+                else:
+                    command = [sys.executable, str(ROOT / 'install.py'), 'update', '--home', str(home)]
                     subprocess.run(command + (['--dry-run'] if args.dry_run else []), check=True)
             if args.dry_run:
                 return

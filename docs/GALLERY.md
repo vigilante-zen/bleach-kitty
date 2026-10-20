@@ -2,12 +2,14 @@
 
 [Back to Bankai](../README.md) · [Artwork provenance](ARTWORK.md)
 
-44 portraits, with color and manga editions side by side. Click a portrait to view the original image. Manga uses ink, screentones and restrained character accents.
+46 portraits, with color and manga editions side by side. Click a portrait to view the original image. Manga uses ink, screentones and restrained character accents.
 
-Newest first: Nemu, Askin, Lille and Yachiru — added October 20, 2026.
+Newest first: TYBW Ichigo and Bankai Kenpachi, followed by Nemu, Askin, Lille and Yachiru — added October 20, 2026.
 
 | Character | Color | Manga |
 | --- | --- | --- |
+| Ichigo · TYBW True Shikai | [<img src="../files/.config/fastfetch/portraits/ichigo-tybw.png" alt="Ichigo · TYBW True Shikai — Color" width="220">](../files/.config/fastfetch/portraits/ichigo-tybw.png) | [<img src="../files/.config/fastfetch/manga/ichigo-tybw.png" alt="Ichigo · TYBW True Shikai — Manga" width="220">](../files/.config/fastfetch/manga/ichigo-tybw.png) |
+| Kenpachi · Bankai | [<img src="../files/.config/fastfetch/portraits/kenpachi-bankai.png" alt="Kenpachi · Bankai — Color" width="220">](../files/.config/fastfetch/portraits/kenpachi-bankai.png) | [<img src="../files/.config/fastfetch/manga/kenpachi-bankai.png" alt="Kenpachi · Bankai — Manga" width="220">](../files/.config/fastfetch/manga/kenpachi-bankai.png) |
 | Nemu Kurotsuchi | [<img src="../files/.config/fastfetch/portraits/nemu.png" alt="Nemu Kurotsuchi — Color" width="220">](../files/.config/fastfetch/portraits/nemu.png) | [<img src="../files/.config/fastfetch/manga/nemu.png" alt="Nemu Kurotsuchi — Manga" width="220">](../files/.config/fastfetch/manga/nemu.png) |
 | Askin Nakk Le Vaar | [<img src="../files/.config/fastfetch/portraits/askin.png" alt="Askin Nakk Le Vaar — Color" width="220">](../files/.config/fastfetch/portraits/askin.png) | [<img src="../files/.config/fastfetch/manga/askin.png" alt="Askin Nakk Le Vaar — Manga" width="220">](../files/.config/fastfetch/manga/askin.png) |
 | Lille Barro | [<img src="../files/.config/fastfetch/portraits/lille.png" alt="Lille Barro — Color" width="220">](../files/.config/fastfetch/portraits/lille.png) | [<img src="../files/.config/fastfetch/manga/lille.png" alt="Lille Barro — Manga" width="220">](../files/.config/fastfetch/manga/lille.png) |

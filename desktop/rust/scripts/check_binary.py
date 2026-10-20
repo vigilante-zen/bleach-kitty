@@ -125,7 +125,7 @@ class CompiledRustChecks(unittest.TestCase):
         manifest.write_text(json.dumps(data))
         self.rpc('restore', name=name, fail=True)
 
-    def test_all_eight_presets_are_native_and_update_both_screens(self):
+    def test_all_twelve_presets_are_native_and_update_both_screens(self):
         for preset in CATALOG['presets']:
             result = self.rpc('apply', preset=preset['id'])
             self.assertTrue(result['pending'])
@@ -148,12 +148,31 @@ class CompiledRustChecks(unittest.TestCase):
             self.rpc('save-portraits', choice=choice, art=art, fail=True)
         self.assertEqual(self.rpc('portraits')['art'], 'color')
 
+    def test_shared_appearance_manga_accent_and_login_shuffle(self):
+        spec = importlib.util.spec_from_file_location('shared_appearance', PROJECT.parent / 'shared/appearance_settings.py')
+        appearance = importlib.util.module_from_spec(spec); spec.loader.exec_module(appearance)
+        options = appearance.defaults()
+        options.update(edition='manga', accent='#123456', login='yhwach', shuffle_login=True, pool=['renji', 'hitsugaya'])
+        appearance.save(self.home, options)
+        self.assertEqual(self.rpc('appearance'), options)
+        for name in options['pool']: self.write('Pictures/Bleach-TYBW/Wallpapers/' + name + '-manga.png', 'manga wallpaper')
+        self.rpc('apply', preset='renji')
+        self.assertIn('renji-manga.png', (self.home / '.config/kscreenlockerrc').read_text())
+        self.assertIn('AccentColor=18,52,86', (self.home / '.config/kdeglobals').read_text())
+        self.rpc('shuffle-login')
+        self.assertEqual(self.rpc('status')['current'], 'hitsugaya')
+        self.rpc('save-appearance', appearance=dict(options, shuffle_login=False))
+        self.assertFalse(appearance.load(self.home)['shuffle_login'])
+        for bad in [dict(options, edition='other'), dict(options, accent='#123'), dict(options, pool=[]), dict(options, login='../bad')]:
+            self.rpc('save-appearance', appearance=bad, fail=True)
+        self.assertFalse(appearance.load(self.home)['shuffle_login'])
+
     def test_match_desktop_can_be_enabled_and_disabled(self):
-        self.write('.config/fastfetch/portraits/dangai-ichigo.png', 'test image')
+        self.write('.config/fastfetch/portraits/ichigo-tybw.png', 'test image')
         self.write('.config/fastfetch/portraits/rukia-bankai.png', 'test image')
         self.rpc('apply', preset='ichigo')
         self.rpc('save-portraits', choice='random', art='mixed', match_desktop=True)
-        self.assertEqual(self.rpc('portraits')['choice'], 'dangai-ichigo')
+        self.assertEqual(self.rpc('portraits')['choice'], 'ichigo-tybw')
         self.rpc('apply', preset='rukia')
         state = self.rpc('portraits')
         self.assertTrue(state['match_desktop'])

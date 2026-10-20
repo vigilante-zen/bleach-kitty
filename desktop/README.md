@@ -27,6 +27,12 @@ Each install guide is self-contained. You do not need to install the other contr
 
 ![Rust color and manga preview with desktop matching](../docs/screenshots/rust-terminal-art.png)
 
+**Appearance controls**
+
+| Python | Rust |
+| --- | --- |
+| ![Python appearance options](../docs/screenshots/python-appearance-options.png) | ![Rust appearance options](../docs/screenshots/rust-appearance-options.png) |
+
 ## Downloads and installers
 
 [Choose a release download](https://github.com/vigilante-zen/bleach-kitty/releases). Python and Rust are packaged separately, each with the shared terminal theme and artwork. Assets appear after the release workflow succeeds. Run just your chosen installer from the package or repository root:
@@ -62,3 +68,9 @@ The two commands can coexist. Their desktop presets, terminal preferences and sn
 Choose **Start the Rust edition in the tray at login** in Rust, or the corresponding checkbox in Python. Disable the other edition before switching. Rust tray startup keeps its window hidden; when the tray is unavailable, the fallback window starts minimized. Repeated tray launches do not raise an existing control center. A normal app-menu launch opens the window.
 
 These settings control Bankai only. Minimizing other restored applications is a per-user KDE session customization; it is not enabled for everyone by an edition installer. The development machine uses a separate login-only minimizer with a 20-second startup interval. Any app opened manually in that interval also minimizes; apps opened after it behave normally. This machine-specific helper and autostart entries are outside the repository and release archives.
+
+## Appearance options shared by both editions
+
+The background page offers Color/Manga wallpaper edition, an optional custom accent, fixed/following manga login scene, and a character pool for optional shuffle at login. Saving these options does not apply a desktop preset; use Apply afterward for wallpaper/accents. Login-scene choice syncs after system setup. Preferences live in `~/.local/share/bleach-desktop/appearance.json`, survive updates/uninstall and are captured by desktop snapshots. The default is color wallpaper, character accent, following login scene, and no login shuffle.
+
+The twelve presets include TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. Their manga scenes are available for both backgrounds and login. Terminal artwork has its own Color/Manga/Mixed selection, favorites and rotation, including two additional TYBW forms. Original Ulquiorra art remains a legacy-arc option.

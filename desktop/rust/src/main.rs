@@ -2,6 +2,7 @@ mod json;
 mod fsutil;
 mod presets;
 mod portraits;
+mod appearance;
 mod snapshots;
 #[cfg(test)] mod tests;
 use std::{ffi::{CStr,CString,c_char}, fs, io::{Read,Write}, path::PathBuf};
@@ -39,6 +40,9 @@ impl App {
                 "mask_svg" => include_str!("../assets/bleach-tray.svg"), "terminal_svg" => include_str!("../assets/bleach-terminal.svg"), "monitor_svg" => include_str!("../assets/bleach-monitor.svg") }),
             "status" => Ok(obj! { "current" => self.current(), "pending" => self.state.join("pending").exists(),
                 "autostart" => self.home.join(".config/autostart/bleach-bankai-rust.desktop").exists(), "offline" => self.offline }),
+            "appearance" => appearance::load(self),
+            "save-appearance" => appearance::save(self,request),
+            "shuffle-login" => appearance::shuffle_login(self),
             "portraits" => portraits::status(self),
             "save-portraits" => portraits::save(self, request),
             "snapshots" => { let _lock = fsutil::Lock::acquire(&self.state)?; Ok(Value::from(snapshots::scan(self)?)) },
@@ -104,6 +108,7 @@ fn cli(args: &[String]) -> Result<i32> {
     let request = match action {
         "status" => obj! { "op" => "status" }, "backup" => obj! { "op" => "backup" },
         "verify" | "restore" => obj! { "op" => action, "name" => args.get(2).map(String::as_str).unwrap_or(snapshots::BASELINE) },
+        "shuffle-login" => obj! { "op" => "shuffle-login" },
         "cleanup-plan" => obj! { "op" => "plan", "keep" => args.get(2).map(String::as_str).unwrap_or("5").parse::<u64>().text()? },
         _ if app.preset(action).is_ok() => obj! { "op" => "apply", "preset" => action },
         _ => return Err("Unknown command. Run bankai-rust --help.".into()),

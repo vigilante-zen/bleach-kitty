@@ -1,0 +1,112 @@
+{
+  "presets": [
+    {
+      "id": "ichigo",
+      "title": "Ichigo",
+      "subtitle": "Ember orange \u00b7 TYBW True Shikai",
+      "accent": "#ff9d52",
+      "image": "ichigo-desktop.png",
+      "portrait": "ichigo-tybw",
+      "manga": "ichigo-manga.png"
+    },
+    {
+      "id": "rukia",
+      "title": "Rukia",
+      "subtitle": "Ice blue \u00b7 Hakka no Togame",
+      "accent": "#a9dfff",
+      "image": "rukia-desktop.png",
+      "portrait": "rukia-bankai",
+      "manga": "rukia-manga.png"
+    },
+    {
+      "id": "quincy",
+      "title": "Quincy",
+      "subtitle": "Spirit blue \u00b7 Uryu",
+      "accent": "#4baaff",
+      "image": "quincy-desktop.png",
+      "portrait": "uryu",
+      "manga": "quincy-manga.png"
+    },
+    {
+      "id": "tybw",
+      "title": "TYBW",
+      "subtitle": "Crimson & blue \u00b7 Shuffle",
+      "accent": "#e63946",
+      "image": "bleach-tybw.png",
+      "portrait": "random",
+      "manga": "tybw-manga.png"
+    },
+    {
+      "id": "urahara",
+      "title": "Urahara",
+      "subtitle": "Emerald \u00b7 21:9 ultrawide",
+      "accent": "#a8d18d",
+      "image": "urahara-desktop.png",
+      "portrait": "urahara",
+      "manga": "urahara-manga.png"
+    },
+    {
+      "id": "byakuya",
+      "title": "Byakuya",
+      "subtitle": "Cherry blossom \u00b7 21:9 ultrawide",
+      "accent": "#f2a6cf",
+      "image": "byakuya-desktop.png",
+      "portrait": "byakuya",
+      "manga": "byakuya-manga.png"
+    },
+    {
+      "id": "yamamoto",
+      "title": "Yamamoto",
+      "subtitle": "Ember gold \u00b7 21:9 ultrawide",
+      "accent": "#ffb56b",
+      "image": "yamamoto-desktop.png",
+      "portrait": "yamamoto",
+      "manga": "yamamoto-manga.png"
+    },
+    {
+      "id": "ulquiorra",
+      "title": "Ulquiorra",
+      "subtitle": "Emerald moon \u00b7 21:9 ultrawide",
+      "accent": "#76e3a3",
+      "image": "ulquiorra-desktop.png",
+      "portrait": "ulquiorra",
+      "manga": "ulquiorra-manga.png"
+    },
+    {
+      "id": "renji",
+      "title": "Renji",
+      "subtitle": "Crimson \u00b7 True Bankai",
+      "accent": "#e76a73",
+      "image": "renji-desktop.png",
+      "portrait": "renji-bankai",
+      "manga": "renji-manga.png"
+    },
+    {
+      "id": "hitsugaya",
+      "title": "Hitsugaya",
+      "subtitle": "Frost \u00b7 Adult Bankai",
+      "accent": "#a8e6ef",
+      "image": "hitsugaya-desktop.png",
+      "portrait": "hitsugaya-bankai",
+      "manga": "hitsugaya-manga.png"
+    },
+    {
+      "id": "kenpachi",
+      "title": "Kenpachi",
+      "subtitle": "Scarlet \u00b7 Bankai",
+      "accent": "#e45462",
+      "image": "kenpachi-desktop.png",
+      "portrait": "kenpachi-bankai",
+      "manga": "kenpachi-manga.png"
+    },
+    {
+      "id": "yhwach",
+      "title": "Yhwach",
+      "subtitle": "Imperial \u00b7 TYBW",
+      "accent": "#b68fce",
+      "image": "yhwach-desktop.png",
+      "portrait": "yhwach",
+      "manga": "yhwach-manga.png"
+    }
+  ]
+}

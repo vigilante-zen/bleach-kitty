@@ -6,7 +6,7 @@ from pathlib import Path
 import stat
 import tempfile
 
-PRESETS = ('ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra')
+PRESETS = ('ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach')
 THEME_PATH = 'usr/share/sddm/themes/bankai-manga'
 
 def selection(preset):
@@ -31,11 +31,25 @@ def read_preset(home):
     finally:
         os.close(fd)
 
+def login_preset(home):
+    path = Path(home) / '.local/share/bleach-desktop/appearance.json'
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        try:
+            if not stat.S_ISREG(os.fstat(fd).st_mode): return read_preset(home)
+            data = os.read(fd, 8193)
+        finally: os.close(fd)
+        if len(data) <= 8192:
+            value = json.loads(data)
+            if isinstance(value, dict) and value.get('login') in PRESETS: return value['login']
+    except (OSError, ValueError, TypeError): pass
+    return read_preset(home)
+
 def sync(root=Path('/'), home=None):
     root = Path(root)
     if home is None:
         home = json.loads((root / 'var/lib/bankai-login/follow.json').read_text())['home']
-    preset = read_preset(home)
+    preset = login_preset(home)
     if preset is None:
         print('No valid desktop preset; keeping the previous login scene.')
         return False

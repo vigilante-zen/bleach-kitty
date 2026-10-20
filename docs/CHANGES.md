@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-- Match the login screen to the chosen desktop preset using eight full wallpaper scenes converted to black-and-white manga. Preserve the existing login layout and controls.
+- Expand to twelve desktop presets with TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach, plus matching full manga scenes.
+- Correct Ichigo's wallpaper to his Royal Palace True Shikai design and Yamamoto's TYBW arm/weapon design. Keep Ulquiorra as a legacy option.
+- Add TYBW Ichigo and Bankai Kenpachi color/manga terminal portraits, character accents and a TYBW forms group: 46 portraits / 92 editions, still 36 characters.
+- Add shared appearance controls in both apps for color/manga backgrounds, custom accents, fixed/following login scenes, and optional login shuffle with a character pool.
+- Add terminal installer updates that retain preferences, original backups and edited files, and deliver new artwork through either desktop installer.
+
+- Match the login screen to the chosen desktop preset using twelve full wallpaper scenes converted to black-and-white manga. Preserve the existing login layout and controls.
 - Add optional one-time automatic matching setup for either edition, with a systemd path watcher, fixed preset validation, and restore/removal. App previews show the selected scene before activation.
 
 - Add the optional Ichigo manga SDDM login theme, with preview, separate administrator activation, update, restore and exact standalone-install migration.

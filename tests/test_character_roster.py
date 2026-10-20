@@ -40,7 +40,7 @@ class CharacterRosterChecks(unittest.TestCase):
 
     def test_new_arrivals_and_faction_groups_include_new_characters(self):
         self.command('group', 'new-arrivals')
-        selected = {Path(self.command('next').strip()).stem for _ in range(11)}
+        selected = {Path(self.command('next').strip()).stem for _ in self.roster.GROUPS['new-arrivals']}
         self.assertEqual(selected, set(self.roster.GROUPS['new-arrivals']))
         self.assertTrue(NEW <= selected)
         self.assertTrue({'nemu', 'yachiru'} <= set(self.roster.GROUPS['soul-reapers']))

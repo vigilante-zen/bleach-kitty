@@ -13,7 +13,7 @@ from PySide6.QtGui import QActionGroup, QColor, QDesktopServices, QFont, QIcon, 
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
-    QApplication, QButtonGroup, QCheckBox, QComboBox, QFrame, QGridLayout, QHBoxLayout, QLabel,
+    QApplication, QButtonGroup, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QColorDialog, QFormLayout, QLineEdit, QListWidgetItem, QFrame, QGridLayout, QHBoxLayout, QLabel,
     QListWidget, QMainWindow, QMenu, QMessageBox, QPushButton, QSpinBox, QStackedWidget,
     QScrollArea, QSystemTrayIcon, QTextEdit, QToolButton, QVBoxLayout, QWidget,
 )
@@ -24,16 +24,16 @@ DATA = HOME / '.local/share/bleach-desktop'
 BIN = HOME / '.local/bin'
 WALLPAPERS = HOME / 'Pictures/Bleach-TYBW/Wallpapers'
 SNAPSHOTS = HOME / 'Backups/Bleach-Desktop'
-PRESETS = {
-    'ichigo': ('Ichigo', 'Ember orange · Dangai', '#ff9d52', 'ichigo-desktop.png'),
-    'rukia': ('Rukia', 'Ice blue · Hakka no Togame', '#a9dfff', 'rukia-desktop.png'),
-    'quincy': ('Quincy', 'Spirit blue · Uryu', '#4baaff', 'quincy-desktop.png'),
-    'tybw': ('TYBW', 'Crimson & blue · Shuffle', '#e63946', 'bleach-tybw.png'),
-    'urahara': ('Urahara', 'Emerald · 21:9 ultrawide', '#a8d18d', 'urahara-desktop.png'),
-    'byakuya': ('Byakuya', 'Cherry blossom · 21:9 ultrawide', '#f2a6cf', 'byakuya-desktop.png'),
-    'yamamoto': ('Yamamoto', 'Ember gold · 21:9 ultrawide', '#ffb56b', 'yamamoto-desktop.png'),
-    'ulquiorra': ('Ulquiorra', 'Emerald moon · 21:9 ultrawide', '#76e3a3', 'ulquiorra-desktop.png'),
-}
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'shared') if (Path(__file__).resolve().parents[1] / 'shared/appearance_settings.py').is_file() else str(DATA))
+import appearance_settings
+PRESETS = {p['id']: (p['title'], p['subtitle'], p['accent'], p['image']) for p in appearance_settings.catalog()}
+
+def appearance():
+    try: return appearance_settings.load(HOME)
+    except (OSError, ValueError): return appearance_settings.defaults()
+
+def wallpaper(name):
+    return WALLPAPERS / (name + '-manga.png' if appearance()['edition'] == 'manga' else PRESETS[name][3])
 
 ICONS = Path(__file__).resolve().parent / 'icons'
 
@@ -108,7 +108,7 @@ class Artwork(QWidget):
 
     def select(self, name):
         self.name = name
-        self.pixmap = QPixmap(str(WALLPAPERS / PRESETS[name][3]))
+        self.pixmap = QPixmap(str(wallpaper(name)))
         self.update()
 
     def paintEvent(self, event):
@@ -128,6 +128,7 @@ class Artwork(QWidget):
         gradient.setColorAt(1, QColor(9, 12, 18, 245))
         painter.fillRect(self.rect(), gradient)
         title, subtitle, accent, _ = PRESETS[self.name]
+        accent = appearance()["accent"] or accent
         painter.setPen(QColor(accent))
         font = QFont('Noto Sans', 10)
         font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 3)
@@ -320,8 +321,11 @@ class ControlCenter(QMainWindow):
         layout = QVBoxLayout(page)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(13)
-        layout.addWidget(label('Make it yours', 'heading'))
-        layout.addWidget(label('Matching wallpaper, lock screen, colors and terminal portrait. Four new presets fit your 21:9 monitors.', 'muted'))
+        header = QHBoxLayout()
+        header.addWidget(label('Make it yours', 'heading')); header.addStretch()
+        header.addWidget(self.button('Appearance options', self.appearance_options))
+        layout.addLayout(header)
+        layout.addWidget(label('Twelve characters and forms, color or manga wallpapers, and matching login scenes.', 'muted'))
         self.art = Artwork()
         layout.addWidget(self.art, 1)
         cards = QGridLayout()
@@ -665,11 +669,53 @@ class ControlCenter(QMainWindow):
             self.message.setText('Could not open ' + path.name + '.')
 
     def open_wallpaper(self):
-        self.open_file(WALLPAPERS / PRESETS[self.selected][3])
+        self.open_file(wallpaper(self.selected))
 
     def browse_artwork(self):
         gallery = HOME / '.config/fastfetch/previews/manga-roster.html'
         self.open_file(gallery if gallery.exists() else WALLPAPERS)
+
+    def appearance_options(self):
+        options = appearance()
+        dialog = QDialog(self); dialog.setWindowTitle('Appearance options')
+        layout = QVBoxLayout(dialog); form = QFormLayout(); layout.addLayout(form)
+        edition = QComboBox(); edition.addItem('Color', 'color'); edition.addItem('Manga', 'manga')
+        edition.setCurrentIndex(max(0, edition.findData(options['edition'])))
+        form.addRow('Desktop and lock screen', edition)
+        accent = QLineEdit(options['accent']); accent.setPlaceholderText('Use character accent')
+        form.addRow('Accent override (#RRGGBB)', accent)
+        choose = QPushButton('Choose accent color')
+        def choose_color():
+            color = QColorDialog.getColor(QColor(accent.text() or PRESETS[self.selected][2]), dialog)
+            if color.isValid(): accent.setText(color.name())
+        choose.clicked.connect(choose_color); layout.addWidget(choose)
+        login = QComboBox(); login.addItem('Follow background character', 'follow')
+        for name, row in PRESETS.items(): login.addItem(row[0] + ' (fixed manga scene)', name)
+        login.setCurrentIndex(max(0, login.findData(options['login'])))
+        form.addRow('Login scene', login)
+        shuffle = QCheckBox('Choose a different background when Bankai starts at login')
+        shuffle.setChecked(options['shuffle_login']); layout.addWidget(shuffle)
+        layout.addWidget(label('Shuffle pool (choose at least one):', 'muted'))
+        pool = QListWidget(); pool.setMaximumHeight(190)
+        for name, row in PRESETS.items():
+            item = QListWidgetItem(row[0]); item.setData(Qt.ItemDataRole.UserRole, name)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Checked if name in options['pool'] else Qt.CheckState.Unchecked)
+            pool.addItem(item)
+        layout.addWidget(pool)
+        layout.addWidget(label('Save options, then Apply a background for wallpaper and accent changes. Login choice syncs after one-time system setup. Enable only one Bankai edition at login for shuffle.', 'muted'))
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        layout.addWidget(buttons); buttons.rejected.connect(dialog.reject)
+        def save():
+            value = dict(edition=edition.currentData(), accent=accent.text().strip(), login=login.currentData(),
+                         shuffle_login=shuffle.isChecked(), pool=[pool.item(i).data(Qt.ItemDataRole.UserRole) for i in range(pool.count()) if pool.item(i).checkState() == Qt.CheckState.Checked])
+            try: appearance_settings.save(HOME, value)
+            except (OSError, ValueError) as error:
+                QMessageBox.information(dialog, 'Appearance options', str(error)); return
+            self.select_preset(self.selected)
+            self.message.setText('Appearance saved. Apply a background to update wallpaper and accents.')
+            dialog.accept()
+        buttons.accepted.connect(save); dialog.exec()
 
     def login_setup(self):
         installer = DATA / 'install-login.py'
@@ -814,6 +860,8 @@ def main():
                     window.show_window()
                     window.message.setText('The system tray is unavailable, so Bankai opened its window instead.')
             QTimer.singleShot(10000, check_tray)
+        if args.tray and appearance()['shuffle_login']:
+            window.run_task([str(BIN / 'bankai-desktop'), 'shuffle-login'], 'Choosing a login background…', 'Login background selected.')
         if not args.tray:
             window.show_window(backups=args.backups)
         return app.exec()

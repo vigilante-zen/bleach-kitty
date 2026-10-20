@@ -38,7 +38,8 @@ pub fn run(program: &str, args: &[&str]) -> Result<(bool, String)> {
 
 pub fn apply(app: &App, name: &str) -> Result<Value> {
     let preset = app.preset(name)?;
-    let image = app.wallpapers.join(preset.get("image")?.text()?);
+    let appearance = crate::appearance::load(app)?;
+    let image = app.wallpapers.join(preset.get(if appearance.get("edition")?.text()? == "manga" { "manga" } else { "image" })?.text()?);
     let scheme = format!("Bleach{}", preset.get("title")?.text()?);
     let scheme_file = app.home.join(".local/share/color-schemes").join(format!("{scheme}.colors"));
     for path in [&image, &scheme_file] {
@@ -61,7 +62,8 @@ pub fn apply(app: &App, name: &str) -> Result<Value> {
             edit(".config/kdeglobals", section, key, value)?;
         }
     }
-    let accent = preset.get("accent")?.text()?;
+    let custom = appearance.get("accent")?.text()?;
+    let accent = if custom.is_empty() { preset.get("accent")?.text()? } else { custom };
     let rgb = [1,3,5].iter().map(|i| u8::from_str_radix(&accent[*i..*i+2],16).map(|n|n.to_string())).collect::<std::result::Result<Vec<_>,_>>().text()?.join(",");
     edit(".config/kdeglobals", "General", "ColorScheme", &scheme)?;
     edit(".config/kdeglobals", "General", "AccentColor", &rgb)?;

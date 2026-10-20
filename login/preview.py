@@ -20,7 +20,7 @@ class Dummy(QObject):
     def powerOff(self): pass
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--preset', default='ichigo', choices=['ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra'])
+parser.add_argument('--preset', default='ichigo', choices=['ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach'])
 parser.add_argument('--output', type=Path)
 args = parser.parse_args()
 app = QGuiApplication([])

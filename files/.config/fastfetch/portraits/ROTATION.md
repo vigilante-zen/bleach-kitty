@@ -17,7 +17,7 @@ Favorites are saved in `~/.config/fastfetch/portrait-favorites.json`. The deck i
 
 ## Character groups
 
-`bankai-group` shows the active rotation and available groups. Choose with `bankai-group soul-reapers`, `bankai-group arrancars`, `bankai-group quincy`, `bankai-group human-world`, or `bankai-group ichigo`. Use `bankai-group all` for everyone. Human World is a themed group and overlaps other groups.
+`bankai-group` shows the active rotation and available groups. Choose with `bankai-group soul-reapers`, `bankai-group arrancars`, `bankai-group quincy`, `bankai-group human-world`, or `bankai-group ichigo`, or `bankai-group tybw-forms`. Use `bankai-group all` for everyone. Human World is a themed group and overlaps other groups.
 
 Group selection activates shuffle mode and preserves saved favorites. `bankai-favorites use` switches back to favorites. Changing the pool starts a fresh deck. A portrait fixed with `bankai-pick <name>` stays fixed until a group, favorites rotation, or random mode is selected.
 
@@ -31,9 +31,9 @@ Run `bankai-settings` in Kitty for portraits with previews, character groups, fa
 
 ## Character-balanced shuffle
 
-`bankai-shuffle character` gives each character one turn per cycle, treating the six Ichigo portraits as forms of one character. Ichigo's available forms use a separate shuffle deck so every form appears before repeating. With the full roster this is 36 character turns per cycle. Favorites and groups limit the eligible portraits before balancing.
+`bankai-shuffle character` gives each character one turn per cycle, treating the seven Ichigo portraits as forms of one character. Ichigo's available forms use a separate shuffle deck so every form appears before repeating. With the full roster this is 36 character turns per cycle. Favorites and groups limit the eligible portraits before balancing.
 
-`bankai-shuffle portrait` restores the original every-image-once deck (44 images in the full roster). `bankai-shuffle` reports the saved style. Both styles avoid immediate repeats at cycle boundaries where possible and persist across tabs. The style is also available under Shuffle style in `bankai-settings`. Fixed portraits remain fixed; choose `bankai-pick random` to resume rotation. The default style remains portrait.
+`bankai-shuffle portrait` restores the original every-image-once deck (46 images in the full roster). `bankai-shuffle` reports the saved style. Both styles avoid immediate repeats at cycle boundaries where possible and persist across tabs. The style is also available under Shuffle style in `bankai-settings`. Fixed portraits remain fixed; choose `bankai-pick random` to resume rotation. The default style remains portrait.
 
 ## Kitty settings shortcut
 
@@ -45,7 +45,7 @@ Run `bankai-doctor`, or choose Check setup in `bankai-settings`, to validate req
 
 ## Bankai variants
 
-Urahara, Renji, and Hitsugaya each have base and Bankai portraits. Select `urahara-bankai`, `renji-bankai`, or `hitsugaya-bankai` in the picker. Portrait shuffle rotates all 44 images. Character shuffle gives the 36 characters equal turns, with separate form decks for Ichigo, Urahara, Renji, and Hitsugaya. Favorites can include either form or both.
+Kenpachi, Urahara, Renji, and Hitsugaya each have base and Bankai portraits. Select `urahara-bankai`, `renji-bankai`, or `hitsugaya-bankai` in the picker. Portrait shuffle rotates all 46 images. Character shuffle gives the 36 characters equal turns, with separate form decks for Ichigo, Kenpachi, Urahara, Renji, and Hitsugaya. Favorites can include either form or both.
 
 ## Readable portrait names
 
@@ -92,3 +92,5 @@ Jugram Haschwalth (`jugram`), Bazz-B (`bazz-b`) and Bambietta Basterbine (`bambi
 ## October 20 additions
 
 Nemu Kurotsuchi (`nemu`) and Yachiru Kusajishi (`yachiru`) join Soul Reapers; Askin Nakk Le Vaar (`askin`) and Lille Barro (`lille`) join Quincy. All four are in New Arrivals, with color/manga portraits, full/compact greeting themes, shell accents and monitor palettes. Use `bankai-pick nemu` for a fixed portrait or `bankai-group new-arrivals` for rotation. The Rust app discovers the installed portraits automatically. Prompt records are in `~/.config/fastfetch/additions-20261020/PROMPTS.json`.
+
+TYBW forms include `ichigo-tybw` (Royal Palace True Shikai) and `kenpachi-bankai`, alongside the existing Renji, adult Hitsugaya, Rukia and Urahara Bankai portraits. `bankai-group tybw-forms` rotates those forms and Yhwach.

@@ -23,7 +23,7 @@ jobs:
         run: python desktop/python/install.py --home "$RUNNER_TEMP/bankai-home"
       - name: Render all manga login scenes with dummy data
         run: |
-          for preset in ichigo rukia quincy tybw urahara byakuya yamamoto ulquiorra; do
+          for preset in ichigo rukia quincy tybw urahara byakuya yamamoto ulquiorra renji hitsugaya kenpachi yhwach; do
             python login/preview.py --preset "$preset" --output "$RUNNER_TEMP/login-$preset.png"
           done
       - name: Snapshot manager checks

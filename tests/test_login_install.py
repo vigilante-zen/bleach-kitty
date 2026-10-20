@@ -67,6 +67,11 @@ class LoginInstallChecks(unittest.TestCase):
                 marker.write_text(invalid)
                 self.assertFalse(sync.sync(root))
                 self.assertEqual(selected.read_bytes(), sync.selection('ulquiorra'))
+            settings = marker.parent / 'appearance.json'
+            settings.write_text(json.dumps({'login': 'yhwach'}))
+            self.assertTrue(sync.sync(root))
+            self.assertEqual(selected.read_bytes(), sync.selection('yhwach'))
+            settings.unlink()
             marker.unlink(); marker.symlink_to('/etc/passwd')
             self.assertFalse(sync.sync(root))
             login.apply('install', root)  # Preserve follow settings across update.

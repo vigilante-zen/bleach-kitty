@@ -11,16 +11,9 @@ import sys
 HOME = Path.home()
 DATA = HOME / '.local/share/bleach-desktop'
 STATE = HOME / '.local/state/bleach-desktop'
-PRESETS = {
-    'ichigo': ('Ichigo', 'dangai-ichigo', '#ff9d52'),
-    'rukia': ('Rukia', 'rukia-bankai', '#a9dfff'),
-    'quincy': ('Quincy', 'uryu', '#4baaff'),
-    'tybw': ('TYBW', 'random', '#e63946'),
-    'urahara': ('Urahara', 'urahara', '#a8d18d'),
-    'byakuya': ('Byakuya', 'byakuya', '#f2a6cf'),
-    'yamamoto': ('Yamamoto', 'yamamoto', '#ffb56b'),
-    'ulquiorra': ('Ulquiorra', 'ulquiorra', '#76e3a3'),
-}
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'shared') if (Path(__file__).resolve().parents[2] / 'shared/appearance_settings.py').is_file() else str(DATA))
+import appearance_settings
+PRESETS = {p['id']: (p['title'], p['portrait'], p['accent']) for p in appearance_settings.catalog()}
 
 def put(path, section, key, value):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -75,7 +68,10 @@ for (var i = 0; i < ps.length; ++i) {
 
 def apply(name, pending_only=False):
     label, portrait, accent = PRESETS[name]
-    image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / ('bleach-tybw.png' if name == 'tybw' else name + '-desktop.png')
+    options = appearance_settings.load(HOME)
+    accent = options['accent'] or accent
+    filename = name + '-manga.png' if options['edition'] == 'manga' else ('bleach-tybw.png' if name == 'tybw' else name + '-desktop.png')
+    image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / filename
     if not image.is_file():
         raise ValueError(f'Wallpaper is missing: {image}')
     if not pending_only:
@@ -138,12 +134,16 @@ def apply(name, pending_only=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('preset', nargs='?', default='status', choices=[*PRESETS, 'status', 'apply-pending'])
+    parser.add_argument('preset', nargs='?', default='status', choices=[*PRESETS, 'status', 'apply-pending', 'shuffle-login'])
     args = parser.parse_args()
     if args.preset == 'status':
         print('Presets: ' + ', '.join(PRESETS))
         print('Current: ' + ((DATA / 'current').read_text().strip() if (DATA / 'current').exists() else 'not selected'))
         print('Refresh pending: ' + str((STATE / 'pending').exists()))
+    elif args.preset == 'shuffle-login':
+        current = (DATA / 'current').read_text().strip() if (DATA / 'current').exists() else ''
+        chosen = appearance_settings.shuffled(HOME, current)
+        if chosen: apply(chosen)
     elif args.preset == 'apply-pending':
         marker = STATE / 'pending'
         if marker.exists():

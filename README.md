@@ -1,6 +1,6 @@
 # Bankai · Bleach desktop and terminal
 
-A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **36 characters, 44 portraits and 88 art editions**, with matching shell, cursor, greeting and monitor accents.
+A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **36 characters, 46 portraits and 92 art editions**, with matching shell, cursor, greeting and monitor accents.
 
 [Browse all color and manga artwork](docs/GALLERY.md) · [Full command guide](files/.config/fastfetch/portraits/ROTATION.md) · [Artwork provenance and prompts](docs/ARTWORK.md)
 
@@ -70,6 +70,12 @@ bankai-settings
 
 The startup adds `~/.local/bin` to Fish's PATH. The package does not change your login shell or launch other terminals with Fish.
 
+## Appearance options
+
+Both Bankai apps provide **Appearance options** beside the background controls: choose Color or Manga for the desktop and lock screen, set a custom accent (or leave it empty for character colors), choose a fixed manga login scene or follow the background, and choose a character pool for optional shuffle at login. Save options, then Apply a preset to update wallpaper and accent. Login choices require the one-time system setup. Enable only one Bankai edition at login for shuffle. Terminal Color/Manga/Mixed and favorites remain separate.
+
+There are twelve desktop presets, including TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. The terminal roster also includes TYBW True Shikai Ichigo and Bankai Kenpachi as separate forms.
+
 ## Daily commands
 
 ```fish
@@ -77,7 +83,8 @@ bankai-art mixed                 # color | manga | mixed
 bankai-pick                      # visual portrait picker
 bankai-pick --session urahara    # pin a character in this shell
 bankai-pick --session reset      # follow saved settings
-bankai-group new-arrivals        # eleven recent additions
+bankai-group new-arrivals        # thirteen recent portraits
+bankai-group tybw-forms          # TYBW forms and Yhwach
 bankai-group quincy              # five Quincy portraits
 bankai-group all                 # full roster
 bankai-shuffle character         # equal character turns
@@ -92,6 +99,15 @@ bankai-backup                    # snapshot the current theme
 ```
 
 Group/art changes apply at the next greeting. `bankai-pick random` resumes the current shuffle pool after a fixed selection. History starts with the first successful greeting and retains 50 entries. Settings also offer favorites, shuffle style, layout, snapshots and diagnostics.
+
+## Update
+
+```bash
+python3 install.py update --dry-run
+python3 install.py update
+```
+
+Updates add new artwork and refresh unchanged managed files. Existing preferences, locally edited files and the original backups are retained. Both desktop installers run this update automatically for an existing terminal installation unless `--skip-theme` is supplied.
 
 ## Uninstall and restore
 

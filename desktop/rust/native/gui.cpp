@@ -251,7 +251,13 @@ public:
   QJsonObject preset(const QString &id) const {
     for (auto p : presets)
       if (p.toObject().value("id").toString() == id)
-        return p.toObject();
+        {
+          auto value = p.toObject();
+          auto options = rpc({{"op", "appearance"}}).toObject();
+          if (options.value("edition").toString() == "manga") value["image"] = value["manga"];
+          if (!options.value("accent").toString().isEmpty()) value["accent"] = options["accent"];
+          return value;
+        }
     return presets.first().toObject();
   }
   void selectPreset(const QString &id) {
@@ -269,10 +275,12 @@ public:
     auto *layout = new QVBoxLayout(page);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(13);
-    layout->addWidget(label("Make it yours", "heading"));
+    auto *header = new QHBoxLayout;
+    header->addWidget(label("Make it yours", "heading")); header->addStretch();
+    header->addWidget(button("Appearance options", [this] { appearanceOptions(); })); layout->addLayout(header);
     layout->addWidget(
         label("Matching wallpaper, lock screen and desktop colors. "
-              "Four presets fit your 21:9 monitors.",
+              "Twelve characters and forms with color and manga wallpapers.",
               "muted"));
     art = new Artwork;
     layout->addWidget(art, 1);
@@ -756,6 +764,46 @@ public:
         !QDesktopServices::openUrl(QUrl::fromLocalFile(path)))
       notice->setText("Could not open " + path);
   }
+  void appearanceOptions() {
+    auto value = rpc({{"op", "appearance"}}).toObject();
+    QDialog dialog(this); dialog.setWindowTitle("Appearance options");
+    auto *layout = new QVBoxLayout(&dialog); auto *form = new QFormLayout;
+    layout->addLayout(form);
+    auto *edition = new QComboBox; edition->addItem("Color", "color"); edition->addItem("Manga", "manga");
+    edition->setCurrentIndex(qMax(0, edition->findData(value.value("edition").toString())));
+    form->addRow("Desktop and lock screen", edition);
+    auto *accent = new QLineEdit(value.value("accent").toString()); accent->setPlaceholderText("Use character accent");
+    form->addRow("Accent override (#RRGGBB)", accent);
+    auto *color = new QPushButton("Choose accent color"); layout->addWidget(color);
+    connect(color, &QPushButton::clicked, &dialog, [&, accent] {
+      auto chosen = QColorDialog::getColor(QColor(accent->text().isEmpty() ? preset(selected).value("accent").toString() : accent->text()), &dialog);
+      if (chosen.isValid()) accent->setText(chosen.name());
+    });
+    auto *login = new QComboBox; login->addItem("Follow background character", "follow");
+    for (auto row : presets) { auto p=row.toObject(); login->addItem(p.value("title").toString()+" (fixed manga scene)",p.value("id")); }
+    login->setCurrentIndex(qMax(0, login->findData(value.value("login").toString())));
+    form->addRow("Login scene", login);
+    auto *shuffle = new QCheckBox("Choose a different background when Bankai starts at login");
+    shuffle->setChecked(value.value("shuffle_login").toBool()); layout->addWidget(shuffle);
+    layout->addWidget(new QLabel("Shuffle pool (choose at least one):"));
+    auto *pool = new QListWidget; pool->setMaximumHeight(190); layout->addWidget(pool);
+    for (auto row : presets) {
+      auto p=row.toObject(); auto *item=new QListWidgetItem(p.value("title").toString(),pool);
+      item->setData(Qt::UserRole,p.value("id")); item->setFlags(item->flags()|Qt::ItemIsUserCheckable);
+      item->setCheckState(value.value("pool").toArray().contains(p.value("id")) ? Qt::Checked : Qt::Unchecked);
+    }
+    auto *note = new QLabel("Save options, then Apply a background for wallpaper and accent changes. Login choice syncs after one-time system setup. Enable only one Bankai edition at login for shuffle.");
+    note->setWordWrap(true); layout->addWidget(note);
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save|QDialogButtonBox::Cancel); layout->addWidget(buttons);
+    connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
+    connect(buttons,&QDialogButtonBox::accepted,&dialog,[&] {
+      QJsonArray selectedPool; for(int i=0;i<pool->count();++i) if(pool->item(i)->checkState()==Qt::Checked) selectedPool.append(pool->item(i)->data(Qt::UserRole).toString());
+      QJsonObject options{{"edition",edition->currentData().toString()},{"accent",accent->text().trimmed()},{"login",login->currentData().toString()},{"shuffle_login",shuffle->isChecked()},{"pool",selectedPool}};
+      try { rpc({{"op","save-appearance"},{"appearance",options}}); selectPreset(selected); notice->setText("Appearance saved. Apply a background to update wallpaper and accents."); dialog.accept(); }
+      catch(const std::exception &e) {QMessageBox::information(&dialog,"Appearance options",QString::fromUtf8(e.what()));}
+    });
+    dialog.exec();
+  }
   void loginSetup() {
     const QString data = QDir::homePath() + "/.local/share/bleach-desktop/";
     const QString theme = data + "login-theme";
@@ -899,7 +947,7 @@ static int smoke(Window &window, const QString &directory) {
   if (rpc({{"op", "status"}}).toObject().value("current") != initial)
     throw std::runtime_error("Preview changed the saved preset");
   window.setupTray(false);
-  if (window.presetActions.size() != 8)
+  if (window.presetActions.size() != window.presets.size())
     throw std::runtime_error("Missing tray actions");
   QDir().mkpath(directory);
   window.resize(1140, 820);
@@ -907,6 +955,15 @@ static int smoke(Window &window, const QString &directory) {
   window.show();
   qApp->processEvents();
   window.grab().save(directory + "/rust-appearance.png");
+  auto appearanceBefore = rpc({{"op", "appearance"}});
+  QTimer::singleShot(100, &window, [&] {
+    if (auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget())) {
+      dialog->grab().save(directory + "/rust-appearance-options.png"); dialog->reject();
+    }
+  });
+  window.appearanceOptions();
+  if (rpc({{"op", "appearance"}}) != appearanceBefore)
+    throw std::runtime_error("Canceling appearance options changed preferences");
   auto originalArtwork = rpc({{"op", "portraits"}}).toObject();
   window.navigation->setCurrentRow(2);
   window.portraitArt->setCurrentIndex(2);
@@ -940,7 +997,7 @@ static int smoke(Window &window, const QString &directory) {
   }
   if (window.process)
     throw std::runtime_error("Native worker did not finish");
-  QTextStream(stdout) << "Native smoke checks passed: eight previews, mask "
+  QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, worker process and screenshots.\n";
   return 0;
@@ -1036,6 +1093,8 @@ extern "C" int bankai_gui(int argc, char **argv) {
           }
         });
     }
+    if (args.contains("tray") && rpc({{"op", "appearance"}}).toObject().value("shuffle_login").toBool())
+      window.startTask({{"op", "shuffle-login"}}, "Choosing a login background…");
     if (!args.contains("tray"))
       window.showWindow(args.contains("backups"));
     return app.exec();

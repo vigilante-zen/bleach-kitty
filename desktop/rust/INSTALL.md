@@ -55,7 +55,7 @@ In **Terminal & tools**, preview a portrait and choose Color/Manga/Mixed, then c
 
 ## Update or switch editions
 
-Quit the tray app before updating. In a Git clone, run `git pull --ff-only`, then rerun `python3 desktop/rust/install.py`. For a release package, extract the new package and run its installer. Original pre-install files remain backed up across upgrades. Update the terminal theme separately using its [uninstall/reinstall procedure](../../README.md#uninstall-and-restore); the desktop updater preserves an existing managed terminal installation.
+Quit the tray app before updating. In a Git clone, run `git pull --ff-only`, then rerun `python3 desktop/rust/install.py`. For a release package, extract the new package and run its installer. Original pre-install files remain backed up across upgrades. The desktop installer updates unchanged managed terminal files and adds new artwork while preserving preferences and local edits. Use `--skip-theme` to leave the terminal installation untouched. Original backups are retained.
 
 To switch, disable login startup in the current edition, quit its tray app, and follow the [other edition's guide](../python/INSTALL.md). Both commands can coexist. They share desktop settings and snapshots; do not apply changes from both at once. Enable only your preferred edition at login. Rust tray startup keeps the control center hidden; if the tray is unavailable, its fallback window starts minimized. Repeated tray launches do not raise an existing window.
 
@@ -84,3 +84,9 @@ QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 ```
 
 After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai-rust --smoke-test`. Smoke checks read installed artwork and snapshots without applying presets. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` compares against the checked-in Python backup source when present, or its installed helper otherwise. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai-rust restore SNAPSHOT_NAME`.
+
+## Appearance controls
+
+Open **Appearance options** beside the background controls. Choose Color or Manga for desktop/lock screen, an optional custom accent (`#RRGGBB`), a fixed manga login character or Follow background, and the character pool for optional shuffle when Bankai starts at login. Save, then Apply a preset for wallpaper/accent changes. Login choice syncs after the one-time SDDM setup. Enable only one edition at login when using shuffle. Settings are shared by both apps and included in desktop snapshots; uninstall preserves them.
+
+Twelve desktop presets include TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. Terminal selection also offers TYBW True Shikai Ichigo and Bankai Kenpachi; the `tybw-forms` terminal group rotates TYBW forms separately from the desktop shuffle pool. Ulquiorra remains a legacy-arc option.

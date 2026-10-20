@@ -4,11 +4,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
-from sync import read_preset
+from sync import login_preset
 
 base = Path(__file__).resolve().parent
 source = base / 'login-theme' if (base / 'login-theme').is_dir() else base / 'theme'
-preset = read_preset(Path.home()) or 'ichigo'
+preset = login_preset(Path.home()) or 'ichigo'
 with tempfile.TemporaryDirectory(prefix='bankai-login-preview-') as folder:
     theme = Path(folder)
     for name in ('Main.qml', 'metadata.desktop', 'theme.conf'):

@@ -8,7 +8,7 @@ import sys
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('action', nargs='?', default='open',
                     choices=['open', 'ichigo', 'rukia', 'quincy', 'tybw',
-                             'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'status', 'backup', 'restore', 'tray', 'backups'])
+                             'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach', 'status', 'backup', 'restore', 'tray', 'backups'])
 parser.add_argument('snapshot', nargs='?', help='Optional snapshot name for restore')
 args = parser.parse_args()
 if args.snapshot and args.action != 'restore':

@@ -52,7 +52,7 @@ Applying a Python desktop preset also selects its matching terminal portrait. Ru
 
 ## Update or switch editions
 
-Quit the tray app before updating. In a Git clone, run `git pull --ff-only`, then rerun `python3 desktop/python/install.py`. For a release package, extract the new package and run its installer. Original pre-install files remain backed up across upgrades. Update the terminal theme separately using its [uninstall/reinstall procedure](../../README.md#uninstall-and-restore); the desktop updater preserves an existing managed terminal installation.
+Quit the tray app before updating. In a Git clone, run `git pull --ff-only`, then rerun `python3 desktop/python/install.py`. For a release package, extract the new package and run its installer. Original pre-install files remain backed up across upgrades. The desktop installer updates unchanged managed terminal files and adds new artwork while preserving preferences and local edits. Use `--skip-theme` to leave the terminal installation untouched. Original backups are retained.
 
 To switch, disable login startup in the current edition, quit its tray app, and follow the [other edition's guide](../rust/INSTALL.md). Both commands can coexist. They share desktop settings and snapshots; do not apply changes from both at once. Enable only your preferred edition at login.
 
@@ -77,3 +77,9 @@ QT_QPA_PLATFORM=offscreen python3 desktop/python/check_control_center.py
 ```
 
 The UI checks expect the shared desktop artwork to be installed. Snapshot tests use temporary directories. Cross-process activation and live KDE behavior need a desktop session. For restore, select a local snapshot in the app or run `bankai restore SNAPSHOT_NAME`; the no-argument legacy restore retains the original developer baseline identifier.
+
+## Appearance controls
+
+Open **Appearance options** beside the background controls. Choose Color or Manga for desktop/lock screen, an optional custom accent (`#RRGGBB`), a fixed manga login character or Follow background, and the character pool for optional shuffle when Bankai starts at login. Save, then Apply a preset for wallpaper/accent changes. Login choice syncs after the one-time SDDM setup. Enable only one edition at login when using shuffle. Settings are shared by both apps and included in desktop snapshots; uninstall preserves them.
+
+Twelve desktop presets include TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. Terminal selection also offers TYBW True Shikai Ichigo and Bankai Kenpachi; the `tybw-forms` terminal group rotates TYBW forms separately from the desktop shuffle pool. Ulquiorra remains a legacy-arc option.

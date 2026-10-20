@@ -1,6 +1,8 @@
 """Desktop installer ownership, rollback, backup and confinement checks."""
 import importlib.util
 import json
+import subprocess
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -78,6 +80,14 @@ class DesktopInstallerChecks(unittest.TestCase):
             with self.assertRaises(OSError):
                 self.change('python', files={self.python: (b'app', 0o755)})
         self.assertFalse((self.home / self.python).exists())
+
+    def test_python_install_and_update_share_terminal_icon(self):
+        command = [sys.executable, str(installer.ROOT/'desktop/python/install.py'), '--home', str(self.home)]
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        icon = self.home/'.local/share/icons/hicolor/scalable/apps/bleach-bankai.svg'
+        self.assertEqual(icon.read_bytes(), (installer.ROOT/'desktop/python/icons/bleach-tray.svg').read_bytes())
+        self.assertTrue((self.home/'.config/fastfetch/portraits/ichigo-tybw.png').is_file())
 
     def test_real_edition_payloads_have_launchers_and_no_preferences(self):
         executable = self.home / 'compiled'; executable.write_bytes(b'compiled')

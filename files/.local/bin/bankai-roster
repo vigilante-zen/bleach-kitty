@@ -10,15 +10,18 @@ import re
 import sys
 import tempfile
 
-ICHIGO = ['hollow-mask', 'split-ichigo', 'vasto-lorde', 'dangai-ichigo', 'mugetsu', 'white-ichigo']
+ICHIGO = ['ichigo-tybw', 'hollow-mask', 'split-ichigo', 'vasto-lorde', 'dangai-ichigo', 'mugetsu', 'white-ichigo']
 CHARACTER_FORMS = {
     'ichigo': ICHIGO,
+    'kenpachi': ['kenpachi', 'kenpachi-bankai'],
     'urahara': ['urahara', 'urahara-bankai'],
     'renji': ['renji', 'renji-bankai'],
     'hitsugaya': ['hitsugaya', 'hitsugaya-bankai'],
 }
 CHARACTER_OWNER = {form: character for character, forms in CHARACTER_FORMS.items() for form in forms}
 DISPLAY_NAMES = {
+    'ichigo-tybw': 'Ichigo · TYBW True Shikai',
+    'kenpachi-bankai': 'Kenpachi · Bankai',
     'nemu': 'Nemu Kurotsuchi',
     'askin': 'Askin Nakk Le Vaar',
     'lille': 'Lille Barro',
@@ -44,8 +47,9 @@ DISPLAY_NAMES = {
     'ulquiorra': 'Ulquiorra · Segunda Etapa',
 }
 GROUPS = {
-    'new-arrivals': ['nemu', 'askin', 'lille', 'yachiru', 'starrk', 'harribel', 'hisagi', 'komamura', 'jugram', 'bazz-b', 'bambietta'],
-    'soul-reapers': ICHIGO + ['urahara-bankai', 'renji-bankai', 'hitsugaya-bankai', 'rukia-bankai', 'renji', 'byakuya', 'urahara', 'yoruichi',
+    'tybw-forms': ['ichigo-tybw', 'kenpachi-bankai', 'renji-bankai', 'hitsugaya-bankai', 'rukia-bankai', 'urahara-bankai', 'yhwach'],
+    'new-arrivals': ['ichigo-tybw', 'kenpachi-bankai', 'nemu', 'askin', 'lille', 'yachiru', 'starrk', 'harribel', 'hisagi', 'komamura', 'jugram', 'bazz-b', 'bambietta'],
+    'soul-reapers': ICHIGO + ['kenpachi-bankai', 'urahara-bankai', 'renji-bankai', 'hitsugaya-bankai', 'rukia-bankai', 'renji', 'byakuya', 'urahara', 'yoruichi',
         'hitsugaya', 'kenpachi', 'aizen', 'yamamoto', 'shunsui', 'ukitake', 'unohana',
         'mayuri', 'soi-fon', 'shinji', 'rangiku', 'gin', 'hisagi', 'komamura', 'nemu', 'yachiru'],
     'arrancars': ['ulquiorra', 'grimmjow', 'nelliel', 'starrk', 'harribel'],

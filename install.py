@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import sys
+import tempfile
 
 REPO = Path(__file__).resolve().parent
 BEGIN = '# BEGIN BLEACH KITTY (managed by bleach-kitty)'
@@ -30,7 +31,7 @@ def check_path(path, home):
         raise ValueError(f'Destination is not a file: {path}')
 
 
-def payload(home):
+def payload(home, updating=False):
     manifest = json.loads((REPO / 'MANIFEST.json').read_text())
     result = {}
     for relative, expected in manifest.items():
@@ -47,6 +48,8 @@ def payload(home):
     kitty = '.config/kitty/kitty.conf'
     check_path(home / kitty, home)
     previous = (home / kitty).read_text() if (home / kitty).exists() else ''
+    if updating:
+        return result
     if BEGIN in previous or END in previous:
         raise ValueError('A managed Kitty block already exists. Uninstall first.')
     block = '\n' + BEGIN + '\n' + '\n'.join('include themes/' + n + '.conf' for n in
@@ -55,15 +58,62 @@ def payload(home):
     return result
 
 
+
+def update(home, state, receipt, dry):
+    check_path(receipt, home)
+    info = json.loads(receipt.read_text())
+    backup = Path(info['backup'])
+    if not backup.is_relative_to(state): raise ValueError('Invalid backup directory')
+    entries = {row['path']: row.copy() for row in info['files']}
+    files = payload(home, updating=True)
+    changes = {}
+    for relative, (data, mode) in files.items():
+        target = home / relative; check_path(target, home)
+        if relative in DEFAULTS and target.exists(): continue
+        entry = entries.get(relative)
+        if entry and target.exists() and digest(target.read_bytes()) != entry['sha256']:
+            print('Kept modified file:', target); continue
+        if target.exists() and target.read_bytes() == data: continue
+        if not entry:
+            existed = target.exists()
+            if existed:
+                saved = backup / relative; check_path(saved, home)
+                if not dry:
+                    saved.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(target, saved)
+            entry = {'path': relative, 'existed': existed}; entries[relative] = entry
+        entry['sha256'] = digest(data); changes[relative] = (data, mode)
+    print(f'{"Would update" if dry else "Update"} {len(changes)} terminal files; preferences and local edits retained')
+    if dry: return
+    before = {relative: ((home / relative).read_bytes(), (home / relative).stat().st_mode & 0o777) if (home / relative).exists() else None for relative in changes}
+    def atomic(path, data, mode=0o644):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, temp = tempfile.mkstemp(dir=path.parent)
+        try:
+            with os.fdopen(fd, 'wb') as stream: stream.write(data)
+            os.chmod(temp, mode); os.replace(temp, path)
+        finally: Path(temp).unlink(missing_ok=True)
+    try:
+        for relative, content in changes.items(): atomic(home / relative, *content)
+        atomic(receipt, (json.dumps({'backup': str(backup), 'files': list(entries.values())}, indent=2) + '\n').encode())
+    except OSError:
+        for relative, content in before.items():
+            if content is None: (home / relative).unlink(missing_ok=True)
+            else: atomic(home / relative, *content)
+        raise
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', nargs='?', default='install', choices=['install', 'uninstall'])
+    parser.add_argument('action', nargs='?', default='install', choices=['install', 'update', 'uninstall'])
     parser.add_argument('--home', type=Path, default=Path.home(), help='target home (also useful for isolated testing)')
     parser.add_argument('--dry-run', action='store_true', help='validate and show file count without writing')
     args = parser.parse_args()
     home = args.home.expanduser().absolute()
     state = home / '.local/state/bleach-kitty-install'
     receipt = state / 'receipt.json'
+    if args.action == 'update':
+        if not receipt.is_file(): raise ValueError('No terminal installation receipt; install first.')
+        update(home, state, receipt, args.dry_run)
+        return
     if args.action == 'install':
         if receipt.exists():
             raise ValueError('Already installed. Uninstall this package before reinstalling; your backup is retained.')

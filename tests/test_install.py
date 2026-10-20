@@ -29,8 +29,8 @@ class InstallationTests(unittest.TestCase):
             self.assertLess(len(data), 100 * 1024 * 1024)
             if not name.endswith('.png'):
                 self.assertNotIn(b'/home/zen', data, name)
-        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/portraits').glob('*.png'))), 44)
-        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/manga').glob('*.png'))), 44)
+        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/portraits').glob('*.png'))), 46)
+        self.assertEqual(len(list((REPO / 'files/.config/fastfetch/manga').glob('*.png'))), 46)
 
     def test_install_relocate_and_restore(self):
         with tempfile.TemporaryDirectory(prefix='bankai home ') as temp:
@@ -72,6 +72,20 @@ class InstallationTests(unittest.TestCase):
             self.assertEqual(kitty.read_text(), 'font_size 17\n')
             self.assertEqual(prompt.read_text(), '# user edit\n')
             self.assertTrue((home / '.local/state/bleach-kitty-install/receipt.json').exists())
+
+    def test_update_preserves_preferences_edits_and_original_backups(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder)
+            self.run_installer(home)
+            choices=home/'.config/fastfetch/portrait-choice'; choices.write_text('renji-bankai\n')
+            custom=home/'.config/fish/functions/bankai-accent.fish'; custom.write_text('# local edit\n')
+            self.run_installer(home, 'update', '--dry-run')
+            self.run_installer(home, 'update')
+            self.assertEqual(choices.read_text(),'renji-bankai\n')
+            self.assertEqual(custom.read_text(),'# local edit\n')
+            self.assertTrue((home/'.config/fastfetch/portraits/ichigo-tybw.png').is_file())
+            self.run_installer(home, 'uninstall')
+            self.assertEqual(custom.read_text(),'# local edit\n')
 
     def test_symlink_destination_rejected_without_writes(self):
         with tempfile.TemporaryDirectory() as temp:

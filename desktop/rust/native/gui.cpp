@@ -132,7 +132,9 @@ public:
   QLabel *saved, *notice, *previewNote, *storage, *snapshotDetails;
   QComboBox *snapshots, *portraitChoice, *portraitArt;
   QSpinBox *keep;
-  QCheckBox *autostart;
+  QCheckBox *autostart, *matchDesktop;
+  QLabel *portraitPreview, *mangaPreview, *portraitCaption;
+  QString savedDesktop;
   QPushButton *verifyButton, *restoreButton, *protectButton, *cleanupButton,
       *logButton;
   QPlainTextEdit *log;
@@ -393,19 +395,37 @@ public:
     portraitChoice->setAccessibleName("Terminal character");
     portraitChoice->addItem("Random characters", "random");
     layout->addWidget(portraitChoice);
+    matchDesktop = new QCheckBox("Match desktop character");
+    layout->addWidget(matchDesktop);
     portraitArt = new QComboBox;
     portraitArt->setAccessibleName("Portrait art style");
     portraitArt->addItem("Color", "color");
     portraitArt->addItem("Manga", "manga");
     portraitArt->addItem("Mixed color and manga", "mixed");
     layout->addWidget(portraitArt);
+    auto *previewRow = new QHBoxLayout;
+    portraitPreview = new QLabel;
+    mangaPreview = new QLabel;
+    for (auto *image : {portraitPreview, mangaPreview}) {
+      image->setFixedSize(180, 180);
+      image->setAlignment(Qt::AlignCenter);
+      previewRow->addWidget(image);
+    }
+    previewRow->addStretch();
+    layout->addLayout(previewRow);
+    portraitCaption = label("", "muted");
+    layout->addWidget(portraitCaption);
+    connect(portraitChoice, &QComboBox::currentIndexChanged, this, [this] { updatePortraitPreview(); });
+    connect(portraitArt, &QComboBox::currentIndexChanged, this, [this] { updatePortraitPreview(); });
+    connect(matchDesktop, &QCheckBox::toggled, this, [this] { updatePortraitPreview(); });
     layout->addWidget(button("Save terminal artwork", [this] {
       startTask({{"op", "save-portraits"},
                  {"choice", portraitChoice->currentData().toString()},
-                 {"art", portraitArt->currentData().toString()}},
+                 {"art", portraitArt->currentData().toString()},
+                 {"match_desktop", matchDesktop->isChecked()}},
                 "Saving terminal artwork…");
     }, true));
-    layout->addWidget(label("Applies to new terminal tabs. Desktop presets preserve your choice. "
+    layout->addWidget(label("Applies to new terminal tabs. Enable matching to follow desktop presets. "
                             "Random uses your existing groups and favorites. "
                             "Color fills in when manga is unavailable.", "muted"));
     layout->addWidget(button(
@@ -441,13 +461,44 @@ public:
     scroll->setWidget(page);
     return scroll;
   }
+  void updatePortraitPreview() {
+    portraitChoice->setEnabled(!process && !matchDesktop->isChecked());
+    auto choice = portraitChoice->currentData().toString();
+    if (matchDesktop->isChecked())
+      choice = preset(savedDesktop).value("portrait").toString();
+    bool sample = choice == "random";
+    if (sample)
+      choice = portraitChoice->count() > 1 ? portraitChoice->itemData(1).toString() : QString();
+    auto root = home + "/.config/fastfetch/";
+    auto color = root + "portraits/" + choice + ".png";
+    auto manga = root + "manga/" + choice + ".png";
+    bool available = QFile::exists(manga);
+    auto art = portraitArt->currentData().toString();
+    auto show = [](QLabel *label, const QString &file) {
+      QImageReader reader(file);
+      reader.setScaledSize(reader.size().scaled(180, 180, Qt::KeepAspectRatio));
+      auto image = reader.read();
+      label->setPixmap(QPixmap::fromImage(image));
+      if (image.isNull()) label->setText("Portrait unavailable");
+    };
+    show(portraitPreview, art == "manga" && available ? manga : color);
+    mangaPreview->setVisible(art == "mixed" && available);
+    if (mangaPreview->isVisible()) show(mangaPreview, manga);
+    auto title = choice;
+    title.replace('-', ' ');
+    portraitCaption->setText((sample ? "Rotation example: " : "Preview: ") + title +
+        (art == "mixed" && available ? " · Color / Manga" :
+         art == "manga" && available ? " · Manga" : " · Color") +
+        (art != "color" && !available ? " (manga unavailable)" : "") +
+        ". Previewing does not change your saved settings.");
+  }
   void refreshStatus() {
     try {
       auto artwork = rpc({{"op", "portraits"}}).toObject();
       // Keep unsaved selections while polling; reload when saved preferences change.
       auto signature = QJsonDocument(artwork).toJson(QJsonDocument::Compact);
       if (portraitChoice->property("savedArtwork").toByteArray() != signature) {
-        QSignalBlocker choiceBlock(portraitChoice), artBlock(portraitArt);
+        QSignalBlocker choiceBlock(portraitChoice), artBlock(portraitArt), followBlock(matchDesktop);
         portraitChoice->clear();
         portraitChoice->addItem("Random characters", "random");
         for (auto value : artwork.value("portraits").toArray()) {
@@ -458,10 +509,13 @@ public:
         }
         portraitChoice->setCurrentIndex(qMax(0, portraitChoice->findData(artwork.value("choice").toString())));
         portraitArt->setCurrentIndex(qMax(0, portraitArt->findData(artwork.value("art").toString())));
+        matchDesktop->setChecked(artwork.value("match_desktop").toBool());
         portraitChoice->setProperty("savedArtwork", signature);
       }
       auto status = rpc({{"op", "status"}}).toObject();
       auto id = status.value("current").toString();
+      savedDesktop = id;
+      updatePortraitPreview();
       auto p = preset(id);
       saved->setText("SAVED PRESET\n" + p.value("title").toString() +
                      (status.value("pending").toBool()
@@ -610,6 +664,7 @@ public:
     notice->setText(progress);
     portraitChoice->setEnabled(false);
     portraitArt->setEnabled(false);
+    matchDesktop->setEnabled(false);
     output.clear();
     log->clear();
     for (auto *b : buttons)
@@ -669,6 +724,7 @@ public:
     process = nullptr;
     portraitChoice->setEnabled(true);
     portraitArt->setEnabled(true);
+    matchDesktop->setEnabled(true);
     slowTimer.stop();
     for (auto *b : buttons)
       b->setEnabled(true);
@@ -839,6 +895,16 @@ static int smoke(Window &window, const QString &directory) {
   window.show();
   qApp->processEvents();
   window.grab().save(directory + "/rust-appearance.png");
+  auto originalArtwork = rpc({{"op", "portraits"}}).toObject();
+  window.navigation->setCurrentRow(2);
+  window.portraitArt->setCurrentIndex(2);
+  window.matchDesktop->setChecked(!window.matchDesktop->isChecked());
+  qApp->processEvents();
+  if (rpc({{"op", "portraits"}}).toObject() != originalArtwork)
+    throw std::runtime_error("Portrait preview changed saved settings");
+  if (!window.portraitCaption->text().contains("Previewing"))
+    throw std::runtime_error("Portrait preview caption missing");
+  window.grab().save(directory + "/rust-terminal-art.png");
   window.navigation->setCurrentRow(1);
   qApp->processEvents();
   window.grab().save(directory + "/rust-backups.png");

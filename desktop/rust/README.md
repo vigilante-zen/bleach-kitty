@@ -19,9 +19,13 @@ Both editions read the same saved preset, character artwork, KDE settings, Kitty
 
 Under **Terminal & tools**, choose **Random characters** or an installed portrait, then **Color**, **Manga**, or **Mixed color and manga**, and click **Save terminal artwork**. Changes apply to new terminal tabs. Random rotation uses the groups and favorites configured in the terminal. Color artwork is used when manga is unavailable. Existing shell-only overrides continue to take precedence in that shell; use `bankai-pick --session reset` to follow saved preferences.
 
-Desktop preset changes now preserve terminal portrait and art preferences. Select the matching portrait explicitly here if desired. The Python app still uses its original preset behavior. Settings use the same files as `bankai-pick` and `bankai-art`, and external changes appear in the app.
+Enable **Match desktop character** and save to follow the currently saved desktop preset and future preset changes. Disable it and save a portrait or random rotation to keep terminal artwork independent. Art style remains independent in both modes. The TYBW desktop preset uses random rotation.
 
-The terminal-artwork update passed 19 Rust unit tests, 17 compiled-binary integration tests and the offscreen native smoke checks. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
+The live preview updates before saving. Mixed mode shows color and manga side by side; missing manga falls back to color. Random mode shows a labeled sample without advancing the shuffle deck or changing saved preferences.
+
+Desktop preset changes preserve independent terminal portrait and art preferences. The Python app still uses its original preset behavior. Settings use the same files as `bankai-pick` and `bankai-art`, and external changes appear in the app.
+
+The terminal-artwork update passed 19 Rust unit tests, 18 compiled-binary integration tests and the offscreen native smoke checks. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
 
 ## Ported behavior
 

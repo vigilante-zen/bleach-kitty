@@ -86,7 +86,16 @@ pub fn apply(app: &App, name: &str) -> Result<Value> {
     let include = "include themes/bleach-desktop.conf";
     if !kitty.lines().any(|line| line == include) { edits.insert(".config/kitty/kitty.conf".into(), format!("{}\n\n{include}\n",kitty.trim_end())); }
     edits.insert(".config/kitty/themes/bleach-desktop.conf".into(), format!("# Managed by Bankai Rust\ncursor {accent}\nactive_border_color {accent}\nactive_tab_background {accent}\nactive_tab_foreground #090c12\nselection_background {accent}\nselection_foreground #090c12\ncolor1 {accent}\ncolor9 {accent}\n"));
-    // Terminal artwork is selected independently from the desktop preset.
+    let follow_path = app.home.join(".config/fastfetch/portrait-follow-desktop");
+    fsutil::reject_links(&follow_path, &app.home)?;
+    let follow = match fs::read_to_string(&follow_path) {
+        Ok(value) => value.trim() == "on",
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => false,
+        Err(e) => return Err(e.to_string()),
+    };
+    if follow {
+        edits.insert(".config/fastfetch/portrait-choice".into(), format!("{}\n", preset.get("portrait")?.text()?));
+    }
     for relative in edits.keys() { fsutil::reject_links(&app.home.join(relative), &app.home)?; }
     let backup = snapshots::create(app)?;
     for (relative,text) in edits { fsutil::atomic_write(&app.home.join(relative), text.as_bytes(), None)?; }

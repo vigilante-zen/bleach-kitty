@@ -145,6 +145,24 @@ class CompiledRustChecks(unittest.TestCase):
             self.rpc('save-portraits', choice=choice, art=art, fail=True)
         self.assertEqual(self.rpc('portraits')['art'], 'color')
 
+    def test_match_desktop_can_be_enabled_and_disabled(self):
+        self.write('.config/fastfetch/portraits/dangai-ichigo.png', 'test image')
+        self.write('.config/fastfetch/portraits/rukia-bankai.png', 'test image')
+        self.rpc('apply', preset='ichigo')
+        self.rpc('save-portraits', choice='random', art='mixed', match_desktop=True)
+        self.assertEqual(self.rpc('portraits')['choice'], 'dangai-ichigo')
+        self.rpc('apply', preset='rukia')
+        state = self.rpc('portraits')
+        self.assertTrue(state['match_desktop'])
+        self.assertEqual((state['choice'], state['art']), ('rukia-bankai', 'mixed'))
+        self.rpc('apply', preset='tybw')
+        self.assertEqual(self.rpc('portraits')['choice'], 'random')
+        self.rpc('save-portraits', choice='random', art='manga', match_desktop=False)
+        self.rpc('apply', preset='ichigo')
+        state = self.rpc('portraits')
+        self.assertFalse(state['match_desktop'])
+        self.assertEqual((state['choice'], state['art']), ('random', 'manga'))
+
     def test_portrait_symlink_does_not_modify_external_file(self):
         target = self.write('outside-art', 'untouched')
         path = self.home / '.config/fastfetch/portrait-art-mode'

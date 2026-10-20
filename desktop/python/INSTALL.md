@@ -1,99 +1,79 @@
 # Install Bankai Python
 
-[Choose another edition](../README.md) · [Python overview](README.md) · [Rust installation](../rust/INSTALL.md)
+[Choose another edition](../README.md) · [Python overview](README.md) · [Install Rust instead](../rust/INSTALL.md)
 
-Choose this edition for the original Python + PySide6 control center. Requires Linux with KDE Plasma 6, Python 3 and PySide6 (Qt 6). Install PySide6 through your distribution's packages or Python environment before continuing. If using a virtual environment, activate it before launching Bankai; the `bankai` script uses `python3` from PATH.
+## Requirements
 
-## 1. Get the repository and install the terminal theme
+Linux with KDE Plasma 6, Python 3 and PySide6 (Qt 6). Install PySide6 through your distribution or a Python environment; the `bankai` command uses `python3` from PATH. If using a virtual environment, activate it before installing and before using the `bankai` terminal command. The app-menu launcher records the Python interpreter running the installer, so it can use that environment directly.
 
-Run these commands in Bash. If you already cloned the repository, open that folder instead of cloning again.
+Both editions use the shared terminal theme, which requires Kitty, Fish, Fastfetch, btop, fzf and Python 3. Install those prerequisites with your distribution's package manager. The installer does not install system packages or change your default shell. If Fish is not your default, open Kitty and run `fish`.
+
+## 1. Download your edition
+
+Choose a package on the [GitHub Releases page](https://github.com/vigilante-zen/bleach-kitty/releases):
+
+- **`bankai-python.tar.gz`** — Python desktop source and shared terminal theme/artwork.
+
+Release assets appear after a release is published and the packaging workflow passes. Until the first release is available, clone the repository instead. Each edition archive includes only the selected desktop edition plus common files. Its `.sha256` sidecar verifies the download; for example, run `sha256sum -c ARCHIVE.tar.gz.sha256` in the download directory.
+
+Extract the archive and open its top-level directory, or clone:
 
 ```bash
 git clone https://github.com/vigilante-zen/bleach-kitty.git
 cd bleach-kitty
 ```
 
-Both desktop editions use the shared Kitty/Fish theme. If it is already installed, skip these two commands. The theme installer rejects a second installation; see the [theme update and restore notes](../../README.md#uninstall-and-restore) before reinstalling.
+## 2. Preview and install
+
+From the extracted package or repository root:
 
 ```bash
-python3 install.py --dry-run
-python3 install.py
+python3 desktop/python/install.py --dry-run
+python3 desktop/python/install.py
 ```
 
-The theme needs Kitty, Fish, Fastfetch, btop, fzf and Python 3. It does not change your default shell. Open Kitty and run `fish` if needed. Use `bankai-doctor` inside Fish to check the theme.
+One command installs the selected app, shared wallpapers/color schemes, its icon and KDE app-menu entry. It also installs the shared terminal theme unless a receipt from the root theme installer already exists. An unmanaged theme setup can cause the root theme installer to refuse conflicting managed blocks; use `--skip-theme` only when you have already installed a working terminal theme yourself.
 
-## 2. Install the shared desktop artwork
+Existing desktop files are backed up before replacement. Installer state and originals are kept in `~/.local/state/bankai-desktop-install/`. Locally edited managed desktop files block updates until you preserve or resolve those edits. Shared desktop assets stay installed while another edition still owns them. No portrait preferences, snapshots or login-startup settings are bundled or reset.
 
-Run from the repository root. These copy commands replace matching installed files. Before upgrading an existing desktop installation, quit its tray app and save a backup with `bankai backup` or `bankai-rust backup`; retain your previous executable separately if you want to roll back the application itself.
+For a staging installation, add `--home /absolute/test/home`. It does not launch a desktop session. `--dry-run` writes no installation files and does not compile Rust. Actual theme installation and desktop installation have separate receipts: if desktop installation fails after installing the theme, the theme remains installed and can be uninstalled separately.
 
-```bash
-mkdir -p "$HOME/Pictures/Bleach-TYBW/Wallpapers" \
-  "$HOME/.local/share/color-schemes" \
-  "$HOME/.local/share/bleach-desktop" \
-  "$HOME/.local/share/icons/hicolor/scalable/apps" \
-  "$HOME/.local/share/applications" "$HOME/.local/bin"
-cp desktop/shared/wallpapers/*.png "$HOME/Pictures/Bleach-TYBW/Wallpapers/"
-cp desktop/shared/color-schemes/*.colors "$HOME/.local/share/color-schemes/"
-```
+## 3. Launch
 
-## 3. Install the Python app
-
-From the repository root:
-
-```bash
-cp desktop/python/control_center.py desktop/python/snapshot_manager.py \
-  "$HOME/.local/share/bleach-desktop/"
-cp desktop/python/README.md "$HOME/.local/share/bleach-desktop/README.md"
-cp -r desktop/python/icons "$HOME/.local/share/bleach-desktop/"
-install -m 755 desktop/python/bin/bankai desktop/python/bin/bankai-desktop \
-  desktop/python/bin/bankai-desktop-backup desktop/python/bin/bankai-desktop-restore \
-  "$HOME/.local/bin/"
-cp desktop/python/icons/bleach-tray.svg \
-  "$HOME/.local/share/icons/hicolor/scalable/apps/bleach-bankai.svg"
-```
-
-Confirm the interpreter can load the GUI:
-
-```bash
-python3 -c 'from PySide6.QtWidgets import QApplication; print("PySide6 ready")'
-```
-
-## 4. Add the app launcher
-
-```bash
-cat > "$HOME/.local/share/applications/bleach-bankai.desktop" <<EOF
-[Desktop Entry]
-Type=Application
-Name=Bankai Python
-Comment=Bleach desktop control center — Python edition
-Exec="$HOME/.local/bin/bankai"
-Icon=bleach-bankai
-Terminal=false
-Categories=Settings;DesktopSettings;
-StartupNotify=false
-EOF
-```
-
-Search **Bankai Python** in KDE's app menu, or launch directly:
+Search **Bankai Python** in KDE's app menu, or run:
 
 ```bash
 "$HOME/.local/bin/bankai"
 ```
 
-## Use and update
+Use `bankai tray` for tray mode and `bankai backups` for backup management. If the short command is not found, open a new Fish session or use the absolute path above. Run `bankai-doctor` inside Fish to check the terminal theme.
 
-- `bankai` opens the window; `bankai tray` starts tray mode; `bankai backups` opens backup management.
-- Applying a desktop preset also selects its matching terminal portrait. Use `bankai-pick random` in Fish to resume rotation.
-- Choose your login-startup preference in **Terminal & tools**. When switching editions, disable the previous edition's startup first and quit its tray app.
-- To update, quit Bankai, run `git pull --ff-only` in the repository, then repeat steps 2–3. The root theme installer is separate and should not be rerun over an existing theme installation.
-- For restore, use the app to select an existing snapshot, or pass its name explicitly to `bankai restore SNAPSHOT_NAME`. The no-argument restore command retains the original developer baseline identifier and is unsuitable for a fresh installation.
+Applying a Python desktop preset also selects its matching terminal portrait. Run `bankai-pick random` in Fish to resume rotation.
 
-## Validation and limits
+## Update or switch editions
+
+Quit the tray app before updating. In a Git clone, run `git pull --ff-only`, then rerun `python3 desktop/python/install.py`. For a release package, extract the new package and run its installer. Original pre-install files remain backed up across upgrades. Update the terminal theme separately using its [uninstall/reinstall procedure](../../README.md#uninstall-and-restore); the desktop updater preserves an existing managed terminal installation.
+
+To switch, disable login startup in the current edition, quit its tray app, and follow the [other edition's guide](../rust/INSTALL.md). Both commands can coexist. They share desktop settings and snapshots; do not apply changes from both at once. Enable only your preferred edition at login.
+
+## Uninstall
+
+Disable the edition's login-startup checkbox, then quit its tray app. From the package or repository root:
 
 ```bash
-cd desktop/python
-python3 check_snapshot_manager.py
-QT_QPA_PLATFORM=offscreen python3 check_control_center.py
+python3 desktop/python/install.py uninstall --dry-run
+python3 desktop/python/install.py uninstall
 ```
 
-The checks use temporary snapshot/configuration directories. Cross-process activation and live KDE wallpaper/tray behavior need a desktop session. The system login-screen installer is not included in this edition package; the app's login-screen setup shortcut does not supply it. Desktop installation is manual, and the root terminal uninstaller does not remove these desktop files.
+Uninstall restores originals and removes files added by this desktop installer. Files edited since installation are retained and remain tracked for manual resolution. Shared desktop files remain while the other edition uses them. Theme files, runtime preferences and snapshots are kept. To remove the common terminal theme as well, use the separate root `python3 install.py uninstall` command after removing both desktop editions.
+
+The legacy system login-screen installer is not bundled; its app shortcut requires a separately installed setup. These installers do not change the system login screen.
+
+## Validation
+
+```bash
+python3 desktop/python/check_snapshot_manager.py
+QT_QPA_PLATFORM=offscreen python3 desktop/python/check_control_center.py
+```
+
+The UI checks expect the shared desktop artwork to be installed. Snapshot tests use temporary directories. Cross-process activation and live KDE behavior need a desktop session. For restore, select a local snapshot in the app or run `bankai restore SNAPSHOT_NAME`; the no-argument legacy restore retains the original developer baseline identifier.

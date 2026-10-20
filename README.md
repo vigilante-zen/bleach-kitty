@@ -17,7 +17,9 @@ A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **
 | **[Install Python →](desktop/python/INSTALL.md)** | **[Install Rust →](desktop/rust/INSTALL.md)** |
 | [Python source and details](desktop/python/README.md) | [Rust source and details](desktop/rust/README.md) |
 
-Pick one desktop edition. Each guide includes its requirements, shared theme setup, installation, launcher, updates and validation. [Compare editions or switch later](desktop/README.md).
+[Download edition packages](https://github.com/vigilante-zen/bleach-kitty/releases) · [See app screenshots](desktop/README.md#screenshots)
+
+Pick one desktop edition. Each edition has its own installer with backups, launcher creation, updates and uninstall support. Each guide includes its requirements, installation and validation. [Compare editions or switch later](desktop/README.md).
 
 For the terminal theme on its own, follow [Terminal theme installation](#install) below.
 
@@ -105,6 +107,8 @@ python3 -m unittest discover -s tests -v
 The installer can target an isolated directory via `--home /absolute/test/home`. That option is for staging/testing; desktop launchers and config references are expanded for that directory. Validation on the original setup covered all portraits/palettes, Fish/Kitty configuration, full shuffle cycles, groups and exact-edition replay. No real desktop session is launched by the automated installer tests.
 
 ## GitHub repository
+
+[Release packaging and CI instructions](docs/RELEASING.md).
 
 Both desktop editions live in this repository with separate install guides and source directories. Shared assets are stored once in `desktop/shared/`. The terminal payload remains in `files/`, with checksums in `MANIFEST.json`. GitHub's repository ZIP contains both source editions; follow only your chosen edition's setup guide.
 

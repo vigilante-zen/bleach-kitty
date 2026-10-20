@@ -1,104 +1,86 @@
 # Install Bankai Rust
 
-[Choose another edition](../README.md) · [Rust overview](README.md) · [Python installation](../python/INSTALL.md)
+[Choose another edition](../README.md) · [Rust overview](README.md) · [Install Python instead](../python/INSTALL.md)
 
-Choose this edition for the compiled Rust core and Qt Widgets interface, including live portrait previews and optional matching to the desktop character. It is experimental. Installing the Python control-center edition is optional; Rust runs its own preset and snapshot backend.
+## Requirements
 
-Requirements: Linux with KDE Plasma 6, Rust and Cargo supporting this source, a C++17 compiler, pkg-config, and Qt 6 Widgets, SVG and Network development libraries. The source was built and tested with Rust/Cargo 1.99.1 and Qt 6.12. The terminal theme still uses Python and Fish helpers.
+Linux with KDE Plasma 6, Python 3, a compatible Qt 6 runtime, and (for a source installation) Rust/Cargo, a C++17 compiler, pkg-config and Qt 6 Widgets/SVG/Network development libraries. The prebuilt Linux x86-64 release is built on Ubuntu 24.04 with its system Qt libraries; use a source build on systems with incompatible libraries or other architectures. It is not a portable static binary.
 
-## 1. Get the repository and install the terminal theme
+Both editions use the shared terminal theme, which requires Kitty, Fish, Fastfetch, btop, fzf and Python 3. Install those prerequisites with your distribution's package manager. The installer does not install system packages or change your default shell. If Fish is not your default, open Kitty and run `fish`.
 
-Run these commands in Bash. If you already cloned the repository, open that folder instead of cloning again.
+For a source installation, the installer runs `cargo build --release --locked`. Cargo downloads locked dependencies on the first build. A prebuilt Rust package contains `desktop/rust/bin/bankai-rust`, which the installer uses directly; Rust/Cargo and C++ build tools are then unnecessary. Check native runtime compatibility with `ldd desktop/rust/bin/bankai-rust`; no libraries should say `not found`.
+
+## 1. Download your edition
+
+Choose a package on the [GitHub Releases page](https://github.com/vigilante-zen/bleach-kitty/releases):
+
+- **`bankai-rust-linux-x86-64.tar.gz`** — compiled Linux x86-64 app, Rust source and shared terminal theme/artwork.
+- **`bankai-rust-source.tar.gz`** — source build for other compatible Linux environments.
+
+Release assets appear after a release is published and the packaging workflow passes. Until the first release is available, clone the repository instead. Each edition archive includes only the selected desktop edition plus common files. Its `.sha256` sidecar verifies the download; for example, run `sha256sum -c ARCHIVE.tar.gz.sha256` in the download directory.
+
+Extract the archive and open its top-level directory, or clone:
 
 ```bash
 git clone https://github.com/vigilante-zen/bleach-kitty.git
 cd bleach-kitty
 ```
 
-Both desktop editions use the shared Kitty/Fish theme. If it is already installed, skip these two commands. The theme installer rejects a second installation; see the [theme update and restore notes](../../README.md#uninstall-and-restore) before reinstalling.
+## 2. Preview and install
+
+From the extracted package or repository root:
 
 ```bash
-python3 install.py --dry-run
-python3 install.py
+python3 desktop/rust/install.py --dry-run
+python3 desktop/rust/install.py
 ```
 
-The theme needs Kitty, Fish, Fastfetch, btop, fzf and Python 3. It does not change your default shell. Open Kitty and run `fish` if needed. Use `bankai-doctor` inside Fish to check the theme.
+One command installs the selected app, shared wallpapers/color schemes, its icon and KDE app-menu entry. It also installs the shared terminal theme unless a receipt from the root theme installer already exists. An unmanaged theme setup can cause the root theme installer to refuse conflicting managed blocks; use `--skip-theme` only when you have already installed a working terminal theme yourself.
 
-## 2. Install the shared desktop artwork
+Existing desktop files are backed up before replacement. Installer state and originals are kept in `~/.local/state/bankai-desktop-install/`. Locally edited managed desktop files block updates until you preserve or resolve those edits. Shared desktop assets stay installed while another edition still owns them. No portrait preferences, snapshots or login-startup settings are bundled or reset.
 
-Run from the repository root. These copy commands replace matching installed files. Before upgrading an existing desktop installation, quit its tray app and save a backup with `bankai backup` or `bankai-rust backup`; retain your previous executable separately if you want to roll back the application itself.
+For a staging installation, add `--home /absolute/test/home`. It does not launch a desktop session. `--dry-run` writes no installation files and does not compile Rust. Actual theme installation and desktop installation have separate receipts: if desktop installation fails after installing the theme, the theme remains installed and can be uninstalled separately.
 
-```bash
-mkdir -p "$HOME/Pictures/Bleach-TYBW/Wallpapers" \
-  "$HOME/.local/share/color-schemes" \
-  "$HOME/.local/share/bleach-desktop" \
-  "$HOME/.local/share/icons/hicolor/scalable/apps" \
-  "$HOME/.local/share/applications" "$HOME/.local/bin"
-cp desktop/shared/wallpapers/*.png "$HOME/Pictures/Bleach-TYBW/Wallpapers/"
-cp desktop/shared/color-schemes/*.colors "$HOME/.local/share/color-schemes/"
-```
+## 3. Launch
 
-## 3. Build and test Rust
-
-From the repository root:
-
-```bash
-cd desktop/rust
-cargo test --locked
-cargo build --release --locked
-cd ../..
-```
-
-Cargo downloads the locked build dependencies on the first build. Add `--offline` only when those dependencies are already cached. If Qt detection fails, check that `pkg-config --modversion Qt6Widgets Qt6Svg Qt6Network` succeeds after installing your distribution's Qt development packages.
-
-## 4. Install the Rust executable
-
-```bash
-install -m 755 desktop/rust/target/release/bankai-rust "$HOME/.local/bin/bankai-rust"
-cp desktop/rust/assets/bleach-tray.svg \
-  "$HOME/.local/share/icons/hicolor/scalable/apps/bleach-bankai-rust.svg"
-```
-
-## 5. Add the app launcher
-
-```bash
-cat > "$HOME/.local/share/applications/bleach-bankai-rust.desktop" <<EOF
-[Desktop Entry]
-Type=Application
-Name=Bankai Rust
-Comment=Bleach desktop control center — Rust edition
-Exec="$HOME/.local/bin/bankai-rust"
-Icon=bleach-bankai-rust
-Terminal=false
-Categories=Settings;DesktopSettings;
-StartupNotify=false
-EOF
-```
-
-Search **Bankai Rust** in KDE's app menu, or launch directly:
+Search **Bankai Rust** in KDE's app menu, or run:
 
 ```bash
 "$HOME/.local/bin/bankai-rust"
 ```
 
-## Use and update
+Use `bankai-rust tray` for tray mode and `bankai-rust backups` for backup management. If the short command is not found, open a new Fish session or use the absolute path above. Run `bankai-doctor` inside Fish to check the terminal theme.
 
-- `bankai-rust` opens the window; `bankai-rust tray` starts tray mode; `bankai-rust backups` opens backup management.
-- In **Terminal & tools**, choose a portrait or random rotation and Color/Manga/Mixed. Preview first, then click **Save terminal artwork**. New terminal tabs use your selection.
-- Enable **Match desktop character** and save to follow desktop presets. Leave it off to preserve independent portrait selection. Random previews are examples and do not advance the shuffle deck.
-- Shell-only overrides take precedence in that shell. Run `bankai-pick --session reset` in Fish to follow saved preferences.
-- Choose your login-startup preference in the app. Disable the previous edition's startup and quit its tray app when switching editions.
-- To update, quit Bankai Rust, run `git pull --ff-only` from the repository, and repeat steps 2–4. Keep your settings and snapshots; do not rerun the root theme installer over an existing theme installation.
-- For restore, select an existing snapshot in the app or pass its name to `bankai-rust restore SNAPSHOT_NAME`.
+In **Terminal & tools**, preview a portrait and choose Color/Manga/Mixed, then click **Save terminal artwork**. Enable **Match desktop character** to follow desktop preset changes; leave it off for independent rotation. New tabs use the saved choice. `bankai-pick --session reset` in Fish clears a shell-only override.
 
-## Validation and limits
+## Update or switch editions
 
-From `desktop/rust/` after building and installing the shared artwork:
+Quit the tray app before updating. In a Git clone, run `git pull --ff-only`, then rerun `python3 desktop/rust/install.py`. For a release package, extract the new package and run its installer. Original pre-install files remain backed up across upgrades. Update the terminal theme separately using its [uninstall/reinstall procedure](../../README.md#uninstall-and-restore); the desktop updater preserves an existing managed terminal installation.
+
+To switch, disable login startup in the current edition, quit its tray app, and follow the [other edition's guide](../python/INSTALL.md). Both commands can coexist. They share desktop settings and snapshots; do not apply changes from both at once. Enable only your preferred edition at login.
+
+## Uninstall
+
+Disable the edition's login-startup checkbox, then quit its tray app. From the package or repository root:
 
 ```bash
+python3 desktop/rust/install.py uninstall --dry-run
+python3 desktop/rust/install.py uninstall
+```
+
+Uninstall restores originals and removes files added by this desktop installer. Files edited since installation are retained and remain tracked for manual resolution. Shared desktop files remain while the other edition uses them. Theme files, runtime preferences and snapshots are kept. To remove the common terminal theme as well, use the separate root `python3 install.py uninstall` command after removing both desktop editions.
+
+The legacy system login-screen installer is not bundled; its app shortcut requires a separately installed setup. These installers do not change the system login screen.
+
+## Validation
+
+For a source checkout:
+
+```bash
+cd desktop/rust
+cargo test --locked
+cargo build --release --locked
 QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 ```
 
-The smoke test previews installed artwork and reads your real snapshot list without applying presets. Screenshots go to the ignored `artifacts/` directory. `scripts/check_binary.py` and `scripts/benchmark.py` compare against the Python installation and need that edition installed too; they are optional for Rust-only users.
-
-Live KDE tray display, cross-process activation and wallpaper/color changes need desktop testing. The app's setup-guide and system login-screen shortcuts refer to legacy installed Python setup files; those are not supplied by a Rust-only installation. Use this guide for Rust setup. Desktop installation is manual, and the root terminal uninstaller does not remove these desktop files.
+After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai-rust --smoke-test`. Smoke checks read installed artwork and snapshots without applying presets. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` compares against the checked-in Python backup source when present, or its installed helper otherwise. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai-rust restore SNAPSHOT_NAME`.

@@ -14,7 +14,10 @@ import unittest
 PROJECT = Path(__file__).resolve().parents[1]
 BINARY = PROJECT / 'target/release/bankai-rust'
 CATALOG = json.loads((PROJECT / 'assets/catalog.json').read_text())
-loader = importlib.machinery.SourceFileLoader('python_backup', str(Path.home() / '.local/bin/bankai-desktop-backup'))
+backup_source = PROJECT.parent / 'python/bin/bankai-desktop-backup'
+if not backup_source.is_file():
+    backup_source = Path.home() / '.local/bin/bankai-desktop-backup'
+loader = importlib.machinery.SourceFileLoader('python_backup', str(backup_source))
 spec = importlib.util.spec_from_loader(loader.name, loader)
 python_backup = importlib.util.module_from_spec(spec)
 loader.exec_module(python_backup)

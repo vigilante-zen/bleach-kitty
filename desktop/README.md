@@ -17,6 +17,28 @@ The Rust edition has a smaller measured startup footprint on the development mac
 
 Each install guide is self-contained. You do not need to install the other control-center edition. Both need the shared terminal theme, whose Python/Fish helpers also run when using the Rust edition.
 
+## Screenshots
+
+| Python control center | Rust control center |
+| --- | --- |
+| ![Python desktop control center](../docs/screenshots/python-control-center.png) | ![Rust desktop control center](../docs/screenshots/rust-control-center.png) |
+
+**Rust terminal artwork preview**
+
+![Rust color and manga preview with desktop matching](../docs/screenshots/rust-terminal-art.png)
+
+## Downloads and installers
+
+[Choose a release download](https://github.com/vigilante-zen/bleach-kitty/releases). Python and Rust are packaged separately, each with the shared terminal theme and artwork. Assets appear after the release workflow succeeds. Run just your chosen installer from the package or repository root:
+
+```bash
+python3 desktop/python/install.py  # Python edition
+# OR
+python3 desktop/rust/install.py    # Rust edition; builds source if needed
+```
+
+Both support `--dry-run`, upgrades, `uninstall`, original-file backups and shared-asset ownership. Read the selected edition's install guide before running. No system dependencies are installed automatically.
+
 ## Switching editions
 
 1. Disable login startup in the currently running edition and quit its tray app.

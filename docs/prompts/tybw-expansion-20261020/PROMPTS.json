@@ -186,6 +186,18 @@
       "sha256": "43b1330b2af4e988a95d8f3c400ad61ac476ccb0a03f7128de7de1b780c3af25",
       "width": 1672,
       "height": 941
+    },
+    {
+      "path": "desktop/shared/wallpapers/ichigo-desktop-v5.png",
+      "sha256": "64dd9143f302fc7f045b8e3626d4415e5e987462447233b29bd387af370a4549",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-ichigo.png",
+      "sha256": "06e67b47a0bef1b6d653df92c83dd623326fd2d929ed43db1705e481f1cfd5d0",
+      "width": 1672,
+      "height": 941
     }
   ],
   "corrections": [
@@ -243,6 +255,28 @@
       "method": "Local Pillow conversion: grayscale, autocontrast with 1% cutoff, contrast enhancement 1.16x, unsharp mask radius 1.2 / percent 115 / threshold 3. The lockscreen uses the exact same pose; no additional image-generation call was used.",
       "output": "login/theme/assets/scene-ichigo.png",
       "output_sha256": "43b1330b2af4e988a95d8f3c400ad61ac476ccb0a03f7128de7de1b780c3af25",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "ichigo-desktop-v5-local-zangetsu-hilt-retouch",
+      "date": "2026-10-20",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop-v4.png (two-handed pose)",
+      "reference_sha256": "43b3366da0abf6a36f0117adb981cc10b773179cfaf9dd462de2ea5357ce11d1",
+      "method": "Local Pillow overlay only; no image generation. Added five pale diagonal tsuka-wrap bands on the exposed hilt between coordinates (1344,454) and (1383,428), plus five dark oval chain links with warm metal edging from the pommel at (1385,429) along a short curve to (1417,453). The current full-size source and final output are both 1672x941.",
+      "output": "desktop/shared/wallpapers/ichigo-desktop-v5.png",
+      "output_sha256": "64dd9143f302fc7f045b8e3626d4415e5e987462447233b29bd387af370a4549",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "ichigo-login-scene-v5-local-monochrome-conversion",
+      "date": "2026-10-20",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop-v5.png",
+      "reference_sha256": "64dd9143f302fc7f045b8e3626d4415e5e987462447233b29bd387af370a4549",
+      "method": "Local Pillow conversion: grayscale, autocontrast with 1% cutoff, contrast enhancement 1.16x, unsharp mask radius 1.2 / percent 115 / threshold 3. The lockscreen uses the exact same pose and sword details; no additional image-generation call was used.",
+      "output": "login/theme/assets/scene-ichigo.png",
+      "output_sha256": "06e67b47a0bef1b6d653df92c83dd623326fd2d929ed43db1705e481f1cfd5d0",
       "width": 1672,
       "height": 941
     }

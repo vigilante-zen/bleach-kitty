@@ -19,6 +19,10 @@ A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **
 - Settings overlay on **Ctrl+Shift+F12**.
 - Setup diagnostics and verified theme snapshots.
 
+## Bankai desktop apps
+
+The [desktop source collection](desktop/README.md) includes both the original [Python + PySide6](desktop/python/README.md) control center and the experimental [Rust + Qt](desktop/rust/README.md) edition, with eight matching wallpapers and KDE color schemes. Desktop installation is separate from the terminal theme installer below.
+
 ## Requirements
 
 Linux with `kitty`, `fish`, `fastfetch`, `btop`, `fzf`, and `python3` on PATH. `git` is optional for the right prompt. A font covering the Japanese heading and prompt symbols is recommended. Preview rendering uses `/usr/share/fzf/fzf-preview.sh` when supplied by the distribution; without it the picker still works, with a text fallback.

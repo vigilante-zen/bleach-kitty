@@ -1,0 +1,38 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "transparent_background": false,
+  "target_monitor_resolution": [
+    2560,
+    1080
+  ],
+  "prompts": {
+    "urahara": "Use case: stylized-concept. Asset: ultrawide KDE desktop and lock-screen wallpaper for a 2560 by 1080 monitor. STRICT composition: panoramic 64:27 aspect ratio (approximately 21:9), target 2560x1080 pixels, much wider than a normal 16:9 picture. Edge-to-edge artwork, no borders or letterboxing. Premium restrained Bleach TYBW anime fan art with detailed painterly manga ink. The single character stands in the far RIGHT quarter, fully visible with safe margins from top and bottom. The middle 55 percent is almost empty near-black negative space for a clock, password prompt and desktop windows. Faint spiritual landscape along bottom. Keep the center dark and quiet. No text, lettering, logos, panels or UI. Kisuke Urahara in his recognizable green-and-white striped bucket hat, dark haori and green robes, holding his Benihime cane sword. Emerald green spiritual mist and subtle geometric kido light at the outer edges; hints of his shop and traditional rooftops at bottom. Palette charcoal, muted jade, luminous emerald and cream. Calm, mysterious, clever atmosphere.",
+    "byakuya": "Use case: stylized-concept. Asset: ultrawide KDE desktop and lock-screen wallpaper for a 2560 by 1080 monitor. STRICT composition: panoramic 64:27 aspect ratio (approximately 21:9), target 2560x1080 pixels, much wider than a normal 16:9 picture. Edge-to-edge artwork, no borders or letterboxing. Premium restrained Bleach TYBW anime fan art with detailed painterly manga ink. The single character stands in the far RIGHT quarter, fully visible with safe margins from top and bottom. The middle 55 percent is almost empty near-black negative space for a clock, password prompt and desktop windows. Faint spiritual landscape along bottom. Keep the center dark and quiet. No text, lettering, logos, panels or UI. Byakuya Kuchiki, long black hair with distinctive white noble hair ornaments, white scarf and white captain haori over black shinigami robes, elegant katana held downward. Senbonzakura cherry blossom petals drift along the right and lower edges, sparse muted pink traces at far left. Subtle Soul Society rooftops at bottom. Palette near-black plum, rose pink, white and silver. Refined, elegant and dignified.",
+    "yamamoto": "Use case: stylized-concept. Asset: ultrawide KDE desktop and lock-screen wallpaper for a 2560 by 1080 monitor. STRICT composition: panoramic 64:27 aspect ratio (approximately 21:9), target 2560x1080 pixels, much wider than a normal 16:9 picture. Edge-to-edge artwork, no borders or letterboxing. Premium restrained Bleach TYBW anime fan art with detailed painterly manga ink. The single character stands in the far RIGHT quarter, fully visible with safe margins from top and bottom. The middle 55 percent is almost empty near-black negative space for a clock, password prompt and desktop windows. Faint spiritual landscape along bottom. Keep the center dark and quiet. No text, lettering, logos, panels or UI. Genryusai Shigekuni Yamamoto as an elderly bald shinigami captain with long white beard, stern scarred face, captain robe and a flame-wreathed katana. Restrained ember trails and molten gold near the far edges; faint burned Soul Society skyline at the bottom. Keep most of the canvas near-black; do not flood center with fire. Palette charcoal, burnt orange, deep crimson and molten amber. Ancient, powerful, cinematic.",
+    "ulquiorra": "Use case: stylized-concept. Asset: ultrawide KDE desktop and lock-screen wallpaper for a 2560 by 1080 monitor. STRICT composition: panoramic 64:27 aspect ratio (approximately 21:9), target 2560x1080 pixels, much wider than a normal 16:9 picture. Edge-to-edge artwork, no borders or letterboxing. Premium restrained Bleach TYBW anime fan art with detailed painterly manga ink. The single character stands in the far RIGHT quarter, fully visible with safe margins from top and bottom. The middle 55 percent is almost empty near-black negative space for a clock, password prompt and desktop windows. Faint spiritual landscape along bottom. Keep the center dark and quiet. No text, lettering, logos, panels or UI. Ulquiorra Cifer with pale skin, dark hair, green eyes, black tear-like facial markings and his broken white horned hollow helmet, white Arrancar uniform, slender sword, standing quietly at far right. Emerald spiritual energy, faint white desert dunes and a distant Hueco Mundo moon confined to far upper left. Palette near-black teal, cool bone white and luminous emerald. Minimalist haunting stillness."
+  },
+  "saved_files": {
+    "urahara": "~/Pictures/Bleach-TYBW/Wallpapers/urahara-desktop.png",
+    "byakuya": "~/Pictures/Bleach-TYBW/Wallpapers/byakuya-desktop.png",
+    "yamamoto": "~/Pictures/Bleach-TYBW/Wallpapers/yamamoto-desktop.png",
+    "ulquiorra": "~/Pictures/Bleach-TYBW/Wallpapers/ulquiorra-desktop.png"
+  },
+  "actual_dimensions": {
+    "urahara": {
+      "width": 1931,
+      "height": 814
+    },
+    "byakuya": {
+      "width": 1931,
+      "height": 814
+    },
+    "yamamoto": {
+      "width": 1931,
+      "height": 814
+    },
+    "ulquiorra": {
+      "width": 1931,
+      "height": 814
+    }
+  }
+}

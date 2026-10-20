@@ -1,0 +1,118 @@
+{
+  "presets": [
+    {
+      "id": "ichigo",
+      "title": "Ichigo",
+      "subtitle": "Ember orange \u00b7 Dangai",
+      "accent": "#ff9d52",
+      "image": "ichigo-desktop.png",
+      "portrait": "dangai-ichigo"
+    },
+    {
+      "id": "rukia",
+      "title": "Rukia",
+      "subtitle": "Ice blue \u00b7 Hakka no Togame",
+      "accent": "#a9dfff",
+      "image": "rukia-desktop.png",
+      "portrait": "rukia-bankai"
+    },
+    {
+      "id": "quincy",
+      "title": "Quincy",
+      "subtitle": "Spirit blue \u00b7 Uryu",
+      "accent": "#4baaff",
+      "image": "quincy-desktop.png",
+      "portrait": "uryu"
+    },
+    {
+      "id": "tybw",
+      "title": "TYBW",
+      "subtitle": "Crimson & blue \u00b7 Shuffle",
+      "accent": "#e63946",
+      "image": "bleach-tybw.png",
+      "portrait": "random"
+    },
+    {
+      "id": "urahara",
+      "title": "Urahara",
+      "subtitle": "Emerald \u00b7 21:9 ultrawide",
+      "accent": "#a8d18d",
+      "image": "urahara-desktop.png",
+      "portrait": "urahara"
+    },
+    {
+      "id": "byakuya",
+      "title": "Byakuya",
+      "subtitle": "Cherry blossom \u00b7 21:9 ultrawide",
+      "accent": "#f2a6cf",
+      "image": "byakuya-desktop.png",
+      "portrait": "byakuya"
+    },
+    {
+      "id": "yamamoto",
+      "title": "Yamamoto",
+      "subtitle": "Ember gold \u00b7 21:9 ultrawide",
+      "accent": "#ffb56b",
+      "image": "yamamoto-desktop.png",
+      "portrait": "yamamoto"
+    },
+    {
+      "id": "ulquiorra",
+      "title": "Ulquiorra",
+      "subtitle": "Emerald moon \u00b7 21:9 ultrawide",
+      "accent": "#76e3a3",
+      "image": "ulquiorra-desktop.png",
+      "portrait": "ulquiorra"
+    }
+  ],
+  "trees": [
+    ".config/kitty",
+    ".config/fastfetch",
+    ".config/btop",
+    ".local/share/bleach-desktop",
+    ".local/share/plasma/look-and-feel/org.zen.bleach.desktop",
+    "Pictures/Bleach-TYBW"
+  ],
+  "files": [
+    ".config/fish/config.fish",
+    ".config/fish/functions/fish_prompt.fish",
+    ".config/fish/functions/fish_title.fish",
+    ".config/fish/functions/fish_right_prompt.fish",
+    ".local/bin/bankai-roster",
+    ".local/bin/bankai-preview",
+    ".local/bin/bankai-history-store",
+    ".local/bin/bankai-desktop-backup",
+    ".local/bin/bankai-doctor",
+    ".local/share/applications/bleach-terminal.desktop",
+    ".local/share/applications/bleach-monitor.desktop",
+    ".local/share/icons/hicolor/scalable/apps/bleach-bankai.svg",
+    ".config/kdeglobals",
+    ".config/plasmarc",
+    ".config/plasmashellrc",
+    ".config/plasma-org.kde.plasma.desktop-appletsrc",
+    ".config/kscreenlockerrc",
+    ".config/ksplashrc",
+    ".config/kglobalshortcutsrc",
+    ".config/environment.d/90-dms.conf",
+    ".config/autostart/bleach-desktop.desktop",
+    ".config/fastfetch/portrait-choice",
+    ".local/state/bleach-desktop/pending",
+    ".local/bin/bankai-desktop",
+    ".local/bin/bankai-desktop-restore",
+    ".local/bin/bankai",
+    ".local/share/applications/bleach-bankai.desktop",
+    ".config/fish/completions/bankai.fish",
+    ".config/autostart/bleach-bankai.desktop",
+    ".local/share/icons/hicolor/scalable/apps/bleach-terminal.svg",
+    ".local/share/icons/hicolor/scalable/apps/bleach-monitor.svg",
+    ".local/state/bleach-desktop/protected-snapshots.json",
+    ".local/share/applications/com.mitchellh.ghostty.desktop",
+    ".local/share/applications/org.kde.konsole.desktop"
+  ],
+  "patterns": [
+    ".config/fish/functions/bankai-*.fish",
+    ".config/fish/completions/bankai-*.fish",
+    ".local/share/color-schemes/Bleach*.colors",
+    ".local/share/applications/bleach-preset-*.desktop"
+  ]
+}

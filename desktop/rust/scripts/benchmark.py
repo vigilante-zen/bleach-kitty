@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""Compare both editions at the same offscreen, fully rendered window stage."""
+import argparse
+import json
+import os
+from pathlib import Path
+import statistics
+import subprocess
+import sys
+import time
+
+PROJECT = Path(__file__).resolve().parents[1]
+PYTHON_CASE = r'''
+import time
+started = time.perf_counter()
+import json
+from pathlib import Path
+import sys
+from PySide6.QtWidgets import QApplication
+root = Path.home()/'.local/share/bleach-desktop'
+sys.path.insert(0, str(root))
+import control_center as center
+app = QApplication([])
+app.setStyle('Fusion')
+app.setStyleSheet(center.STYLE)
+window = center.ControlCenter()
+window.show()
+app.processEvents()
+result = {'edition': 'python-pyside6', 'startup_ms': (time.perf_counter()-started)*1000}
+for line in Path('/proc/self/status').read_text().splitlines():
+    if line.startswith(('VmRSS:', 'VmHWM:')):
+        key, value = line.split(':', 1)
+        result[key + '_kib'] = int(value.split()[0])
+result['preset_count'] = len(center.PRESETS)
+print(json.dumps(result))
+window.close()
+'''
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--runs', type=int, default=7)
+    args = parser.parse_args()
+    if args.runs < 1:
+        parser.error('Choose at least one run')
+    environment = dict(os.environ, QT_QPA_PLATFORM='offscreen')
+    cases = {'rust': [str(PROJECT / 'target/release/bankai-rust'), '--benchmark'],
+             'python': [sys.executable, '-c', PYTHON_CASE]}
+    measurements = {'rust': [], 'python': []}
+    for iteration in range(args.runs + 1):
+        # Alternate order. The first pair warms caches and is discarded.
+        order = ['rust', 'python'] if iteration % 2 == 0 else ['python', 'rust']
+        for edition in order:
+            start = time.perf_counter()
+            result = subprocess.run(cases[edition], text=True, capture_output=True, env=environment,
+                                    check=True, timeout=30)
+            value = json.loads(result.stdout)
+            value['process_wall_ms'] = (time.perf_counter()-start)*1000
+            if iteration:
+                measurements[edition].append(value)
+    summary = {}
+    for edition, values in measurements.items():
+        summary[edition] = {key: round(statistics.median(v[key] for v in values), 2)
+                            for key in ['startup_ms', 'process_wall_ms', 'VmRSS_kib', 'VmHWM_kib']}
+    report = {'runs_per_edition': args.runs, 'summary': summary, 'runs': measurements,
+              'method': 'Offscreen Qt Fusion; all eight thumbnails, initial wallpaper, backup metadata and a rendered window. Warm-up pair discarded; interleaved process launches.',
+              'limits': 'Native code also downsizes thumbnails earlier. Gains reflect implementation and language/runtime changes. This does not measure live Wayland startup, idle CPU, actual tray hosting, or proportional physical memory.'}
+    output = PROJECT / 'artifacts/benchmark.json'
+    output.parent.mkdir(exist_ok=True)
+    output.write_text(json.dumps(report, indent=2)+'\n')
+    print(json.dumps(report['summary'], indent=2))
+    print('Full results:', output)
+
+
+if __name__ == '__main__':
+    main()

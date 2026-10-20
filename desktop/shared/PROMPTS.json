@@ -1,0 +1,14 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "transparent_background": false,
+  "prompts": {
+    "ichigo": "Create a polished 2560x1440 landscape desktop and KDE lockscreen wallpaper: Bleach TYBW anime fan art of Ichigo Kurosaki in black Bankai robes, orange hair, long black sword, standing ONLY in far right quarter of frame. Elegant painterly manga ink style, deep near-black navy background, fine burnt orange spiritual energy embers only at outer edges, subtle silhouette of Soul Society architecture along bottom. Center 55 percent of canvas is almost empty, dark and quiet, especially top center and middle center, for a white clock and login controls to be added by OS. Edge-to-edge artwork, no text, no lettering, no logos, no panels, no UI. Cinematic premium restrained composition, orange and charcoal color palette. Save the image as a file and report its local path.",
+    "rukia": "Use case: stylized-concept. Asset: polished 2560x1440 landscape KDE desktop/lockscreen wallpaper. Bleach TYBW anime fan art of Rukia Kuchiki in Hakka no Togame Bankai, white hair, elaborate flowing white kimono and ice sword. Full figure placed ONLY in far right quarter. Restrained premium painterly manga ink aesthetic, deep almost black navy background, luminous ice blue spiritual snow and subtle ice architecture at outer edges and lower edge. Center 55 percent is extremely dark almost empty negative space, including top center and middle center, for OS clock and password controls. Beautiful icy blue and charcoal palette, delicate silver highlights. No text, logos, panels or UI. Edge to edge artwork.",
+    "quincy": "Use case: stylized-concept. Asset: 2560x1440 landscape KDE desktop and lock-screen wallpaper. Bleach TYBW anime fan art of Uryu Ishida, black hair, thin glasses, white Quincy uniform and blue luminous spirit bow, standing ONLY in far right quarter. Elegant painterly manga ink aesthetic. Vast near-black navy central negative space; faint Soul Society skyline at bottom, crisp cobalt energy particles at far edges. Center 55 percent is very dark, empty and quiet, especially top-center and middle-center, for OS white clock and password controls. Premium restrained cinematic composition. Cobalt blue, white and charcoal. No text, lettering, logos, UI, frames or panels. Edge to edge artwork."
+  },
+  "saved_files": {
+    "ichigo": "~/Pictures/Bleach-TYBW/Wallpapers/ichigo-desktop.png",
+    "rukia": "~/Pictures/Bleach-TYBW/Wallpapers/rukia-desktop.png",
+    "quincy": "~/Pictures/Bleach-TYBW/Wallpapers/quincy-desktop.png"
+  }
+}

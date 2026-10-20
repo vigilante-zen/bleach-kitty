@@ -1,0 +1,16 @@
+[package]
+name = "bankai-rust"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+description = "Bankai desktop control center: Rust core and native Qt interface"
+license = "MIT"
+
+[build-dependencies]
+cc = "=1.2.66"
+pkg-config = "=0.3.32"
+
+[profile.release]
+lto = "thin"
+strip = true
+

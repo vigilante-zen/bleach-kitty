@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""Open the Bankai control center, or run a Bleach preset command."""
+import argparse
+import os
+from pathlib import Path
+import sys
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('action', nargs='?', default='open',
+                    choices=['open', 'ichigo', 'rukia', 'quincy', 'tybw',
+                             'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'status', 'backup', 'restore', 'tray', 'backups'])
+parser.add_argument('snapshot', nargs='?', help='Optional snapshot name for restore')
+args = parser.parse_args()
+if args.snapshot and args.action != 'restore':
+    parser.error('A snapshot name is only accepted with restore.')
+home = Path.home()
+if args.action in ['open', 'tray', 'backups']:
+    target = home / '.local/share/bleach-desktop/control_center.py'
+    os.execv(sys.executable, [sys.executable, str(target)] + ([] if args.action == 'open' else ['--' + args.action]))
+elif args.action == 'backup':
+    target = home / '.local/bin/bankai-desktop-backup'
+    os.execv(str(target), [str(target)])
+elif args.action == 'restore':
+    target = home / '.local/bin/bankai-desktop-restore'
+    os.execv(str(target), [str(target)] + ([args.snapshot] if args.snapshot else []))
+else:
+    target = home / '.local/bin/bankai-desktop'
+    os.execv(str(target), [str(target), args.action])

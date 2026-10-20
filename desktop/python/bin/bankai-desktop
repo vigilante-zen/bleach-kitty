@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+"""Switch matching Bleach desktop, lock-screen and terminal presets."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+HOME = Path.home()
+DATA = HOME / '.local/share/bleach-desktop'
+STATE = HOME / '.local/state/bleach-desktop'
+PRESETS = {
+    'ichigo': ('Ichigo', 'dangai-ichigo', '#ff9d52'),
+    'rukia': ('Rukia', 'rukia-bankai', '#a9dfff'),
+    'quincy': ('Quincy', 'uryu', '#4baaff'),
+    'tybw': ('TYBW', 'random', '#e63946'),
+    'urahara': ('Urahara', 'urahara', '#a8d18d'),
+    'byakuya': ('Byakuya', 'byakuya', '#f2a6cf'),
+    'yamamoto': ('Yamamoto', 'yamamoto', '#ffb56b'),
+    'ulquiorra': ('Ulquiorra', 'ulquiorra', '#76e3a3'),
+}
+
+def put(path, section, key, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = path.read_text() if path.exists() else ''
+    header = '[' + section + ']'
+    lines = text.splitlines()
+    try:
+        start = lines.index(header) + 1
+    except ValueError:
+        lines += ['', header, f'{key}={value}']
+    else:
+        end = next((i for i in range(start, len(lines)) if lines[i].startswith('[')), len(lines))
+        match = next((i for i in range(start, end) if lines[i].startswith(key + '=')), None)
+        if match is None:
+            lines.insert(end, f'{key}={value}')
+        else:
+            lines[match] = f'{key}={value}'
+    path.write_text('\n'.join(lines) + '\n')
+
+def run(args):
+    try:
+        return subprocess.run(args, capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+def panel_script():
+    return '''
+var ps = panels();
+for (var i = 0; i < ps.length; ++i) {
+    var p = ps[i];
+    p.floating = true;
+    p.opacity = "translucent";
+    p.height = 44;
+    var widgets = p.widgets();
+    for (var j = 0; j < widgets.length; ++j) {
+        var w = widgets[j];
+        if (w.type === "org.kde.plasma.icontasks" || w.type === "org.kde.plasma.taskmanager") {
+            w.currentConfigGroup = ["General"];
+            var old = w.readConfig("launchers", []);
+            if (typeof old === "string") old = old.split(",");
+            var keep = [];
+            for (var k = 0; k < old.length; ++k) {
+                if (!/ghostty|Alacritty|kitty\\.desktop|bleach-terminal|bleach-monitor/i.test(old[k])) keep.push(old[k]);
+            }
+            keep.push("applications:bleach-terminal.desktop");
+            keep.push("applications:bleach-monitor.desktop");
+            w.writeConfig("launchers", keep);
+        }
+    }
+}
+'''
+
+def apply(name, pending_only=False):
+    label, portrait, accent = PRESETS[name]
+    image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / ('bleach-tybw.png' if name == 'tybw' else name + '-desktop.png')
+    if not image.is_file():
+        raise ValueError(f'Wallpaper is missing: {image}')
+    if not pending_only:
+        # Save a verified full snapshot before every switch.
+        result = run([str(HOME / '.local/bin/bankai-desktop-backup')])
+        if result is None or result.returncode:
+            raise ValueError('Could not back up current desktop; settings were not changed.')
+        print(result.stdout.strip())
+    scheme = 'Bleach' + label
+    globals_ = HOME / '.config/kdeglobals'
+    # Populate the active colors as well as the selected scheme for offline setup.
+    source = (HOME / '.local/share/color-schemes' / (scheme + '.colors')).read_text()
+    section = ''
+    for line in source.splitlines():
+        if line.startswith('['):
+            section = line[1:-1]
+        elif '=' in line and (section.startswith('Colors:') or section == 'WM'):
+            key, value = line.split('=', 1)
+            put(globals_, section, key, value)
+    put(globals_, 'General', 'ColorScheme', scheme)
+    put(globals_, 'General', 'AccentColor', ','.join(str(int(accent[i:i+2], 16)) for i in (1, 3, 5)))
+    put(HOME / '.config/plasmarc', 'Theme', 'name', 'breeze-dark')
+    lock = HOME / '.config/kscreenlockerrc'
+    put(lock, 'Greeter', 'WallpaperPlugin', 'org.kde.image')
+    put(lock, 'Greeter][Wallpaper][org.kde.image][General', 'Image', image.as_uri())
+    put(lock, 'Greeter][Wallpaper][org.kde.image][General', 'FillMode', '2')
+    (HOME / '.config/fastfetch/portrait-choice').write_text(portrait + '\n')
+    terminal = HOME / '.config/kitty/themes/bleach-desktop.conf'
+    terminal.write_text(f'# Managed by bankai-desktop\ncursor {accent}\nactive_border_color {accent}\nactive_tab_background {accent}\nactive_tab_foreground #090c12\nselection_background {accent}\nselection_foreground #090c12\ncolor1 {accent}\ncolor9 {accent}\n')
+    config = HOME / '.config/kitty/kitty.conf'
+    include = 'include themes/bleach-desktop.conf'
+    if include not in config.read_text().splitlines():
+        config.write_text(config.read_text().rstrip() + '\n\n' + include + '\n')
+    STATE.mkdir(parents=True, exist_ok=True)
+    (DATA / 'current').write_text(name + '\n')
+    (STATE / 'pending').write_text(name + '\n')
+    # Updating persisted wallpapers also covers screens not currently connected.
+    applets = HOME / '.config/plasma-org.kde.plasma.desktop-appletsrc'
+    text = applets.read_text()
+    desktop_ids = re.findall(r'^\[Containments\]\[(\d+)\]\n(?:(?!\n\[).)*?plugin=org\.kde\.plasma\.(?:folder|desktop)\n', text, re.M | re.S)
+    for desktop in desktop_ids:
+        put(applets, f'Containments][{desktop}][Wallpaper][org.kde.image][General', 'Image', image.as_uri())
+    desktop_js = 'var ds = desktops(); for (var i=0;i<ds.length;++i) { ds[i].wallpaperPlugin="org.kde.image"; ds[i].currentConfigGroup=["Wallpaper","org.kde.image","General"]; ds[i].writeConfig("Image",' + json.dumps(image.as_uri()) + '); }\n'
+    result = run(['qdbus6', 'org.kde.plasmashell', '/PlasmaShell', 'org.kde.PlasmaShell.evaluateScript', desktop_js + panel_script()])
+    online = result is not None and result.returncode == 0 and not re.search(r'error|exception', result.stdout, re.I)
+    if online:
+        # The CLI skips an already-selected scheme. Force a refresh of the
+        # persisted colors so applications receive KDE's change notification.
+        put(globals_, 'General', 'ColorScheme', 'BreezeDark')
+        colors = run(['plasma-apply-colorscheme', scheme, '--accent-color', accent])
+        put(globals_, 'General', 'ColorScheme', scheme)
+        theme = run(['plasma-apply-desktoptheme', 'breeze-dark'])
+        if colors is not None and colors.returncode == 0 and theme is not None and theme.returncode == 0:
+            (STATE / 'pending').unlink(missing_ok=True)
+            print(f'{label} applied. Open a new Kitty window for the matching greeting.')
+        else:
+            print('Wallpaper and launchers applied. Color/style refresh remains pending for next login.')
+    else:
+        print(f'{label} saved. Desktop refresh is queued for your next KDE login.')
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('preset', nargs='?', default='status', choices=[*PRESETS, 'status', 'apply-pending'])
+    args = parser.parse_args()
+    if args.preset == 'status':
+        print('Presets: ' + ', '.join(PRESETS))
+        print('Current: ' + ((DATA / 'current').read_text().strip() if (DATA / 'current').exists() else 'not selected'))
+        print('Refresh pending: ' + str((STATE / 'pending').exists()))
+    elif args.preset == 'apply-pending':
+        marker = STATE / 'pending'
+        if marker.exists():
+            name = marker.read_text().strip()
+            if name not in PRESETS:
+                raise ValueError('Invalid pending preset')
+            apply(name, pending_only=True)
+    else:
+        apply(args.preset)
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (OSError, ValueError) as error:
+        print(f'bankai-desktop: {error}', file=sys.stderr)
+        sys.exit(1)

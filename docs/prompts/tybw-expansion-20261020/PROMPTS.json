@@ -162,6 +162,18 @@
       "sha256": "932cdd8ab9115af6639d4bfba0062d129fdc1bf4234359d6324667904ba13bcc",
       "width": 1254,
       "height": 1254
+    },
+    {
+      "path": "desktop/shared/wallpapers/ichigo-desktop-v3.png",
+      "sha256": "c50fdd32758e0c1d6e7fd7fa21bad3dfa04ea2ca4c589d581b2a653d57547842",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "login/theme/assets/scene-ichigo.png",
+      "sha256": "b072315fecee26c185458df3bc6cffb830717c11c2251ae22d19ddd2bbadcd3e",
+      "width": 1672,
+      "height": 941
     }
   ],
   "corrections": [
@@ -173,6 +185,30 @@
       "prompt": "Edit this existing wide 16:9 anime-inspired Bleach TYBW True Shikai Ichigo desktop wallpaper. Make a visible pose correction to Ichigo's right arm (on viewer's right): bring it clearly outward from the right shoulder, with a distinct natural elbow and forearm silhouette in front of the robe, ending in a clearly visible hand holding the hilt of the shorter sword at his right side. Keep the left arm extended down to hold the large long blade angled toward the lower left. Ensure exactly two anatomically connected arms and hands. Preserve Ichigo's face, orange hair, black shihakusho, white crossed straps, overall composition, dark negative space across the left and center, orange ember lighting, storm and ruined Soul Society skyline. No text or watermark.",
       "output": "desktop/shared/wallpapers/ichigo-desktop.png",
       "output_sha256": "4cdc52c3801431e09952605e50b4a8610f8e8529d18bf5ef302229dd5a1d375a",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "ichigo-desktop-v3-arm-correction",
+      "date": "2026-10-20",
+      "reference": "previous corrected Ichigo wallpaper (output of ichigo-wallpaper-arm-correction)",
+      "reference_sha256": "4cdc52c3801431e09952605e50b4a8610f8e8529d18bf5ef302229dd5a1d375a",
+      "prompt": "Edit this Bleach TYBW desktop wallpaper while preserving the overall 16:9 composition, dark smoky Soul Society battlefield, orange ember lighting, Ichigo's design and clothing, and his long black sword. Correct the arm pose clearly: his arms should hang naturally at his sides and be visibly in front of his torso silhouette, with both shoulders, upper arms, forearms, wrists, and hands anatomically connected and readable. In particular, do not place either arm behind his back or hidden behind his torso; bring the arm on the right side of the image slightly forward so its full contour and hand are visible. Keep Ichigo facing away/three-quarter profile and keep the large empty dark space on the left. No extra limbs, no changes to face, outfit, sword, or background.",
+      "output": "desktop/shared/wallpapers/ichigo-desktop-v3.png",
+      "output_sha256": "c50fdd32758e0c1d6e7fd7fa21bad3dfa04ea2ca4c589d581b2a653d57547842",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "id": "ichigo-login-scene-v3-arm-correction",
+      "date": "2026-10-20",
+      "references": [
+        "desktop/shared/wallpapers/ichigo-desktop-v3.png",
+        "login/theme/assets/scene-ichigo.png (prior monochrome scene, style reference; SHA-256 1d586dec9489609c864ff4d32a23d8552f0f6a3e6d56d969d4e61bc21630cca5)"
+      ],
+      "prompt": "Create a corrected monochrome manga login wallpaper using the two provided landscape images. The color Ichigo wallpaper is the authoritative reference for the corrected pose and composition; the black-and-white image is the style reference to preserve. Produce a full-scene 16:9 black, white, and neutral-gray manga ink rendering with the same Soul Society battlefield, dark central negative space, and Ichigo positioned on the far right. Preserve his identity, clothing, sword, camera angle, and scene. Correct the arm anatomy so both arms are clearly connected and naturally hang beside the torso, with both forearms and hands visibly in front of the body silhouette. In particular, the arm on the right side of the image must not appear behind his back or merge into his torso. No extra limbs, no text, no UI, no color, no cropping.",
+      "output": "login/theme/assets/scene-ichigo.png",
+      "output_sha256": "b072315fecee26c185458df3bc6cffb830717c11c2251ae22d19ddd2bbadcd3e",
       "width": 1672,
       "height": 941
     }

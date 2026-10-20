@@ -70,7 +70,8 @@ def apply(name, pending_only=False):
     label, portrait, accent = PRESETS[name]
     options = appearance_settings.load(HOME)
     accent = options['accent'] or accent
-    filename = name + '-manga.png' if options['edition'] == 'manga' else ('bleach-tybw.png' if name == 'tybw' else name + '-desktop.png')
+    preset = next(p for p in appearance_settings.catalog() if p['id'] == name)
+    filename = preset['manga'] if options['edition'] == 'manga' else preset['image']
     image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / filename
     if not image.is_file():
         raise ValueError(f'Wallpaper is missing: {image}')

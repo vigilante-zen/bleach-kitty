@@ -2,7 +2,7 @@
 
 A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **36 characters, 46 portraits and 92 art editions**, with matching shell, cursor, greeting and monitor accents.
 
-[Browse all color and manga artwork](docs/GALLERY.md) · [Full command guide](files/.config/fastfetch/portraits/ROTATION.md) · [Artwork provenance and prompts](docs/ARTWORK.md)
+[Browse all color and manga artwork](docs/GALLERY.md) · [Full command guide](files/.config/fastfetch/portraits/ROTATION.md) · [Artwork provenance and prompts](docs/ARTWORK.md) · [Change log](docs/CHANGES.md)
 
 | Color | Manga |
 | --- | --- |
@@ -38,6 +38,7 @@ Both desktop installers include the [matching manga-scene SDDM theme](login/READ
 - Favorites, character groups, and session-only portrait selection.
 - Responsive full/compact greetings, plus a saved off mode.
 - Character-colored prompts, Git/status hints, cursor, window titles and btop themes.
+- Dedicated full and compact Fastfetch layouts for TYBW Ichigo and Bankai Kenpachi, with matching character accents.
 - Recent-art history with exact-edition previews and replay.
 - Settings overlay on **Ctrl+Shift+F12**.
 - Setup diagnostics and verified theme snapshots.

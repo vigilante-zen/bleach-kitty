@@ -7,6 +7,8 @@
 - Add TYBW Ichigo and Bankai Kenpachi color/manga terminal portraits, character accents and a TYBW forms group: 46 portraits / 92 editions, still 36 characters.
 - Add shared appearance controls in both apps for color/manga backgrounds, custom accents, fixed/following login scenes, and optional login shuffle with a character pool.
 - Add terminal installer updates that retain preferences, original backups and edited files, and deliver new artwork through either desktop installer.
+- Replace the Ichigo desktop/lock-screen wallpaper and monochrome login scene with corrected v3 artwork. Make Python wallpaper selection honor the shared preset catalog, matching Rust for versioned asset filenames.
+- Add full and compact Fastfetch layouts for TYBW Ichigo and Bankai Kenpachi. Refine Fastfetch key colors and btop highlight colors for TYBW Ichigo, Askin, Lille, Nemu and Yachiru.
 
 - Match the login screen to the chosen desktop preset using twelve full wallpaper scenes converted to black-and-white manga. Preserve the existing login layout and controls.
 - Add optional one-time automatic matching setup for either edition, with a systemd path watcher, fixed preset validation, and restore/removal. App previews show the selected scene before activation.

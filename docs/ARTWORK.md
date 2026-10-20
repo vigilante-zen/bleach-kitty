@@ -18,4 +18,4 @@ The [Ichigo boot splash](../boot/README.md) has its own [asset and prompt record
 
 ## Rust application icon
 
-The Hollow crest in `desktop/rust/assets/bleach-tray.svg` is original SVG geometry authored for this project, with a bone-white mask, ink-dark badge and recolorable crimson markings. It uses no downloaded logo, manga panel or generated bitmap. [Launcher and tray size preview](screenshots/rust-icon.png). The Bleach-inspired design is unofficial.
+The Substitute Soul Reaper badge in `desktop/rust/assets/bleach-tray.svg` is original SVG geometry authored for this project: a beveled ivory badge with a dark skull emblem, four diagonal spokes and a character-colored accent rivet. It replaces the earlier Hollow crest. [Launcher and tray size preview](screenshots/rust-icon.png). The design is unofficial Bleach fan art; no downloaded SVG or bitmap is embedded. Shape references were reviewed through [a badge replica photograph](https://theanimemerchant.com/products/bleach-substitute-soul-reaper-badge-replica) and [a badge model preview](https://sketchfab.com/3d-models/substitute-shinigami-badge-d9931ec2ae8d431d81b3890a2e525a2f).

@@ -981,8 +981,8 @@ static int smoke(Window &window, const QString &directory) {
                          p.value("accent").toString())
                      .pixmap(64, 64)
                      .toImage();
-    if (image.pixelColor(38, 14).name() != p.value("accent").toString())
-      throw std::runtime_error("Incorrect native mask color");
+    if (image.pixelColor(32, 54).name() != p.value("accent").toString())
+      throw std::runtime_error("Incorrect native badge accent");
   }
   if (rpc({{"op", "status"}}).toObject().value("current") != initial)
     throw std::runtime_error("Preview changed the saved preset");

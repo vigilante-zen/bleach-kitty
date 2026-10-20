@@ -37,7 +37,7 @@ impl App {
         match op {
             "bootstrap" => Ok(obj! { "presets" => self.catalog.get("presets")?.clone(), "style" => include_str!("../assets/style.qss"),
                 "home" => self.home.to_string_lossy().to_string(), "data" => self.data.to_string_lossy().to_string(), "version" => env!("CARGO_PKG_VERSION"),
-                "mask_svg" => include_str!("../assets/bleach-tray.svg"), "terminal_svg" => include_str!("../assets/bleach-terminal.svg"), "monitor_svg" => include_str!("../assets/bleach-monitor.svg") }),
+                "mask_svg" => include_str!("../assets/bleach-tray.svg"), "terminal_svg" => include_str!("../assets/bleach-terminal.svg"), "monitor_svg" => include_str!("../assets/bleach-monitor.svg"), "backups_svg" => include_str!("../assets/bleach-backups.svg") }),
             "status" => Ok(obj! { "current" => self.current(), "pending" => self.state.join("pending").exists(),
                 "autostart" => self.home.join(".config/autostart/bleach-bankai-rust.desktop").exists(), "offline" => self.offline }),
             "appearance" => appearance::load(self),

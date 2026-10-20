@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Reiatsu Monitor — Quincy pulse</title>
+  <desc>An icy blue four-point Quincy cross above a clear monitoring pulse.</desc>
+  <path d="m32 4 6 12-2 7 8-2 12 6-12 6-8-2 2 8-6 12-6-12 2-8-8 2-12-6 12-6 8 2-2-7Z" fill="#a6e5ff" stroke="#102033" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m32 14 2 11 11 2-11 2-2 13-2-13-11-2 11-2Z" fill="#278cc6"/>
+  <path d="M7 52h12l5-8 7 15 7-11 4 4h15" fill="none" stroke="#102033" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M7 52h12l5-8 7 15 7-11 4 4h15" fill="none" stroke="#d8f3ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

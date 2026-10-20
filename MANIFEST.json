@@ -328,7 +328,10 @@
   ".local/bin/bankai-history-store": "3340a857b693c78d3d4a416515d897b0038d99ba88c54fc0ea37edc13a48a1d5",
   ".local/bin/bankai-preview": "592cbd388a015142d2b6741e552a668d617a9af65b97f6beca0aa9adae9a8774",
   ".local/bin/bankai-roster": "46901f125677110b7eaf9b8cdf14488221634b77e66f51849866013151252220",
-  ".local/share/applications/bleach-monitor.desktop": "d3ae53d6974c1132fa747e55f55849f50a6aa4f3bdb7df902f54bf58269d6a44",
-  ".local/share/applications/bleach-terminal.desktop": "ec7f3b9123154be73e8dfebf444929f393c38e7cf1dfdafd74fbb9147008add4",
-  ".local/share/icons/hicolor/scalable/apps/bleach-bankai.svg": "e04e0deb608e00adb68656e6416266416b3c6e430a2e9d7aae7eb2b9e7d0012d"
+  ".local/share/applications/bleach-monitor.desktop": "91c039fd7c983d55d0052620f7660f381da1abbb2064e51a13f777cb1d3d77b5",
+  ".local/share/applications/bleach-terminal.desktop": "c568ee88440f6b6e02200fb2b4d9ca79756c845d4db0b8223f195134e43c262e",
+  ".local/share/icons/hicolor/scalable/apps/bleach-backups.svg": "7b6f813315cdfef6373b654f3dbe8688a79083b380c0cb46aa2e89e3c26c91c0",
+  ".local/share/icons/hicolor/scalable/apps/bleach-bankai.svg": "e04e0deb608e00adb68656e6416266416b3c6e430a2e9d7aae7eb2b9e7d0012d",
+  ".local/share/icons/hicolor/scalable/apps/bleach-monitor.svg": "01048fb20a152f4ffb956f8b4d4203618def4b242d17d85b52bf88b2fd6024a3",
+  ".local/share/icons/hicolor/scalable/apps/bleach-terminal.svg": "4c65d3fec0fcb660adcfe4081117fab4be15503530631ff45f5a27293554d053"
 }

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Bankai — Snapshot archive</title>
+  <desc>Layered ivory archive boxes with a dark label slot.</desc>
+  <rect x="17" y="5" width="38" height="39" rx="5" fill="#8c8576" stroke="#141c27" stroke-width="2"/>
+  <rect x="11" y="11" width="38" height="39" rx="5" fill="#c6bda8" stroke="#141c27" stroke-width="2"/>
+  <rect x="5" y="21" width="41" height="37" rx="5" fill="#e9dfc7" stroke="#141c27" stroke-width="2"/>
+  <rect x="3" y="18" width="45" height="11" rx="3" fill="#fff5de" stroke="#141c27" stroke-width="2"/>
+  <path d="M18 36h15v7H18Z" fill="#263343"/>
+  <path d="M23 39h5" stroke="#e9dfc7" stroke-width="2" stroke-linecap="round"/>
+</svg>

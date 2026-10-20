@@ -191,6 +191,9 @@ public:
     navigation = new QListWidget;
     navigation->addItems(
         {"Appearance", "Backups & restore", "Terminal & tools"});
+    navigation->item(0)->setIcon(svgIcon(bootstrap.value("mask_svg").toString().toUtf8()));
+    navigation->item(1)->setIcon(svgIcon(bootstrap.value("backups_svg").toString().toUtf8()));
+    navigation->item(2)->setIcon(svgIcon(bootstrap.value("terminal_svg").toString().toUtf8()));
     side->addWidget(navigation);
     saved = label("", "muted");
     side->addWidget(saved);
@@ -911,10 +914,10 @@ public:
         svgIcon(bootstrap.value("monitor_svg").toString().toUtf8()),
         "Reiatsu Monitor", this,
         [this] { terminal("bankai-monitor", "Reiatsu Monitor"); });
-    taskActions << trayMenu->addAction("Create snapshot", this, [this] {
+    taskActions << trayMenu->addAction(svgIcon(bootstrap.value("backups_svg").toString().toUtf8()), "Create snapshot", this, [this] {
       startTask({{"op", "backup"}}, "Creating snapshot…");
     });
-    trayMenu->addAction("Backups && restore", this,
+    trayMenu->addAction(svgIcon(bootstrap.value("backups_svg").toString().toUtf8()), "Backups && restore", this,
                         [this] { showWindow(true); });
     trayMenu->addSeparator();
     trayMenu->addAction("Quit Bankai Rust", this, [this] {

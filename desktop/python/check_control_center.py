@@ -60,6 +60,8 @@ class ControlCenterChecks(unittest.TestCase):
             self.window.cards[name].click()
             self.assertEqual(self.window.selected, name)
             self.assertFalse(self.window.art.pixmap.isNull())
+            self.assertLessEqual(self.window.art.pixmap.width(), 1600)
+            self.assertLessEqual(self.window.art.pixmap.height(), 1000)
         self.assertEqual((center.DATA / 'current').read_text(), 'ichigo\n')
 
     def test_apply_uses_the_selected_preset(self):

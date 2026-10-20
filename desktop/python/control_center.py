@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 from PySide6.QtCore import QByteArray, QFileSystemWatcher, QLockFile, QProcess, QSize, Qt, QTimer, QUrl
-from PySide6.QtGui import QActionGroup, QColor, QDesktopServices, QFont, QIcon, QLinearGradient, QPainter, QPainterPath, QPixmap
+from PySide6.QtGui import QActionGroup, QColor, QDesktopServices, QFont, QIcon, QImageReader, QKeySequence, QShortcut, QLinearGradient, QPainter, QPainterPath, QPixmap
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
@@ -105,10 +105,16 @@ class Artwork(QWidget):
         self.setMinimumHeight(200)
         self.name = 'tybw'
         self.pixmap = QPixmap()
+        self.scaled_preview = QPixmap()
+        self.preview_size = QSize()
 
     def select(self, name):
         self.name = name
-        self.pixmap = QPixmap(str(wallpaper(name)))
+        reader = QImageReader(str(wallpaper(name)))
+        if reader.size().isValid():
+            reader.setScaledSize(reader.size().scaled(1600, 1000, Qt.AspectRatioMode.KeepAspectRatio))
+        self.pixmap = QPixmap.fromImage(reader.read())
+        self.preview_size = QSize()
         self.update()
 
     def paintEvent(self, event):
@@ -119,8 +125,11 @@ class Artwork(QWidget):
         painter.setClipPath(clip)
         painter.fillRect(self.rect(), QColor('#111925'))
         if not self.pixmap.isNull():
-            scaled = self.pixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                        Qt.TransformationMode.SmoothTransformation)
+            if self.preview_size != self.size():
+                self.scaled_preview = self.pixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                                        Qt.TransformationMode.SmoothTransformation)
+                self.preview_size = self.size()
+            scaled = self.scaled_preview
             painter.drawPixmap((self.width() - scaled.width()) // 2,
                                (self.height() - scaled.height()) // 2, scaled)
         gradient = QLinearGradient(0, self.height() * 0.25, 0, self.height())
@@ -193,7 +202,7 @@ class ControlCenter(QMainWindow):
         self.pages.addWidget(self.backups_page())
         self.pages.addWidget(self.tools_page())
         right.addWidget(self.pages, 1)
-        self.message = label('Ready. Choose a preset or open your tools.', 'notice')
+        self.message = label('Choose a character to preview. Click Apply when you are ready.', 'notice')
         right.addWidget(self.message)
         self.details_button = QPushButton('Show activity')
         self.details_button.setMaximumWidth(140)
@@ -207,11 +216,26 @@ class ControlCenter(QMainWindow):
         layout.addWidget(content, 1)
         self.navigation.currentRowChanged.connect(self.pages.setCurrentIndex)
         self.navigation.setCurrentRow(0)
+        for index in range(self.navigation.count()):
+            shortcut = QShortcut(QKeySequence(f'Ctrl+{index + 1}'), self)
+            shortcut.activated.connect(lambda row=index: self.navigation.setCurrentRow(row))
+            self.navigation.item(index).setToolTip(f'Ctrl+{index + 1}')
         self.timeout = QTimer(self)
         self.timeout.setSingleShot(True)
         self.timeout.timeout.connect(self.operation_timeout)
         self.select_preset(self.selected)
         self.refresh_state()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        columns = max(1, min(4, (self.width() - 290) // 160))
+        if not hasattr(self, 'preset_grid') or columns == self.preset_columns:
+            return
+        self.preset_columns = columns
+        for card in self.cards.values():
+            self.preset_grid.removeWidget(card)
+        for index, card in enumerate(self.cards.values()):
+            self.preset_grid.addWidget(card, index // columns, index % columns)
 
     def show_window(self, backups=False):
         if backups:
@@ -329,6 +353,8 @@ class ControlCenter(QMainWindow):
         self.art = Artwork()
         layout.addWidget(self.art, 1)
         cards = QGridLayout()
+        self.preset_grid = cards
+        self.preset_columns = 4
         self.card_group = QButtonGroup(self)
         self.card_group.setExclusive(True)
         for index, (name, (title, subtitle, accent, image)) in enumerate(PRESETS.items()):
@@ -337,7 +363,10 @@ class ControlCenter(QMainWindow):
             card.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
             card.setText(title)
             card.setToolTip(subtitle)
-            thumb = QPixmap(str(WALLPAPERS / image))
+            reader = QImageReader(str(WALLPAPERS / image))
+            if reader.size().isValid():
+                reader.setScaledSize(reader.size().scaled(276, 130, Qt.AspectRatioMode.KeepAspectRatio))
+            thumb = QPixmap.fromImage(reader.read())
             card.setIcon(QIcon(thumb))
             card.setIconSize(QSize(138, 65))
             card.setMinimumHeight(96)

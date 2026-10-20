@@ -2,7 +2,7 @@
 
 A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **32 characters, 40 portraits and 80 art editions**, with matching shell, cursor, greeting and monitor accents.
 
-[Browse all color and manga artwork](files/.config/fastfetch/previews/manga-roster.html) · [Full command guide](files/.config/fastfetch/portraits/ROTATION.md) · [Artwork provenance and prompts](docs/ARTWORK.md)
+[Browse all color and manga artwork](docs/GALLERY.md) · [Full command guide](files/.config/fastfetch/portraits/ROTATION.md) · [Artwork provenance and prompts](docs/ARTWORK.md)
 
 | Color | Manga |
 | --- | --- |
@@ -112,7 +112,7 @@ The installer can target an isolated directory via `--home /absolute/test/home`.
 
 Both desktop editions live in this repository with separate install guides and source directories. Shared assets are stored once in `desktop/shared/`. The terminal payload remains in `files/`, with checksums in `MANIFEST.json`. GitHub's repository ZIP contains both source editions; follow only your chosen edition's setup guide.
 
-The artwork is committed as regular PNG files, so cloning includes a substantial artwork download. The gallery HTML is intended to be opened locally; GitHub displays its source, while README images render directly.
+The artwork is committed as regular PNG files, so cloning includes a substantial artwork download. The [portrait gallery](docs/GALLERY.md) renders directly on GitHub. The bundled HTML gallery under `files/.config/fastfetch/previews/` is for local browser viewing.
 
 ## License and artwork
 

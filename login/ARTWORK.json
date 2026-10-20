@@ -8,10 +8,10 @@
   "assets": [
     {
       "preset": "ichigo",
-      "reference": "desktop/shared/wallpapers/ichigo-desktop.png",
-      "reference_sha256": "fd1ecfdecc1077f5838e742f33a2d2941531c34f378533b4f32ba902d17ac5ad",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop-v3.png",
+      "reference_sha256": "c50fdd32758e0c1d6e7fd7fa21bad3dfa04ea2ca4c589d581b2a653d57547842",
       "path": "login/theme/assets/scene-ichigo.png",
-      "sha256": "1d586dec9489609c864ff4d32a23d8552f0f6a3e6d56d969d4e61bc21630cca5",
+      "sha256": "b072315fecee26c185458df3bc6cffb830717c11c2251ae22d19ddd2bbadcd3e",
       "width": 1672,
       "height": 941,
       "prompt_record": "docs/prompts/tybw-expansion-20261020/PROMPTS.json",

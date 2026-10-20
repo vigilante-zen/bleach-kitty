@@ -1,20 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <title>Bankai — Hollow mask</title>
+  <title>Bankai — Hollow crest</title>
+  <desc>A bone-white Hollow mask with sharp black eyes and crimson war markings on an ink-dark badge.</desc>
   <defs>
-    <clipPath id="face">
-      <path d="M32 3C17 3 8 13 9 29c1 13 9 24 23 32 14-8 22-19 23-32C56 13 47 3 32 3Z"/>
-    </clipPath>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#202b3a"/>
+      <stop offset="1" stop-color="#0b1019"/>
+    </linearGradient>
+    <linearGradient id="bone" x1="0" y1="0" x2="0.8" y2="1">
+      <stop stop-color="#fffdf4"/>
+      <stop offset="1" stop-color="#c6c7be"/>
+    </linearGradient>
   </defs>
-  <path d="M32 3C17 3 8 13 9 29c1 13 9 24 23 32 14-8 22-19 23-32C56 13 47 3 32 3Z"
-        fill="#f4f1e8" stroke="#11151c" stroke-width="2.5" stroke-linejoin="round"/>
-  <g clip-path="url(#face)" fill="#d72f43">
-    <path d="m34 1 7 1 2 19-5 10Z"/>
-    <path d="m47 5 7 5-8 16-5 4Z"/>
-    <path d="m58 17 4 9-15 10-6 1Z"/>
-    <path d="m59 35-4 10-13-5-4-5Z"/>
+  <rect x="1" y="1" width="62" height="62" rx="16" fill="url(#ink)" stroke="#445063" stroke-width="1"/>
+  <path d="M10 24C13 14 21 8 31 7M54 40C51 50 43 56 33 57" fill="none" stroke="#d72f43" stroke-width="2" stroke-linecap="round"/>
+  <path d="M32 8C19 8 12 16 13 29l3 13 9 10 7 5 7-5 9-10 3-13C52 16 45 8 32 8Z" fill="url(#bone)" stroke="#080d14" stroke-width="2" stroke-linejoin="round"/>
+  <g fill="#d72f43">
+    <path d="m34 8 7 2 2 12-6 6Z"/>
+    <path d="m46 14 3 7-6 9-4 1Z"/>
+    <path d="m50 27-1 8-7 4-4-4Z"/>
+    <path d="m47 40-4 7-5-8 1-3Z"/>
   </g>
-  <path d="m14 24 14 6-2 7-9-3Z M50 24l-14 6 2 7 9-3Z" fill="#11151c"/>
-  <path d="m32 33-4 10h8Z" fill="#11151c"/>
-  <path d="m21 44 11 3 11-3-3 8-8 5-8-5Z" fill="#11151c"/>
-  <path d="M28 47v7m8-7v7" fill="none" stroke="#f4f1e8" stroke-width="2.5"/>
+  <path d="m16 25 13 5-3 7-8-5Z m32 0-13 5 3 7 8-5Z" fill="#090e16"/>
+  <path d="m19 29 6 2-1 2-4-2Z m26 0-6 2 1 2 4-2Z" fill="#d7a33e"/>
+  <path d="m32 34-3 7h6Z" fill="#090e16"/>
+  <path d="m21 41 11 4 11-4-4 9-7 4-7-4Z" fill="#090e16"/>
+  <path d="m26 44 1 5m5-3v6m6-8-1 5" fill="none" stroke="#edece2" stroke-width="2"/>
+  <path d="M18 19c3-5 6-7 11-8" fill="none" stroke="#fffdf6" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>
 </svg>

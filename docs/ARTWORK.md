@@ -15,3 +15,7 @@ Nemu Kurotsuchi, Askin Nakk Le Vaar, Lille Barro and Yachiru Kusajishi were adde
 The [manga login screen](../login/README.md) includes twelve black-and-white manga scene conversions of the full desktop wallpapers. [Exact prompt, source references, dimensions and hashes](../login/ARTWORK.json) are preserved. The built-in imagegen tool produced these scene edits; the TYBW expansion adds four backgrounds, corrects Ichigo and Yamamoto, and adds separate True Shikai Ichigo and Bankai Kenpachi terminal portraits. [Expansion prompts and hashes](prompts/tybw-expansion-20261020/PROMPTS.json) record the changes. The original Dangai portrait asset remains for migration compatibility. The paper layout, ink borders and lettering are drawn by QML; `login/preview.png` uses dummy login data. These unofficial fan-art scenes follow the same separate artwork terms above.
 
 The [Ichigo boot splash](../boot/README.md) has its own [asset and prompt record](../boot/ARTWORK.json). Its character cutout is also excluded from the code MIT license. Aura, particle and loading-bar assets are generated from code-native geometry. Hollow-mask boot assets have been removed; the current splash always uses Ichigo.
+
+## Rust application icon
+
+The Hollow crest in `desktop/rust/assets/bleach-tray.svg` is original SVG geometry authored for this project, with a bone-white mask, ink-dark badge and recolorable crimson markings. It uses no downloaded logo, manga panel or generated bitmap. [Launcher and tray size preview](screenshots/rust-icon.png). The Bleach-inspired design is unofficial.

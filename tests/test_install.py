@@ -59,6 +59,23 @@ class InstallationTests(unittest.TestCase):
             self.assertEqual(choice.read_text(), 'urahara\n')
             self.assertFalse((home / '.config/fastfetch/portraits/urahara.png').exists())
 
+    def test_install_preserves_existing_includes_without_duplicates(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp)
+            kitty = home / '.config/kitty/kitty.conf'
+            kitty.parent.mkdir(parents=True)
+            original = ('font_size 13\ninclude themes/bleach-tybw.conf\n'
+                        'include "./themes/bleach-effects.conf" # existing\n')
+            kitty.write_text(original)
+            self.run_installer(home)
+            text = kitty.read_text()
+            self.assertEqual(text.count('bleach-tybw.conf'), 1)
+            self.assertEqual(text.count('bleach-effects.conf'), 1)
+            self.assertEqual(text.count('bleach-v5.conf'), 1)
+            self.assertEqual(text.count('bleach-shortcuts.conf'), 1)
+            self.run_installer(home, 'uninstall')
+            self.assertEqual(kitty.read_text(), original)
+
     def test_uninstall_preserves_later_changes(self):
         with tempfile.TemporaryDirectory() as temp:
             home = Path(temp)

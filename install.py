@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import shlex
 import sys
 import tempfile
 
@@ -52,8 +53,19 @@ def payload(home, updating=False):
         return result
     if BEGIN in previous or END in previous:
         raise ValueError('A managed Kitty block already exists. Uninstall first.')
-    block = '\n' + BEGIN + '\n' + '\n'.join('include themes/' + n + '.conf' for n in
-                 ['bleach-tybw', 'bleach-effects', 'bleach-v5', 'bleach-shortcuts']) + '\n' + END + '\n'
+    existing = set()
+    for line in previous.splitlines():
+        try:
+            parts = shlex.split(line, comments=True)
+        except ValueError:
+            continue
+        if len(parts) == 2 and parts[0] == 'include':
+            path = Path(os.path.expandvars(parts[1])).expanduser()
+            existing.add((home / '.config/kitty' / path).resolve())
+    includes = ['include themes/' + name + '.conf' for name in
+                ['bleach-tybw', 'bleach-effects', 'bleach-v5', 'bleach-shortcuts']
+                if (home / '.config/kitty/themes' / (name + '.conf')).resolve() not in existing]
+    block = '\n' + BEGIN + '\n' + '\n'.join(includes) + '\n' + END + '\n'
     result[kitty] = ((previous + block).encode(), 0o644)
     return result
 

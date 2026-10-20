@@ -1,0 +1,10 @@
+{
+  "generator": "image_gen built-in tool",
+  "date": "2026-10-20",
+  "prompt": "Create a single transparent-background character cutout for a premium Bleach-themed Linux boot splash. Ichigo Kurosaki in Bankai: recognizable spiky orange hair, lean adult male silhouette, long black shinigami coat with torn flowing hem, oversized black sword resting diagonally behind his shoulder. Full body, upright composed pose, almost black silhouette with minimal subtle burnt-orange rim highlights and very few ivory highlights, face mostly in shadow. Graphic anime ink style, crisp high quality edges, cinematic silhouette readable on a nearly black #090C12 screen. Composition centered vertically with generous transparent margin around all hair, sword and cloth; vertical character occupies about 80 percent of square canvas. No background, no ground, no gradients surrounding the figure, no lettering, no logo, no watermark, no border, no extra characters, no particles or aura; the animation engine will add aura separately. Transparent alpha background required.",
+  "asset": "theme/assets/silhouette.png",
+  "transparency": true,
+  "license": "Unofficial Bleach fan artwork; excluded from code MIT license.",
+  "notes": "Hollow mask is reused from Bankai's existing SVG icon. Aura, particle and bar assets are generated from original code-native SVG geometry.",
+  "sha256": "2503f15c097fa16ae981083dba2a256397296f7de35255948d05456050d3f03a"
+}

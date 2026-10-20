@@ -1,0 +1,136 @@
+# Original Bankai Plymouth theme. Pick exactly once per splash startup.
+variant_mode = "random";
+mask_mode = Math.Random() < 0.5;
+if (variant_mode == "mask") mask_mode = 1;
+if (variant_mode == "silhouette") mask_mode = 0;
+Window.SetBackgroundTopColor(0.0353, 0.0471, 0.0706);
+Window.SetBackgroundBottomColor(0.0353, 0.0471, 0.0706);
+Plymouth.SetRefreshRate(30);
+width = Window.GetWidth();
+height = Window.GetHeight();
+scale = height / 1080;
+if (width / 1600 < scale) scale = width / 1600;
+if (scale > 1) scale = 1;
+center_x = width / 2;
+center_y = height * 0.40;
+color = "orange";
+if (mask_mode) color = "red";
+visual_size = 620 * scale;
+visual_file = "silhouette.png";
+if (mask_mode) { visual_size = 290 * scale; visual_file = "mask.png"; }
+visual_image = Image(visual_file).Scale(visual_size, visual_size);
+visual = Sprite(visual_image);
+visual.SetZ(10);
+visual.SetPosition(center_x - visual_size/2, center_y - visual_size/2, 10);
+aura_size = 520 * scale;
+aura_image = Image("aura-" + color + ".png").Scale(aura_size, aura_size);
+aura = Sprite(aura_image);
+aura.SetZ(1);
+aura.SetPosition(center_x - aura_size/2, center_y - aura_size/2, 1);
+track_width = 360 * scale;
+track_image = Image("bar-track.png").Scale(track_width, 3 * scale);
+track = Sprite(track_image);
+track.SetPosition(center_x - track_width / 2, height * 0.84, 20);
+bar_image = Image("bar-" + color + ".png");
+bar = Sprite(bar_image.Scale(1, 3 * scale));
+bar.SetZ(21);
+label_image = Image.Text("B A N K A I", 0.95, 0.94, 0.91, 1, "Sans Bold 24");
+label = Sprite(label_image);
+label.SetPosition(center_x - label_image.GetWidth()/2, height * 0.745, 20);
+sub_image = Image.Text("SOUL SOCIETY  /  REIATSU ONLINE", 0.50, 0.56, 0.65, 1, "Sans 11");
+sub = Sprite(sub_image);
+sub.SetPosition(center_x - sub_image.GetWidth()/2, height * 0.80, 20);
+message = Sprite();
+message.SetZ(100);
+entry = Sprite();
+entry.SetZ(101);
+time = 0;
+frame = 0;
+progress = 0;
+dialog_active = 0;
+for (i = 0; i < 18; i++) {
+    particles[i].phase = Math.Random();
+    particles[i].x = center_x + (Math.Random() - 0.5) * 740 * scale;
+    particles[i].speed = 0.05 + Math.Random() * 0.10;
+    particles[i].sprite = Sprite(Image("spark-" + color + ".png").Scale(2 * scale, (8 + Math.Random() * 17) * scale));
+    particles[i].sprite.SetZ(3);
+}
+fun centered_text(sprite, text, y) {
+    local.image = Image.Text(text, 0.91, 0.93, 0.96, 1, "Sans 12");
+    if (image.GetWidth() > width * 0.9)
+        image = image.Scale(width * 0.9, image.GetHeight() * width * 0.9 / image.GetWidth());
+    sprite.SetImage(image);
+    sprite.SetPosition(center_x - image.GetWidth()/2, y, 100);
+}
+fun refresh() {
+    global.time += 1 / 30;
+    global.frame += 1;
+    local.fade = time / 0.8;
+    if (fade > 1) fade = 1;
+    local.pulse = 0.65 + Math.Sin(time * 2.2) * 0.15;
+    if (frame % 3 == 0) {
+        local.rotated = aura_image.Rotate(time * 0.12);
+        aura.SetImage(rotated);
+        aura.SetPosition(center_x - rotated.GetWidth()/2, center_y - rotated.GetHeight()/2, 1);
+    }
+    visual.SetPosition(center_x - visual_size/2, center_y - visual_size/2 + Math.Sin(time * 1.3) * 4 * scale, 10);
+    local.visibility = fade;
+    if (dialog_active) visibility = 0.16;
+    visual.SetOpacity(visibility);
+    aura.SetOpacity(pulse * visibility);
+    for (i = 0; i < 18; i++) {
+        local.phase = (particles[i].phase + time * particles[i].speed) % 1;
+        local.opacity = Math.Sin(phase * 3.14159) * 0.50 * visibility;
+        particles[i].sprite.SetPosition(particles[i].x + Math.Sin(time + i) * 9 * scale, center_y + (0.5-phase) * 600 * scale, 3);
+        particles[i].sprite.SetOpacity(opacity);
+    }
+    if (progress > 0) {
+        local.filled_width = track_width * progress;
+        if (filled_width < 1) filled_width = 1;
+        bar.SetImage(bar_image.Scale(filled_width, 3 * scale));
+        bar.SetPosition(center_x - track_width/2, height * 0.84, 21);
+    } else {
+        bar.SetImage(bar_image.Scale(track_width * 0.18, 3 * scale));
+        bar.SetPosition(center_x - track_width/2 + (track_width * 0.82) * (Math.Sin(time * 1.5)+1)/2, height * 0.84, 21);
+    }
+}
+fun boot_progress(duration, value) {
+    global.progress = value;
+    if (progress < 0) global.progress = 0;
+    if (progress > 1) global.progress = 1;
+}
+fun display_normal() {
+    global.dialog_active = 0;
+    message.SetOpacity(0);
+    entry.SetOpacity(0);
+}
+fun display_password(prompt, bullets) {
+    global.dialog_active = 1;
+    centered_text(message, prompt, height * 0.89);
+    local.masked = "";
+    for (i = 0; i < bullets; i++) masked += "*";
+    centered_text(entry, masked, height * 0.94);
+    message.SetOpacity(1);
+    entry.SetOpacity(1);
+}
+fun display_question(prompt, contents) {
+    global.dialog_active = 1;
+    centered_text(message, prompt, height * 0.89);
+    centered_text(entry, contents, height * 0.94);
+    message.SetOpacity(1);
+    entry.SetOpacity(1);
+}
+fun display_message(text) {
+    if (!dialog_active) {
+        centered_text(message, text, height * 0.91);
+        message.SetOpacity(1);
+    }
+}
+fun hide_message(text) { if (!dialog_active) message.SetOpacity(0); }
+Plymouth.SetRefreshFunction(refresh);
+Plymouth.SetBootProgressFunction(boot_progress);
+Plymouth.SetDisplayNormalFunction(display_normal);
+Plymouth.SetDisplayPasswordFunction(display_password);
+Plymouth.SetDisplayQuestionFunction(display_question);
+Plymouth.SetDisplayMessageFunction(display_message);
+Plymouth.SetHideMessageFunction(hide_message);

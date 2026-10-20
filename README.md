@@ -23,6 +23,10 @@ Pick one desktop edition. Each edition has its own installer with backups, launc
 
 For the terminal theme on its own, follow [Terminal theme installation](#install) below.
 
+## Optional animated boot splash
+
+[Preview and install the randomized Bleach boot theme](boot/README.md): a pulsing Hollow mask or an Ichigo silhouette with flowing reiatsu, chosen once per splash startup. This is a separate optional system theme, with installation and restore steps.
+
 ## Features
 
 - Color, manga, or randomly mixed art editions.

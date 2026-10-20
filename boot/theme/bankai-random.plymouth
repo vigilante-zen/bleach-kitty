@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Bankai — Random Bleach Splash
+Description=Random Hollow mask or Ichigo silhouette with flowing reiatsu.
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/bankai-random/assets
+ScriptFile=/usr/share/plymouth/themes/bankai-random/bankai.script

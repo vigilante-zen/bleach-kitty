@@ -21,7 +21,7 @@ Under **Terminal & tools**, choose **Random characters** or an installed portrai
 
 Desktop preset changes now preserve terminal portrait and art preferences. Select the matching portrait explicitly here if desired. The Python app still uses its original preset behavior. Settings use the same files as `bankai-pick` and `bankai-art`, and external changes appear in the app.
 
-These controls require rebuilding from this source. The previously installed executable predates this change.
+The terminal-artwork update passed 19 Rust unit tests, 17 compiled-binary integration tests and the offscreen native smoke checks. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
 
 ## Ported behavior
 
@@ -68,7 +68,7 @@ cargo build --release --locked --offline
 
 Requirements: Rust and Cargo, a C++17 compiler, pkg-config, and Qt 6 Widgets, SVG and Network development packages. Rust `cc` and `pkg-config` are build-only dependencies. The JSON codec is local and strict, with duplicate-key, UTF-8, nesting and size checks. Snapshot SHA-256 uses Qt's established `QCryptographicHash` through the narrow native bridge rather than a custom hash implementation.
 
-The machine's package cleanup removed Rust, Cargo and rustfmt **after the release build succeeded**. The executable still runs. Rebuilding and rerunning Rust unit tests requires restoring the toolchain; no system packages were reinstalled by this task. Additional Rust test cases were added afterward but could not be compiled in the resulting environment. `native/gui.cpp` was subsequently formatted with clang-format; its behavior matches the built executable.
+Rust/Cargo was restored before the terminal-artwork update. The current source was rebuilt successfully with the cached dependencies, and all Rust unit tests were rerun.
 
 References: [Rust FFI](https://doc.rust-lang.org/nomicon/ffi.html), [Qt tray API](https://doc.qt.io/qt-6/qsystemtrayicon.html), [Qt hashing](https://doc.qt.io/qt-6/qcryptographichash.html).
 

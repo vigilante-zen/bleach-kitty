@@ -671,15 +671,32 @@ class ControlCenter(QMainWindow):
         self.open_file(gallery if gallery.exists() else WALLPAPERS)
 
     def login_setup(self):
+        installer = DATA / 'install-login.py'
+        theme = DATA / 'login-theme'
+        if not installer.is_file() or not (theme / 'Main.qml').is_file():
+            QMessageBox.information(self, 'Login screen', 'Update this Bankai edition with its installer to add the manga login theme.')
+            return
         dialog = QMessageBox(self)
-        dialog.setWindowTitle('Matching login screen')
-        dialog.setText('Install the prepared Bleach login screen from your terminal:')
-        command = 'sudo python3 ~/.local/share/bleach-desktop/install-login.py install'
-        dialog.setInformativeText(command + '\n\nThis needs administrator access. Desktop presets and the lock screen work independently.')
+        dialog.setWindowTitle('Manga login screen')
+        install = 'sudo python3 ~/.local/share/bleach-desktop/install-login.py install'
+        restore = 'sudo python3 ~/.local/share/bleach-desktop/install-login.py restore'
+        dialog.setText('Ichigo manga login screen')
+        dialog.setInformativeText('Preview without logging out. To activate or update, run:\n' + install +
+                                  '\n\nTo restore the previous theme:\n' + restore +
+                                  '\n\nAdministrator access is required. Changes apply at next login; desktop presets are independent.')
         dialog.setStandardButtons(QMessageBox.StandardButton.Close)
-        copy = dialog.addButton('Copy command', QMessageBox.ButtonRole.ActionRole)
-        copy.clicked.connect(lambda: QApplication.clipboard().setText(command))
+        preview = dialog.addButton('Preview', QMessageBox.ButtonRole.ActionRole)
+        preview.clicked.connect(lambda: self.preview_login(theme))
+        copy = dialog.addButton('Copy install command', QMessageBox.ButtonRole.ActionRole)
+        copy.clicked.connect(lambda: QApplication.clipboard().setText(install))
+        undo = dialog.addButton('Copy restore command', QMessageBox.ButtonRole.ActionRole)
+        undo.clicked.connect(lambda: QApplication.clipboard().setText(restore))
         dialog.exec()
+
+    def preview_login(self, theme):
+        success, _ = QProcess.startDetached('sddm-greeter-qt6', ['--test-mode', '--theme', str(theme)])
+        if not success:
+            QMessageBox.information(self, 'Login preview', 'Could not start sddm-greeter-qt6. Install SDDM with Qt 6 to preview this theme.')
 
     def toggle_output(self):
         self.log.setVisible(not self.log.isVisible())

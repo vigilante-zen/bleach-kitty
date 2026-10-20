@@ -67,7 +67,7 @@ python3 desktop/python/install.py uninstall
 
 Uninstall restores originals and removes files added by this desktop installer. Files edited since installation are retained and remain tracked for manual resolution. Shared desktop files remain while the other edition uses them. Theme files, runtime preferences and snapshots are kept. To remove the common terminal theme as well, use the separate root `python3 install.py uninstall` command after removing both desktop editions.
 
-The legacy system login-screen installer is not bundled; its app shortcut requires a separately installed setup. These installers do not change the system login screen.
+The manga SDDM login theme and its system installer are bundled with both editions. Use **Login screen setup** in the app to preview it and copy the install or restore command. Activate separately with `sudo python3 ~/.local/share/bleach-desktop/install-login.py install`; restore with the same command ending in `restore`. Activation requires SDDM with Qt 6. Updates preserve locally edited system files by refusing to overwrite them. Desktop uninstall does not change an activated system theme; restore it first if desired. Shared login assets remain until both editions are uninstalled.
 
 ## Validation
 

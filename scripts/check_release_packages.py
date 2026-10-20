@@ -37,6 +37,21 @@ def check(archive):
                         '--dry-run', '--home', str(home)], cwd=root, check=True)
         if home.exists():
             raise ValueError('Dry run wrote to the staging home')
+        login = root / 'login/install.py'
+        required = ['login/README.md', 'login/theme/Main.qml', 'login/theme/metadata.desktop',
+                    'login/theme/theme.conf', 'login/theme/assets/ichigo.png']
+        if not login.is_file() or any(not (root / name).is_file() for name in required):
+            raise ValueError('Package is missing the optional login theme')
+        system = Path(temp) / 'staging-system'
+        command = ['python3', str(login), '--root', str(system)]
+        subprocess.run(command + ['--dry-run'], check=True)
+        if system.exists():
+            raise ValueError('Login dry run wrote to the staging system')
+        subprocess.run(command, check=True)
+        subprocess.run(command + ['restore'], check=True)
+        if (system / 'etc/sddm.conf.d/zz-bankai-manga.conf').exists():
+            raise ValueError('Login restore left the active theme override')
+
     print('Verified:', archive.name)
 
 

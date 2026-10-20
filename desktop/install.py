@@ -75,6 +75,11 @@ def payload(edition, home, binary=None, dry=False):
         for source in sources:
             add(source, target + '/' + source.name)
     add(ROOT / 'desktop/README.md', '.local/share/bleach-desktop/README.md')
+    add(ROOT / 'login/install.py', '.local/share/bleach-desktop/install-login.py')
+    add(ROOT / 'login/README.md', '.local/share/bleach-desktop/login-README.md')
+    for item in sorted((ROOT / 'login/theme').rglob('*')):
+        if item.is_file():
+            add(item, '.local/share/bleach-desktop/login-theme/' + str(item.relative_to(ROOT / 'login/theme')))
     source = ROOT / 'desktop' / edition
     guide_target = '.local/share/bleach-desktop/' + edition
     for name in ['README.md', 'INSTALL.md']:
@@ -230,6 +235,7 @@ def main():
                 return
         change(args.edition, args.action, home, state, files, args.dry_run)
     if args.action == 'install' and not args.dry_run:
+        print('Optional login theme: sudo python3 ~/.local/share/bleach-desktop/install-login.py install')
         print(f'Open Bankai {args.edition.title()} from your app menu. Login startup stays unchanged.')
     if args.action == 'uninstall':
         print('Theme files, runtime preferences, snapshots and login-startup settings are retained. Disable login startup in the app before uninstalling.')

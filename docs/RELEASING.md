@@ -11,7 +11,9 @@ python3 scripts/package_editions.py
 python3 scripts/check_release_packages.py
 ```
 
-This creates `dist/bankai-python.tar.gz` and `dist/bankai-rust-source.tar.gz`, each with a SHA-256 sidecar. Packages include the selected desktop edition and common theme/artwork; opposite-edition source, build caches, personal preferences and snapshots are excluded.
+This creates `dist/bankai-python.tar.gz` and `dist/bankai-rust-source.tar.gz`, each with a SHA-256 sidecar. Packages include the selected desktop edition, common terminal theme/artwork, and optional manga SDDM theme with its system installer. SDDM activation is a separate administrator command available in both apps; extracted desktop installation never changes the system login screen. Boot splash source remains repository-only and is not included in edition packages. Opposite-edition source, build caches, personal preferences and snapshots are excluded.
+
+Package verification checks both the extracted desktop installer and staged login-theme install/restore. The login system installer has its own receipt and protects modified files.
 
 For a compiled Rust package, build on the intended target system, then label its actual platform:
 

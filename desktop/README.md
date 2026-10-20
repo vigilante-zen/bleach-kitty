@@ -37,6 +37,8 @@ python3 desktop/python/install.py  # Python edition
 python3 desktop/rust/install.py    # Rust edition; builds source if needed
 ```
 
+Both bundle the optional Ichigo manga SDDM login theme. Open **Login screen setup** in either app to preview it and copy activation or restore commands. Activation requires administrator access and stays separate from desktop presets.
+
 Both support `--dry-run`, upgrades, `uninstall`, original-file backups and shared-asset ownership. Read the selected edition's install guide before running. No system dependencies are installed automatically.
 
 ## Switching editions
@@ -54,3 +56,9 @@ The two commands can coexist. Their desktop presets, terminal preferences and sn
 - `shared/`: wallpapers, KDE color schemes and artwork prompts used by either edition.
 
 [Back to the repository](../README.md) · [Artwork ownership and provenance](../docs/ARTWORK.md)
+
+## Login startup
+
+Choose **Start the Rust edition in the tray at login** in Rust, or the corresponding checkbox in Python. Disable the other edition before switching. Rust tray startup keeps its window hidden; when the tray is unavailable, the fallback window starts minimized. Repeated tray launches do not raise an existing control center. A normal app-menu launch opens the window.
+
+These settings control Bankai only. Minimizing other restored applications is a per-user KDE session customization; it is not enabled for everyone by an edition installer. The development machine uses a separate login-only minimizer with a 20-second startup interval. Any app opened manually in that interval also minimizes; apps opened after it behave normally. This machine-specific helper and autostart entries are outside the repository and release archives.

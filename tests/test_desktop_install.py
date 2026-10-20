@@ -84,6 +84,10 @@ class DesktopInstallerChecks(unittest.TestCase):
         for edition in ['python', 'rust']:
             files = installer.payload(edition, self.home, executable)
             self.assertTrue(any(name.endswith('.desktop') for name in files))
+            self.assertIn('.local/share/bleach-desktop/install-login.py', files)
+            self.assertIn('.local/share/bleach-desktop/login-theme/Main.qml', files)
+            self.assertEqual(files['.local/share/bleach-desktop/login-theme/assets/ichigo.png'][0],
+                             (installer.ROOT / 'files/.config/fastfetch/manga/dangai-ichigo.png').read_bytes())
             self.assertFalse(any('portrait-choice' in name or 'autostart' in name for name in files))
             self.change(edition, files=files)
         self.change('rust', 'uninstall')

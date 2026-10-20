@@ -57,7 +57,7 @@ In **Terminal & tools**, preview a portrait and choose Color/Manga/Mixed, then c
 
 Quit the tray app before updating. In a Git clone, run `git pull --ff-only`, then rerun `python3 desktop/rust/install.py`. For a release package, extract the new package and run its installer. Original pre-install files remain backed up across upgrades. Update the terminal theme separately using its [uninstall/reinstall procedure](../../README.md#uninstall-and-restore); the desktop updater preserves an existing managed terminal installation.
 
-To switch, disable login startup in the current edition, quit its tray app, and follow the [other edition's guide](../python/INSTALL.md). Both commands can coexist. They share desktop settings and snapshots; do not apply changes from both at once. Enable only your preferred edition at login.
+To switch, disable login startup in the current edition, quit its tray app, and follow the [other edition's guide](../python/INSTALL.md). Both commands can coexist. They share desktop settings and snapshots; do not apply changes from both at once. Enable only your preferred edition at login. Rust tray startup keeps the control center hidden; if the tray is unavailable, its fallback window starts minimized. Repeated tray launches do not raise an existing window.
 
 ## Uninstall
 
@@ -70,7 +70,7 @@ python3 desktop/rust/install.py uninstall
 
 Uninstall restores originals and removes files added by this desktop installer. Files edited since installation are retained and remain tracked for manual resolution. Shared desktop files remain while the other edition uses them. Theme files, runtime preferences and snapshots are kept. To remove the common terminal theme as well, use the separate root `python3 install.py uninstall` command after removing both desktop editions.
 
-The legacy system login-screen installer is not bundled; its app shortcut requires a separately installed setup. These installers do not change the system login screen.
+The manga SDDM login theme and its system installer are bundled with both editions. Use **Login screen setup** in the app to preview it and copy the install or restore command. Activate separately with `sudo python3 ~/.local/share/bleach-desktop/install-login.py install`; restore with the same command ending in `restore`. Activation requires SDDM with Qt 6. Updates preserve locally edited system files by refusing to overwrite them. Desktop uninstall does not change an activated system theme; restore it first if desired. Shared login assets remain until both editions are uninstalled.
 
 ## Validation
 

@@ -1,8 +1,5 @@
-# Original Bankai Plymouth theme. Pick exactly once per splash startup.
-variant_mode = "random";
-mask_mode = Math.Random() < 0.5;
-if (variant_mode == "mask") mask_mode = 1;
-if (variant_mode == "silhouette") mask_mode = 0;
+# Bankai Ichigo silhouette boot splash.
+variant_mode = "silhouette";
 Window.SetBackgroundTopColor(0.0353, 0.0471, 0.0706);
 Window.SetBackgroundBottomColor(0.0353, 0.0471, 0.0706);
 Plymouth.SetRefreshRate(30);
@@ -14,10 +11,8 @@ if (scale > 1) scale = 1;
 center_x = width / 2;
 center_y = height * 0.40;
 color = "orange";
-if (mask_mode) color = "red";
 visual_size = 620 * scale;
 visual_file = "silhouette.png";
-if (mask_mode) { visual_size = 290 * scale; visual_file = "mask.png"; }
 visual_image = Image(visual_file).Scale(visual_size, visual_size);
 visual = Sprite(visual_image);
 visual.SetZ(10);

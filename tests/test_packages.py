@@ -18,6 +18,7 @@ class PackageChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / 'repo'; root.mkdir()
             for name in ['install.py', 'MANIFEST.json', 'LICENSE', 'files/.config/theme', 'docs/ARTWORK.md',
+                         'login/install.py', 'login/README.md', 'login/preview.py', 'login/preview.png', 'login/theme/Main.qml', 'login/theme/assets/ichigo.png',
                          'desktop/install.py', 'desktop/README.md', 'desktop/shared/wallpapers/art.png',
                          'desktop/python/install.py', 'desktop/rust/install.py',
                          'desktop/rust/target/release/leaked', 'desktop/rust/bin/bankai-rust', 'desktop/python/__pycache__/leaked.pyc']:
@@ -29,6 +30,9 @@ class PackageChecks(unittest.TestCase):
                                                'linux-x86-64' if edition == 'rust' else None)
                     with tarfile.open(archive) as tar:
                         names = tar.getnames()
+                        self.assertTrue(any(name.endswith('/login/install.py') for name in names))
+                        self.assertTrue(any(name.endswith('/login/theme/Main.qml') for name in names))
+                        self.assertTrue(any(name.endswith('/login/theme/assets/ichigo.png') for name in names))
                         other = 'python' if edition == 'rust' else 'rust'
                         self.assertFalse(any('/desktop/' + other + '/' in name for name in names))
                         self.assertFalse(any('target/' in name or '__pycache__/' in name for name in names))

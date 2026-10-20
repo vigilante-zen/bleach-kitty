@@ -99,9 +99,8 @@ def prepare(root, action, mode):
             if not source.is_file(): continue
             if source.is_symlink(): raise ValueError('Unexpected theme package symlink')
             relative = str(source.relative_to(SOURCE));data = source.read_bytes()
-            if source.suffix == '.script':data=data.replace(b'variant_mode = "random";',f'variant_mode = "{mode}";'.encode())
             files[relative] = data
-        if not {'bankai.script', NAME+'.plymouth', 'assets/silhouette.png', 'assets/mask.png'} <= set(files):
+        if not {'bankai.script', NAME+'.plymouth', 'assets/silhouette.png'} <= set(files):
             raise ValueError('Boot-theme package is incomplete')
         return files, set_theme(text, NAME).encode(), receipt
     # If other config settings changed since installation, preserve them.
@@ -155,13 +154,13 @@ def perform(root, action, mode, rebuild=False):
                 except (OSError,subprocess.CalledProcessError):
                     print('Recovery rebuild failed. Resolve the reported initramfs error before rebooting.',file=sys.stderr)
             raise
-    print('Installed Bankai random boot theme.' if action=='install' else 'Restored the previous Plymouth theme.')
+    print('Installed Bankai Ichigo boot theme.' if action=='install' else 'Restored the previous Plymouth theme.')
 
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action',nargs='?',default='install',choices=['install','remove'])
-    parser.add_argument('--mode',choices=['random','mask','silhouette'],default='random')
+    parser.add_argument('--mode',choices=['silhouette'],default='silhouette')
     parser.add_argument('--dry-run',action='store_true')
     parser.add_argument('--root',type=Path,default=Path('/'),help='alternate staging system root; never rebuilds the host boot images')
     args=parser.parse_args();root=args.root.absolute()

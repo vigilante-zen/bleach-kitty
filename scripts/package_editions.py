@@ -21,7 +21,7 @@ def package(edition, output, binary=None, platform=None):
     output.mkdir(parents=True, exist_ok=True)
     archive = output / (name + '.tar.gz')
     paths = [ROOT / p for p in ['install.py', 'MANIFEST.json', 'LICENSE', 'files', 'docs',
-             'desktop/install.py', 'desktop/README.md', 'desktop/shared', 'desktop/' + edition]]
+             'login/install.py', 'login/README.md', 'login/preview.py', 'login/preview.png', 'login/theme', 'desktop/install.py', 'desktop/README.md', 'desktop/shared', 'desktop/' + edition]]
     import io
     summary = f'''# Bankai {edition.title()} release package
 

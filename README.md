@@ -25,7 +25,11 @@ For the terminal theme on its own, follow [Terminal theme installation](#install
 
 ## Optional animated boot splash
 
-[Preview and install the randomized Bleach boot theme](boot/README.md): a pulsing Hollow mask or an Ichigo silhouette with flowing reiatsu, chosen once per splash startup. This is a separate optional system theme, with installation and restore steps.
+[Preview and install the Bleach boot theme](boot/README.md): an Ichigo silhouette with flowing reiatsu. This is a separate optional system theme, with installation and restore steps.
+
+## Optional manga login screen
+
+Both desktop installers include the [Ichigo manga SDDM theme](login/README.md). Open **Login screen setup** in either Bankai app to preview it, then copy the administrator install or restore command.
 
 ## Features
 
@@ -112,7 +116,7 @@ The installer can target an isolated directory via `--home /absolute/test/home`.
 
 ## GitHub repository
 
-[Release packaging and CI instructions](docs/RELEASING.md).
+[Recent changes](docs/CHANGES.md) · [Release packaging and CI instructions](docs/RELEASING.md).
 
 Both desktop editions live in this repository with separate install guides and source directories. Shared assets are stored once in `desktop/shared/`. The terminal payload remains in `files/`, with checksums in `MANIFEST.json`. GitHub's repository ZIP contains both source editions; follow only your chosen edition's setup guide.
 

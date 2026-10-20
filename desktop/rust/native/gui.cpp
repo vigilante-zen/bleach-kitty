@@ -757,19 +757,30 @@ public:
       notice->setText("Could not open " + path);
   }
   void loginSetup() {
+    const QString data = QDir::homePath() + "/.local/share/bleach-desktop/";
+    const QString theme = data + "login-theme";
+    if (!QFile::exists(data + "install-login.py") || !QFile::exists(theme + "/Main.qml")) {
+      QMessageBox::information(this, "Login screen", "Update this Bankai edition with its installer to add the manga login theme.");
+      return;
+    }
     QMessageBox dialog(this);
-    dialog.setWindowTitle("Matching login screen");
-    dialog.setText(
-        "Run the existing system login installer from your terminal:");
-    QString command =
-        "sudo python3 ~/.local/share/bleach-desktop/install-login.py install";
-    dialog.setInformativeText(command +
-                              "\n\nThe login installer is separate from the "
-                              "Rust app and requires administrator access.");
+    dialog.setWindowTitle("Manga login screen");
+    dialog.setText("Ichigo manga login screen");
+    const QString install = "sudo python3 ~/.local/share/bleach-desktop/install-login.py install";
+    const QString restore = "sudo python3 ~/.local/share/bleach-desktop/install-login.py restore";
+    dialog.setInformativeText("Preview without logging out. To activate or update, run:\n" + install +
+        "\n\nTo restore the previous theme:\n" + restore +
+        "\n\nAdministrator access is required. Changes apply at next login; desktop presets are independent.");
     dialog.setStandardButtons(QMessageBox::Close);
-    auto *copy = dialog.addButton("Copy command", QMessageBox::ActionRole);
-    connect(copy, &QPushButton::clicked, this,
-            [command] { qApp->clipboard()->setText(command); });
+    auto *preview = dialog.addButton("Preview", QMessageBox::ActionRole);
+    connect(preview, &QPushButton::clicked, this, [this, theme] {
+      if (!QProcess::startDetached("sddm-greeter-qt6", QStringList{"--test-mode", "--theme", theme}))
+        QMessageBox::information(this, "Login preview", "Could not start sddm-greeter-qt6. Install SDDM with Qt 6 to preview this theme.");
+    });
+    auto *copy = dialog.addButton("Copy install command", QMessageBox::ActionRole);
+    connect(copy, &QPushButton::clicked, this, [install] { qApp->clipboard()->setText(install); });
+    auto *undo = dialog.addButton("Copy restore command", QMessageBox::ActionRole);
+    connect(undo, &QPushButton::clicked, this, [restore] { qApp->clipboard()->setText(restore); });
     dialog.exec();
   }
   void showWindow(bool backups = false) {
@@ -955,7 +966,7 @@ extern "C" int bankai_gui(int argc, char **argv) {
       QLocalSocket client;
       client.connectToServer(socketName);
       if (client.waitForConnected(300)) {
-        client.write(args.contains("backups") ? "backups\n" : "open\n");
+        client.write(args.contains("tray") ? "tray\n" : (args.contains("backups") ? "backups\n" : "open\n"));
         client.waitForBytesWritten(300);
         client.disconnectFromServer();
         return 0;
@@ -1018,9 +1029,9 @@ extern "C" int bankai_gui(int argc, char **argv) {
           if (!QSystemTrayIcon::isSystemTrayAvailable()) {
             window.tray->hide();
             app.setQuitOnLastWindowClosed(true);
-            window.showWindow();
+            window.showMinimized();
             window.notice->setText(
-                "The tray is unavailable, so Bankai Rust opened its window.");
+                "The tray is unavailable; Bankai Rust is minimized in the taskbar.");
           }
         });
     }

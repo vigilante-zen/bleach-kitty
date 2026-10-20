@@ -9,3 +9,9 @@ Artwork was produced during development using the built-in imagegen tool. The ma
 The code's MIT license does not grant rights in Bleach characters, names, trademarks, or the character artwork. No ownership of third-party Bleach intellectual property or endorsement is claimed. Review these separate artwork terms and your intended use before redistribution. No blanket commercial-use license for the artwork is provided by this repository.
 
 Nemu Kurotsuchi, Askin Nakk Le Vaar, Lille Barro and Yachiru Kusajishi were added on 2026-10-20 with matching color and manga portraits. [Exact prompts, references and output hashes](prompts/additions-20261020/PROMPTS.json) are preserved for all eight new assets.
+
+## Login and boot artwork
+
+The [manga login screen](../login/README.md) reuses `files/.config/fastfetch/manga/dangai-ichigo.png` unchanged as `login/theme/assets/ichigo.png`. It is an existing unofficial AI-generated portrait, with the same artwork terms above. The paper layout, ink borders and lettering are drawn by QML; `login/preview.png` is a rendered UI preview using dummy login data.
+
+The [Ichigo boot splash](../boot/README.md) has its own [asset and prompt record](../boot/ARTWORK.json). Its character cutout is also excluded from the code MIT license. Aura, particle and loading-bar assets are generated from code-native geometry. Hollow-mask boot assets have been removed; the current splash always uses Ichigo.

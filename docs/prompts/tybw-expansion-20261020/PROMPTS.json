@@ -10,7 +10,7 @@
         "desktop/shared/wallpapers/ichigo-desktop.png",
         "files/.config/fastfetch/portraits/renji-bankai.png"
       ],
-      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition/lighting only, replace Ichigo with Renji Abarai. Reference 2 is Renji's identity reference. Depict his Thousand-Year Blood War TRUE BANKAI S\u014d\u014d Zabimaru: adult muscular man, long red ponytail, black zigzag forehead tattoos; black shinigami robes, large white fur mantle over the left shoulder, bony snake skull gauntlet over his right wrist, huge broad black cleaver blade extending from the gauntlet. Recognizable stylized baboon skeletal arm structure at the opposite side. Clear anatomy, two arms. Confident determined expression. Ruined Seireitei rooftops and scattered masonry below, sparse crimson reiatsu at edges. Palette charcoal, deep burgundy, restrained crimson, bone ivory. Original unofficial fan art, preserve canonical TYBW costume cues."
+      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition/lighting only, replace Ichigo with Renji Abarai. Reference 2 is Renji's identity reference. Depict his Thousand-Year Blood War TRUE BANKAI Sōō Zabimaru: adult muscular man, long red ponytail, black zigzag forehead tattoos; black shinigami robes, large white fur mantle over the left shoulder, bony snake skull gauntlet over his right wrist, huge broad black cleaver blade extending from the gauntlet. Recognizable stylized baboon skeletal arm structure at the opposite side. Clear anatomy, two arms. Confident determined expression. Ruined Seireitei rooftops and scattered masonry below, sparse crimson reiatsu at edges. Palette charcoal, deep burgundy, restrained crimson, bone ivory. Original unofficial fan art, preserve canonical TYBW costume cues."
     },
     {
       "id": "hitsugaya",
@@ -18,7 +18,7 @@
         "desktop/shared/wallpapers/rukia-desktop.png",
         "files/.config/fastfetch/portraits/hitsugaya-bankai.png"
       ],
-      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition/landscape mood only; replace Rukia with Toshiro Hitsugaya. Reference 2 is identity reference for his Thousand-Year Blood War MATURED DAIGUREN HY\u014cRINMARU form: ADULT tall lean man with swept-back long white hair and teal eyes, recognizable mature masculine face, black shinigami robes and torn white captain haori, crystalline ice dragon wings and ice gauntlets/greaves, long katana. Not his child form, not a female kimono. Full adult figure on far right. Frozen ruined Seireitei skyline and shards of ice across lower edge, sparse frost at outer edges. Palette charcoal navy, silver white, pale cyan. Original unofficial fan art with canonical TYBW design cues."
+      "prompt": "Use case: stylized-concept. Asset: complete landscape desktop wallpaper, wide 16:9 composition. Match the refined painterly anime-ink treatment of the landscape reference, with deep near-black charcoal navy negative space across the central 55 percent for desktop windows. Full-body main character on the FAR RIGHT quarter, entirely visible with safe margins. Atmospheric landscape across the bottom and subtle energy near outer edges only. No text, lettering, watermark, logo, panels, border or UI. One standalone full scene. Reference 1 is composition/landscape mood only; replace Rukia with Toshiro Hitsugaya. Reference 2 is identity reference for his Thousand-Year Blood War MATURED DAIGUREN HYŌRINMARU form: ADULT tall lean man with swept-back long white hair and teal eyes, recognizable mature masculine face, black shinigami robes and torn white captain haori, crystalline ice dragon wings and ice gauntlets/greaves, long katana. Not his child form, not a female kimono. Full adult figure on far right. Frozen ruined Seireitei skyline and shards of ice across lower edge, sparse frost at outer edges. Palette charcoal navy, silver white, pale cyan. Original unofficial fan art with canonical TYBW design cues."
     },
     {
       "id": "kenpachi",
@@ -162,6 +162,19 @@
       "sha256": "932cdd8ab9115af6639d4bfba0062d129fdc1bf4234359d6324667904ba13bcc",
       "width": 1254,
       "height": 1254
+    }
+  ],
+  "corrections": [
+    {
+      "id": "ichigo-wallpaper-arm-correction",
+      "date": "2026-10-20",
+      "reference": "desktop/shared/wallpapers/ichigo-desktop.png (before correction)",
+      "reference_sha256": "fd1ecfdecc1077f5838e742f33a2d2941531c34f378533b4f32ba902d17ac5ad",
+      "prompt": "Edit this existing wide 16:9 anime-inspired Bleach TYBW True Shikai Ichigo desktop wallpaper. Make a visible pose correction to Ichigo's right arm (on viewer's right): bring it clearly outward from the right shoulder, with a distinct natural elbow and forearm silhouette in front of the robe, ending in a clearly visible hand holding the hilt of the shorter sword at his right side. Keep the left arm extended down to hold the large long blade angled toward the lower left. Ensure exactly two anatomically connected arms and hands. Preserve Ichigo's face, orange hair, black shihakusho, white crossed straps, overall composition, dark negative space across the left and center, orange ember lighting, storm and ruined Soul Society skyline. No text or watermark.",
+      "output": "desktop/shared/wallpapers/ichigo-desktop.png",
+      "output_sha256": "4cdc52c3801431e09952605e50b4a8610f8e8529d18bf5ef302229dd5a1d375a",
+      "width": 1672,
+      "height": 941
     }
   ]
 }

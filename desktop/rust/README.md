@@ -15,10 +15,18 @@ You can also search **Bankai Rust** in KDE's app launcher. The existing Python e
 
 Both editions read the same saved preset, character artwork, KDE settings, Kitty accents, portrait selection, snapshots and protected-snapshot list. Applying a preset or restoring a snapshot changes the shared desktop. Comparing their windows and previews is read-only; do not apply competing presets from both editions simultaneously.
 
+## Terminal artwork controls
+
+Under **Terminal & tools**, choose **Random characters** or an installed portrait, then **Color**, **Manga**, or **Mixed color and manga**, and click **Save terminal artwork**. Changes apply to new terminal tabs. Random rotation uses the groups and favorites configured in the terminal. Color artwork is used when manga is unavailable. Existing shell-only overrides continue to take precedence in that shell; use `bankai-pick --session reset` to follow saved preferences.
+
+Desktop preset changes now preserve terminal portrait and art preferences. Select the matching portrait explicitly here if desired. The Python app still uses its original preset behavior. Settings use the same files as `bankai-pick` and `bankai-art`, and external changes appear in the app.
+
+These controls require rebuilding from this source. The previously installed executable predates this change.
+
 ## Ported behavior
 
 - All eight presets, wallpaper previews, explicit Apply, and automatic snapshots before changes.
-- KDE desktop and lock-screen wallpaper, color schemes, terminal accents, and saved greeting portrait.
+- KDE desktop and lock-screen wallpaper, color schemes and terminal accents; independent terminal portrait and art preferences.
 - Hollow-mask tray icon colored for the saved character; updates after command-line changes.
 - Tray preset selection, terminal and monitor launchers, snapshot creation, and window reopening.
 - Background workers run the same Rust binary; action errors are shown and active operations prevent quitting.

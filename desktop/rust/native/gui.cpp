@@ -130,7 +130,7 @@ public:
   QStackedWidget *pages;
   Artwork *art;
   QLabel *saved, *notice, *previewNote, *storage, *snapshotDetails;
-  QComboBox *snapshots;
+  QComboBox *snapshots, *portraitChoice, *portraitArt;
   QSpinBox *keep;
   QCheckBox *autostart;
   QPushButton *verifyButton, *restoreButton, *protectButton, *cleanupButton,
@@ -269,7 +269,7 @@ public:
     layout->setSpacing(13);
     layout->addWidget(label("Make it yours", "heading"));
     layout->addWidget(
-        label("Matching wallpaper, lock screen, colors and terminal portrait. "
+        label("Matching wallpaper, lock screen and desktop colors. "
               "Four presets fit your 21:9 monitors.",
               "muted"));
     art = new Artwork;
@@ -388,6 +388,26 @@ public:
     layout->addWidget(label("At your command", "heading"));
     layout->addWidget(label(
         "Your existing portraits, favorites, greetings and monitor.", "muted"));
+    layout->addWidget(label("TERMINAL ARTWORK", "eyebrow"));
+    portraitChoice = new QComboBox;
+    portraitChoice->setAccessibleName("Terminal character");
+    portraitChoice->addItem("Random characters", "random");
+    layout->addWidget(portraitChoice);
+    portraitArt = new QComboBox;
+    portraitArt->setAccessibleName("Portrait art style");
+    portraitArt->addItem("Color", "color");
+    portraitArt->addItem("Manga", "manga");
+    portraitArt->addItem("Mixed color and manga", "mixed");
+    layout->addWidget(portraitArt);
+    layout->addWidget(button("Save terminal artwork", [this] {
+      startTask({{"op", "save-portraits"},
+                 {"choice", portraitChoice->currentData().toString()},
+                 {"art", portraitArt->currentData().toString()}},
+                "Saving terminal artwork…");
+    }, true));
+    layout->addWidget(label("Applies to new terminal tabs. Desktop presets preserve your choice. "
+                            "Random uses your existing groups and favorites. "
+                            "Color fills in when manga is unavailable.", "muted"));
     layout->addWidget(button(
         "Terminal settings",
         [this] { terminal("bankai-settings", "Bankai settings"); }, true));
@@ -415,10 +435,31 @@ public:
                             "preference. Choose the edition you want to run.",
                             "muted"));
     layout->addStretch();
-    return page;
+    auto *scroll = new QScrollArea;
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setWidget(page);
+    return scroll;
   }
   void refreshStatus() {
     try {
+      auto artwork = rpc({{"op", "portraits"}}).toObject();
+      // Keep unsaved selections while polling; reload when saved preferences change.
+      auto signature = QJsonDocument(artwork).toJson(QJsonDocument::Compact);
+      if (portraitChoice->property("savedArtwork").toByteArray() != signature) {
+        QSignalBlocker choiceBlock(portraitChoice), artBlock(portraitArt);
+        portraitChoice->clear();
+        portraitChoice->addItem("Random characters", "random");
+        for (auto value : artwork.value("portraits").toArray()) {
+          auto id = value.toString();
+          auto title = id;
+          title.replace('-', ' ');
+          portraitChoice->addItem(title, id);
+        }
+        portraitChoice->setCurrentIndex(qMax(0, portraitChoice->findData(artwork.value("choice").toString())));
+        portraitArt->setCurrentIndex(qMax(0, portraitArt->findData(artwork.value("art").toString())));
+        portraitChoice->setProperty("savedArtwork", signature);
+      }
       auto status = rpc({{"op", "status"}}).toObject();
       auto id = status.value("current").toString();
       auto p = preset(id);
@@ -567,6 +608,8 @@ public:
     if (process)
       return;
     notice->setText(progress);
+    portraitChoice->setEnabled(false);
+    portraitArt->setEnabled(false);
     output.clear();
     log->clear();
     for (auto *b : buttons)
@@ -624,6 +667,8 @@ public:
     if (process != worker)
       return;
     process = nullptr;
+    portraitChoice->setEnabled(true);
+    portraitArt->setEnabled(true);
     slowTimer.stop();
     for (auto *b : buttons)
       b->setEnabled(true);

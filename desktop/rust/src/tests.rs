@@ -52,7 +52,7 @@ fn rename_snapshot(f:&Fixture,name:&str){let created=snapshot(f);fs::rename(f.ap
 #[test]fn all_presets_apply_offline_and_update_both_displays(){
     let f=Fixture::new();for p in f.app.catalog.get("presets").unwrap().array().unwrap(){let id=p.get("id").unwrap().text().unwrap();let result=presets::apply(&f.app,id).unwrap();assert!(result.get("pending").unwrap().boolean().unwrap());
         assert_eq!(fs::read_to_string(f.app.data.join("current")).unwrap().trim(),id);
-        assert_eq!(fs::read_to_string(f.app.home.join(".config/fastfetch/portrait-choice")).unwrap().trim(),p.get("portrait").unwrap().text().unwrap());
+        assert!(!f.app.home.join(".config/fastfetch/portrait-choice").exists());
         let applets=fs::read_to_string(f.app.home.join(".config/plasma-org.kde.plasma.desktop-appletsrc")).unwrap();assert_eq!(applets.matches("Image=file://").count(),2);
     }
     let kitty=fs::read_to_string(f.app.home.join(".config/kitty/kitty.conf")).unwrap();assert_eq!(kitty.matches("include themes/bleach-desktop.conf").count(),1);
@@ -74,3 +74,28 @@ fn rename_snapshot(f:&Fixture,name:&str){let created=snapshot(f);fs::rename(f.ap
     symlink(f.app.home.join(".config/kdeglobals"),f.app.snapshots.join("20261019-210001-000000/link")).unwrap();assert!(snapshots::plan(&f.app,1).unwrap().get("candidates").unwrap().array().unwrap().is_empty());
 }
 #[test]fn corrupt_protection_metadata_disables_cleanup(){let f=Fixture::new();write(&f.app.state.join("protected-snapshots.json"),"not json");assert!(snapshots::plan(&f.app,1).is_err());}
+
+#[test] fn portrait_preferences_validate_and_survive_presets() {
+    let f = Fixture::new();
+    write(&f.app.home.join(".config/fastfetch/portraits/urahara.png"), "image");
+    portraits::save(&f.app, &obj! { "choice" => "random", "art" => "mixed" }).unwrap();
+    presets::apply(&f.app, "ichigo").unwrap();
+    let status = portraits::status(&f.app).unwrap();
+    assert_eq!(status.get("choice").unwrap().text().unwrap(), "random");
+    assert_eq!(status.get("art").unwrap().text().unwrap(), "mixed");
+    portraits::save(&f.app, &obj! { "choice" => "urahara", "art" => "manga" }).unwrap();
+    presets::apply(&f.app, "rukia").unwrap();
+    assert_eq!(portraits::status(&f.app).unwrap().get("choice").unwrap().text().unwrap(), "urahara");
+    for (choice, art) in [("../outside", "color"), ("missing", "color"), ("random", "invalid")] {
+        assert!(portraits::save(&f.app, &obj! { "choice" => choice, "art" => art }).is_err());
+    }
+    assert_eq!(portraits::status(&f.app).unwrap().get("art").unwrap().text().unwrap(), "manga");
+}
+#[test] fn portrait_symlink_is_rejected() {
+    let f = Fixture::new();
+    let outside = f.app.home.join("outside"); write(&outside, "unchanged");
+    let path = f.app.home.join(".config/fastfetch/portrait-art-mode");
+    fs::create_dir_all(path.parent().unwrap()).unwrap(); symlink(&outside, &path).unwrap();
+    assert!(portraits::save(&f.app, &obj! { "choice" => "random", "art" => "color" }).is_err());
+    assert_eq!(fs::read_to_string(outside).unwrap(), "unchanged");
+}

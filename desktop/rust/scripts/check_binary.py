@@ -127,11 +127,31 @@ class CompiledRustChecks(unittest.TestCase):
             result = self.rpc('apply', preset=preset['id'])
             self.assertTrue(result['pending'])
             self.assertEqual((self.home / '.local/share/bleach-desktop/current').read_text().strip(), preset['id'])
-            self.assertEqual((self.home / '.config/fastfetch/portrait-choice').read_text().strip(), preset['portrait'])
+            self.assertFalse((self.home / '.config/fastfetch/portrait-choice').exists())
             settings = (self.home / '.config/plasma-org.kde.plasma.desktop-appletsrc').read_text()
             self.assertEqual(settings.count('Image=file://'), 2)
         self.assertEqual((self.home / '.config/kitty/kitty.conf').read_text().count('include themes/bleach-desktop.conf'), 1)
         self.assertIn('Unrelated=preserved', (self.home / '.config/kdeglobals').read_text())
+
+    def test_portrait_preferences_survive_desktop_switches(self):
+        self.write('.config/fastfetch/portraits/urahara.png', 'test image')
+        self.assertEqual(self.rpc('portraits')['portraits'], ['urahara'])
+        for choice, art in [('random', 'mixed'), ('urahara', 'manga'), ('random', 'color')]:
+            self.rpc('save-portraits', choice=choice, art=art)
+            self.rpc('apply', preset='ichigo')
+            state = self.rpc('portraits')
+            self.assertEqual((state['choice'], state['art']), (choice, art))
+        for choice, art in [('../outside', 'color'), ('missing', 'color'), ('random', 'bad')]:
+            self.rpc('save-portraits', choice=choice, art=art, fail=True)
+        self.assertEqual(self.rpc('portraits')['art'], 'color')
+
+    def test_portrait_symlink_does_not_modify_external_file(self):
+        target = self.write('outside-art', 'untouched')
+        path = self.home / '.config/fastfetch/portrait-art-mode'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.symlink_to(target)
+        self.rpc('save-portraits', choice='random', art='manga', fail=True)
+        self.assertEqual(target.read_text(), 'untouched')
 
     def test_missing_asset_keeps_active_settings(self):
         (self.home / 'Pictures/Bleach-TYBW/Wallpapers/urahara-desktop.png').unlink()

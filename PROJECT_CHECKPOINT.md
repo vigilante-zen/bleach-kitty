@@ -7,6 +7,12 @@ This file records a continuation point for the Bankai desktop project.
 - Starting checkpoint: `b28bb11` (`Make Python preset application transactional`); the continuation note was committed as `35c3443`.
 - Preserve the six user-local screenshots in `artifacts/`; they are untracked and should not be deleted or replaced.
 
+## Current verification checkpoint
+
+At `58c938a` and later, the full local CI-equivalent check passed: 57 repository installer/package tests, 23 Python snapshot-manager checks, the Python runtime check, 20 offscreen control-center checks (one local-socket check skipped because this environment blocks sockets), 39 Rust tests, Clippy with warnings denied, an optimized Rust build, 22 compiled Rust integration checks, shared command routing, and create/restore verification for the Python, Rust-source, and prebuilt Rust release archives. Temporary package outputs were written under `/tmp/bankai-ci-packages`.
+
+The current branch remains local-only because this environment cannot resolve `github.com`; `main` is ahead of `origin/main`. The untracked `artifacts/` screenshots remain user data.
+
 ## Latest completed work
 
 Snapshot restore in both Rust and Python now stages and verifies all target bytes before applying them. Replacements and absent-file deletions are transactional: if a later operation fails, earlier files are restored with their original contents and permissions. Failure-injection tests cover a restore that has already replaced and deleted files before failing. Python and Rust also reject a boolean manifest version instead of treating JSON `true` as integer version `1`.

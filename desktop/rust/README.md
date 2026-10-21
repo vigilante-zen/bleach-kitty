@@ -31,7 +31,7 @@ The Rust unit suite, compiled-binary integration checks and offscreen native smo
 
 ## Keyboard and screen reader use
 
-Use Tab and Shift+Tab to move through controls. In the character picker, `/` focuses search, the arrow keys move between character cards, and Enter selects one. Focused buttons, fields, lists and checkboxes have a contrasting outline. Regular control text follows the desktop's configured UI font and size. Screen-reader names and descriptions identify the current artwork previews, character filters, Random pool, login shuffle controls and snapshot actions. Actual announcements still need checking with a screen reader in a live KDE session.
+Use Tab and Shift+Tab to move through controls. In the character picker, `/` focuses search, the arrow keys move between character cards, and Enter selects one. Focused buttons, fields, lists and checkboxes have a contrasting outline. Regular control text follows the desktop's configured UI font and size. Screen-reader names and descriptions identify the current artwork previews, character filters, Random pool, login shuffle controls and snapshot actions. On Qt 6.8 or newer, the picker politely announces the matching-character count after typing pauses. Actual spoken output still needs checking with a screen reader in a live KDE session.
 
 ## Ported behavior
 

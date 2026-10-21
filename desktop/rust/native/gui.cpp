@@ -954,6 +954,19 @@ public:
     resultCount->setAccessibleDescription(
         "Number of character cards shown by the current search and faction filter.");
     layout->addWidget(resultCount);
+    auto *announcementTimer = new QTimer(&dialog);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    announcementTimer->setSingleShot(true);
+    announcementTimer->setInterval(350);
+    connect(announcementTimer, &QTimer::timeout, announcementTimer,
+            [resultCount = QPointer<QLabel>(resultCount)] {
+      if (!resultCount || !resultCount->isVisible() || !QAccessible::isActive())
+        return;
+      QAccessibleAnnouncementEvent event(resultCount, resultCount->text());
+      event.setPoliteness(QAccessible::AnnouncementPoliteness::Polite);
+      QAccessible::updateAccessibility(&event);
+    });
+#endif
     auto *scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
@@ -973,6 +986,7 @@ public:
     int gridAvailableWidth = dialog.width();
     auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites,
                     &recentlyUsed, &displayNames, &dialog, &gridAvailableWidth,
+                    announcementTimer,
                     resultCount]() {
       QString focusedId;
       for (int index = 0; index < grid->count(); ++index)
@@ -1090,9 +1104,18 @@ public:
       else
         empty->setText("No characters in this group. Try another filter.");
       empty->setVisible(noCards);
-      resultCount->setText(QString("%1 character%2")
-                               .arg(grid->count())
-                               .arg(grid->count() == 1 ? "" : "s"));
+      const auto countText = QString("%1 character%2")
+                                 .arg(grid->count())
+                                 .arg(grid->count() == 1 ? "" : "s");
+      const bool resultCountChanged = resultCount->text() != countText;
+      resultCount->setText(countText);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+      if (resultCountChanged && dialog.isVisible())
+        announcementTimer->start();
+#else
+      Q_UNUSED(announcementTimer);
+      Q_UNUSED(resultCountChanged);
+#endif
       gridPage->adjustSize();
       if (restoreFocus)
         QTimer::singleShot(0, restoreFocus,

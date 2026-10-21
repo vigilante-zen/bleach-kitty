@@ -62,7 +62,9 @@ pub fn create(app: &App) -> Result<Value> {
         if entries.is_empty() { return Err("No theme files were found".into()); }
         let absent = catalog_strings(app, "files")?.into_iter().filter(|p| !app.home.join(p).exists()).map(Value::from).collect::<Vec<_>>();
         let manifest = obj! { "version" => 1u64, "files" => entries, "absent" => absent };
-        fsutil::atomic_write(&partial.join("manifest.json"), manifest.dump().as_bytes(), Some(0o600))?;
+        let manifest_text = manifest.dump();
+        if manifest_text.len() > fsutil::MAX_JSON_BYTES { return Err("Snapshot manifest exceeds the 16 MiB size limit".into()); }
+        fsutil::atomic_write(&partial.join("manifest.json"), manifest_text.as_bytes(), Some(0o600))?;
         let name = fsutil::timestamp();
         let destination = app.snapshots.join(&name);
         if destination.exists() { return Err("Snapshot name collision; retry the operation".into()); }

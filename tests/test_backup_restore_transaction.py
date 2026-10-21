@@ -16,6 +16,15 @@ spec.loader.exec_module(backup)
 
 
 class RestoreTransactionChecks(unittest.TestCase):
+    def test_oversized_snapshot_manifest_is_rejected_before_json_parsing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            snapshot = home / 'Backups/Bleach-Desktop/20261021-120000-000001'
+            snapshot.mkdir(parents=True)
+            (snapshot / 'manifest.json').write_bytes(b' ' * (backup.MAX_MANIFEST_BYTES + 1))
+            with self.assertRaisesRegex(ValueError, '16 MiB size limit'):
+                backup.verify_manifest(snapshot, home)
+
     def test_boolean_manifest_version_is_not_accepted_as_integer_one(self):
         with tempfile.TemporaryDirectory() as folder:
             home = Path(folder)

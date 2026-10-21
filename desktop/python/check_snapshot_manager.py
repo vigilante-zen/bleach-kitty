@@ -84,6 +84,13 @@ class SnapshotManagementChecks(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.store.plan(1)
 
+    def test_oversized_manifest_is_ineligible_without_parsing(self):
+        path = self.store.root / self.names[0] / 'manifest.json'
+        path.write_bytes(b' ' * (16 * 1024 * 1024 + 1))
+        row = next(item for item in self.store.scan() if item['name'] == self.names[0])
+        self.assertFalse(row['eligible'])
+        self.assertIn('16 MiB size limit', row['reason'])
+
     def test_cannot_escape_snapshot_directory(self):
         plan = self.store.plan(1)
         plan['candidates'][0]['name'] = '../outside'

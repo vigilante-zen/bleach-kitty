@@ -1,6 +1,7 @@
 use std::{fs::{self, File, OpenOptions}, io::{Read, Write}, os::fd::AsRawFd, os::unix::fs::PermissionsExt, path::{Component, Path, PathBuf}, time::{SystemTime, UNIX_EPOCH}};
 use crate::json::{self, Value};
 pub type Result<T> = std::result::Result<T, String>;
+pub const MAX_JSON_BYTES: usize = 16 * 1024 * 1024;
 pub trait TextResult<T> { fn text(self) -> Result<T>; }
 impl<T, E: std::fmt::Display> TextResult<T> for std::result::Result<T,E> {
     fn text(self) -> Result<T> { self.map_err(|e| e.to_string()) }
@@ -97,8 +98,8 @@ pub fn hash_bytes(data: &[u8]) -> String {
 }
 pub fn read_json(path: &Path) -> Result<Value> {
     let mut bytes = vec![];
-    File::open(path).text()?.take(16 * 1024 * 1024 + 1).read_to_end(&mut bytes).text()?;
-    if bytes.len() > 16 * 1024 * 1024 { return Err("JSON file exceeds the size limit".into()); }
+    File::open(path).text()?.take((MAX_JSON_BYTES + 1) as u64).read_to_end(&mut bytes).text()?;
+    if bytes.len() > MAX_JSON_BYTES { return Err("JSON file exceeds the size limit".into()); }
     json::parse(&String::from_utf8(bytes).text()?)
 }
 pub fn remove_if_exists(path: &Path) -> Result<()> {

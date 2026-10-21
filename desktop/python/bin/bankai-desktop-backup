@@ -20,6 +20,7 @@ FILES = ['.config/fish/config.fish', '.config/fish/functions/fish_prompt.fish',
          '.local/share/applications/bleach-monitor.desktop',
          '.local/share/icons/hicolor/scalable/apps/bleach-bankai.svg']
 PATTERNS = ['.config/fish/functions/bankai-*.fish', '.config/fish/completions/bankai-*.fish']
+MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 
 
 def digest(path):
@@ -63,7 +64,10 @@ def create(home, root):
             shutil.copy2(path, dest)
             entries.append({'path': relative, 'sha256': digest(dest),
                             'mode': stat.S_IMODE(dest.stat().st_mode)})
-        (temporary / 'manifest.json').write_text(json.dumps({'version': 1, 'files': entries, 'absent': [p for p in sorted(set(FILES)) if not (home / p).exists()]}, indent=2) + '\n')
+        manifest = json.dumps({'version': 1, 'files': entries, 'absent': [p for p in sorted(set(FILES)) if not (home / p).exists()]}, indent=2) + '\n'
+        if len(manifest.encode()) > MAX_MANIFEST_BYTES:
+            raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
+        (temporary / 'manifest.json').write_text(manifest)
         final = root / name
         temporary.rename(final)
         return final, len(entries)
@@ -76,7 +80,10 @@ def verify_manifest(snapshot, home):
     reject_links(snapshot, snapshot.parent)
     manifest = snapshot / 'manifest.json'
     reject_links(manifest, snapshot)
-    data = json.loads(manifest.read_text())
+    raw = manifest.read_bytes()
+    if len(raw) > MAX_MANIFEST_BYTES:
+        raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
+    data = json.loads(raw)
     if not isinstance(data, dict) or type(data.get('version')) is not int or data['version'] != 1 or not isinstance(data.get('files'), list) or not data['files']:
         raise ValueError('Invalid snapshot manifest.')
     seen = set()

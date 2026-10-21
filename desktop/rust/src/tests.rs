@@ -155,6 +155,11 @@ fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
     if let Value::Object(map)=&mut manifest{map.insert("version".into(),Value::from(true));}
     fs::write(&path,manifest.dump()).unwrap();assert!(snapshots::verify(&f.app,&name).is_err());
 }
+#[test]fn oversized_snapshot_manifest_is_rejected(){
+    let f=Fixture::new();let name=snapshot(&f);let path=f.app.snapshots.join(&name).join("manifest.json");
+    fs::write(&path,vec![b' ';fsutil::MAX_JSON_BYTES+1]).unwrap();
+    assert!(snapshots::verify(&f.app,&name).unwrap_err().contains("size limit"));
+}
 #[test]fn symlink_destination_is_rejected(){
     let f=Fixture::new();let name=snapshot(&f);let outside=f.app.home.join("outside");write(&outside,"untouched");let target=f.app.home.join(".config/kitty/kitty.conf");fs::remove_file(&target).unwrap();symlink(&outside,&target).unwrap();
     assert!(snapshots::restore(&f.app,&name).is_err());assert_eq!(fs::read_to_string(outside).unwrap(),"untouched");

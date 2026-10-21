@@ -13,6 +13,7 @@ import tempfile
 
 BASELINE = '20261019-202424-204727'
 NAME = re.compile(r'^\d{8}-\d{6}-\d{6}$')
+MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 
 
 def format_size(size):
@@ -88,6 +89,8 @@ class SnapshotStore:
                    'baseline': path.name == BASELINE, 'eligible': False, 'reason': ''}
             try:
                 raw = manifest.read_bytes()
+                if len(raw) > MAX_MANIFEST_BYTES:
+                    raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
                 data = json.loads(raw)
                 entries = data.get('files') if isinstance(data, dict) else None
                 if data.get('version') != 1 or not isinstance(entries, list) or not entries:

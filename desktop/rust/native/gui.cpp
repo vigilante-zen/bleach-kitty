@@ -139,6 +139,8 @@ public:
   QListWidget *navigation;
   QStackedWidget *pages;
   QGridLayout *presetGrid = nullptr;
+  QLineEdit *presetSearch = nullptr;
+  QLabel *presetEmpty = nullptr;
   int presetColumns = 4;
   Artwork *art;
   QLabel *saved, *notice, *previewNote, *storage, *snapshotDetails;
@@ -270,13 +272,29 @@ public:
     if (!presetGrid || columns == presetColumns)
       return;
     presetColumns = columns;
+    layoutPresetCards();
+  }
+  void layoutPresetCards() {
+    if (!presetGrid)
+      return;
     for (auto *card : cards) presetGrid->removeWidget(card);
     int index = 0;
     for (auto value : presets) {
-      auto *card = cards.value(value.toObject().value("id").toString());
-      presetGrid->addWidget(card, index / columns, index % columns);
+      const auto p = value.toObject();
+      const auto id = p.value("id").toString();
+      auto *card = cards.value(id);
+      const auto query = presetSearch ? presetSearch->text().trimmed() : QString();
+      const auto searchable = id + " " + p.value("title").toString() + " " + p.value("subtitle").toString();
+      if (!query.isEmpty() && !searchable.contains(query, Qt::CaseInsensitive)) {
+        card->hide();
+        continue;
+      }
+      presetGrid->addWidget(card, index / presetColumns, index % presetColumns);
+      card->show();
       ++index;
     }
+    if (presetEmpty)
+      presetEmpty->setVisible(index == 0);
     presetGrid->parentWidget()->layout()->activate();
   }
   QPushButton *button(const QString &text, std::function<void()> fn,
@@ -367,6 +385,19 @@ public:
               "muted"));
     art = new Artwork;
     layout->addWidget(art, 1);
+    presetSearch = new QLineEdit;
+    presetSearch->setObjectName("preset-search");
+    presetSearch->setPlaceholderText("Search characters and forms…  ( / to focus )");
+    presetSearch->setClearButtonEnabled(true);
+    presetSearch->setAccessibleName("Search character presets");
+    layout->addWidget(presetSearch);
+    auto *presetSearchShortcut = new QShortcut(QKeySequence(Qt::Key_Slash), page);
+    presetSearchShortcut->setObjectName("preset-search-shortcut");
+    presetSearchShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(presetSearchShortcut, &QShortcut::activated, presetSearch, [this] {
+      presetSearch->setFocus(Qt::ShortcutFocusReason);
+      presetSearch->selectAll();
+    });
     auto *grid = new QGridLayout;
     presetGrid = grid;
     auto *group = new QButtonGroup(this);
@@ -377,6 +408,8 @@ public:
       auto id = p.value("id").toString();
       auto *card = new QToolButton;
       card->setCheckable(true);
+      card->setObjectName("preset-card");
+      card->setAccessibleName(p.value("title").toString());
       card->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
       card->setText(p.value("title").toString());
       card->setToolTip(p.value("subtitle").toString());
@@ -393,6 +426,12 @@ public:
       ++i;
     }
     layout->addLayout(grid);
+    presetEmpty = label("No characters match that search. Try another term.", "muted");
+    presetEmpty->setObjectName("preset-empty-state");
+    presetEmpty->hide();
+    layout->addWidget(presetEmpty);
+    connect(presetSearch, &QLineEdit::textChanged, this,
+            [this] { layoutPresetCards(); });
     previewNote = label("", "muted");
     layout->addWidget(previewNote);
     auto *actions = new QHBoxLayout;
@@ -1072,7 +1111,7 @@ public:
   }
   void appearanceOptions() {
     auto value = rpc({{"op", "appearance"}}).toObject();
-    QDialog dialog(this); dialog.setWindowTitle("Appearance options");
+    QDialog dialog(this); dialog.setObjectName("appearance-options-dialog"); dialog.setWindowTitle("Appearance options");
     auto *layout = new QVBoxLayout(&dialog); auto *form = new QFormLayout;
     layout->addLayout(form);
     auto *edition = new QComboBox; edition->addItem("Color", "color"); edition->addItem("Manga", "manga");
@@ -1100,6 +1139,30 @@ public:
     }
     auto *note = new QLabel("Save options, then Apply a background for wallpaper and accent changes. Login choice syncs after one-time system setup. Enable only one Bankai edition at login for shuffle.");
     note->setWordWrap(true); layout->addWidget(note);
+    auto *reset = new QPushButton("Reset to defaults");
+    reset->setObjectName("reset-appearance");
+    layout->addWidget(reset);
+    connect(reset, &QPushButton::clicked, &dialog, [this, &dialog] {
+      auto *confirm = new QMessageBox(QMessageBox::Question, "Reset appearance",
+          "Restore Bankai's default appearance settings and apply the TYBW preset?",
+          QMessageBox::Yes | QMessageBox::Cancel, &dialog);
+      confirm->setObjectName("reset-confirmation");
+      confirm->setDefaultButton(QMessageBox::Cancel);
+      confirm->setAttribute(Qt::WA_DeleteOnClose);
+      connect(confirm, &QMessageBox::finished, &dialog, [this, &dialog](int result) {
+        if (result != QMessageBox::Yes)
+          return;
+        try {
+          rpc({{"op", "reset-appearance"}});
+          selectPreset("tybw");
+          notice->setText("Appearance settings and desktop reset to Bankai defaults.");
+          dialog.accept();
+        } catch (const std::exception &e) {
+          QMessageBox::information(&dialog, "Reset appearance", QString::fromUtf8(e.what()));
+        }
+      });
+      confirm->open();
+    });
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save|QDialogButtonBox::Cancel); layout->addWidget(buttons);
     connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
     connect(buttons,&QDialogButtonBox::accepted,&dialog,[&] {
@@ -1301,6 +1364,27 @@ static int smoke(Window &window, const QString &directory) {
   window.selectPreset(initial.toString());
   window.show();
   qApp->processEvents();
+  auto *presetSearch = window.findChild<QLineEdit *>("preset-search");
+  auto *presetSearchShortcut = window.findChild<QShortcut *>("preset-search-shortcut");
+  if (!presetSearch || !window.findChild<QLabel *>("preset-empty-state") || !presetSearchShortcut)
+    throw std::runtime_error("Appearance picker is missing search or its empty state");
+  presetSearch->setText("quincy");
+  QMetaObject::invokeMethod(presetSearchShortcut, "activated");
+  qApp->processEvents();
+  if (!presetSearch->hasFocus() || presetSearch->selectedText() != "quincy")
+    throw std::runtime_error("Slash shortcut did not focus and select desktop preset search");
+  int matchingPresets = 0;
+  for (auto *card : window.findChildren<QToolButton *>("preset-card"))
+    if (card->isVisible()) ++matchingPresets;
+  if (matchingPresets != 1)
+    throw std::runtime_error("Appearance preset search did not narrow the roster");
+  presetSearch->setText("no-such-character");
+  qApp->processEvents();
+  auto *presetEmpty = window.findChild<QLabel *>("preset-empty-state");
+  if (!presetEmpty || !presetEmpty->isVisible())
+    throw std::runtime_error("Appearance picker has no useful empty-search state");
+  presetSearch->clear();
+  qApp->processEvents();
   window.grab().save(directory + "/rust-appearance.png");
   auto appearanceBefore = rpc({{"op", "appearance"}});
   QTimer::singleShot(100, &window, [&] {
@@ -1351,9 +1435,53 @@ static int smoke(Window &window, const QString &directory) {
   }
   if (window.process)
     throw std::runtime_error("Native worker did not finish");
+  QJsonArray resetPool; resetPool.append("rukia");
+  rpc({{"op", "save-appearance"}, {"appearance", QJsonObject{
+      {"edition", "manga"}, {"accent", "#123456"}, {"login", "rukia"},
+      {"shuffle_login", true}, {"pool", resetPool}}}});
+  QString resetFailure;
+  QTimer::singleShot(3000, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
+    if (dialog && dialog->isVisible()) {
+      resetFailure += "; Appearance reset confirmation did not finish";
+      if (auto *message = qobject_cast<QMessageBox *>(QApplication::activeModalWidget()))
+        resetFailure += ": " + message->text();
+      const auto dialogs = window.findChildren<QDialog *>();
+      for (auto *pending : dialogs)
+        if (pending->isVisible()) pending->reject();
+    }
+  });
+  QTimer::singleShot(100, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
+    auto *reset = dialog ? dialog->findChild<QPushButton *>("reset-appearance") : nullptr;
+    if (!reset) { resetFailure = "Appearance options are missing reset to defaults"; return; }
+    resetFailure = "Reset confirmation test started";
+    QTimer::singleShot(50, &window, [&] {
+      auto *confirm = window.findChild<QMessageBox *>("reset-confirmation");
+      if (confirm && confirm->button(QMessageBox::Yes)) {
+        resetFailure = "Reset confirmation accepted";
+        confirm->button(QMessageBox::Yes)->click();
+      } else
+        resetFailure = "Reset action did not ask for confirmation";
+    });
+    reset->click();
+  });
+  window.appearanceOptions();
+  if (resetFailure == "Reset confirmation accepted")
+    resetFailure.clear();
+  const auto resetOptions = rpc({{"op", "appearance"}}).toObject();
+  if (!resetFailure.isEmpty() || resetOptions.value("edition").toString() != "color" ||
+      !resetOptions.value("accent").toString().isEmpty() ||
+      resetOptions.value("login").toString() != "follow" ||
+      resetOptions.value("shuffle_login").toBool() ||
+      rpc({{"op", "status"}}).toObject().value("current").toString() != "tybw")
+    throw std::runtime_error((resetFailure.isEmpty()
+        ? "Appearance dialog did not reset preferences and the active preset"
+        : resetFailure).toStdString());
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
-                         "protection, searchable character picker, worker "
+                         "protection, searchable preset and character pickers, "
+                         "appearance reset, worker "
                          "process and screenshots.\n";
   return 0;
 }

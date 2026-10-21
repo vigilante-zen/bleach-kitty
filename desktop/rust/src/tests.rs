@@ -73,6 +73,25 @@ fn rename_snapshot(f:&Fixture,name:&str){let created=snapshot(f);fs::rename(f.ap
     custom_presets::delete(&f.app,&obj!{"id"=>id}).unwrap();
     assert!(custom_presets::list(&f.app).unwrap().is_empty());
 }
+#[test]fn reset_appearance_restores_defaults_and_applies_default_desktop(){
+    let f=Fixture::new();
+    appearance::save(&f.app,&obj!{"appearance"=>obj!{"edition"=>"manga","accent"=>"#123456","login"=>"rukia","shuffle_login"=>true,"pool"=>Value::from(vec![Value::from("rukia")])}}).unwrap();
+    write(&f.app.home.join(".config/fastfetch/portrait-choice"),"random");
+    let result=appearance::reset(&f.app).unwrap();
+    assert_eq!(result.get("message").unwrap().text().unwrap(),"Appearance settings and desktop reset to Bankai defaults.");
+    assert_eq!(appearance::load(&f.app).unwrap(),appearance::defaults(&f.app).unwrap());
+    assert_eq!(fs::read_to_string(f.app.data.join("current")).unwrap().trim(),"tybw");
+    assert!(fs::read_to_string(f.app.home.join(".config/kscreenlockerrc")).unwrap().contains("bleach-tybw.png"));
+    assert_eq!(fs::read_to_string(f.app.home.join(".config/fastfetch/portrait-choice")).unwrap(),"random");
+}
+#[test]fn failed_appearance_reset_restores_saved_options(){
+    let f=Fixture::new();
+    let before=obj!{"edition"=>"manga","accent"=>"#abcdef","login"=>"rukia","shuffle_login"=>true,"pool"=>Value::from(vec![Value::from("rukia")])};
+    appearance::save(&f.app,&obj!{"appearance"=>before.clone()}).unwrap();
+    fs::remove_file(f.app.wallpapers.join("bleach-tybw.png")).unwrap();
+    assert!(appearance::reset(&f.app).is_err());
+    assert_eq!(appearance::load(&f.app).unwrap(),before);
+}
 #[test]fn missing_assets_do_not_change_settings(){let f=Fixture::new();fs::remove_file(f.app.wallpapers.join("urahara-desktop.png")).unwrap();assert!(presets::apply(&f.app,"urahara").is_err());assert!(!f.app.data.join("current").exists());}
 #[test]fn cleanup_preserves_recent_protected_and_baseline(){
     let f=Fixture::new();for i in 0..5{rename_snapshot(&f,&format!("20261019-21000{i}-000000"));}rename_snapshot(&f,snapshots::BASELINE);snapshots::protect(&f.app,"20261019-210000-000000",true).unwrap();

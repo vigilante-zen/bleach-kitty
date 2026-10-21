@@ -33,6 +33,7 @@ The terminal-artwork update passed 19 Rust unit tests, 18 compiled-binary integr
 
 - All eighteen presets, wallpaper previews, explicit Apply, and automatic snapshots before changes.
 - Named custom combinations that capture the current wallpaper, accent, and login-scene choices.
+- Searchable desktop preset cards and a confirmed reset to the default appearance settings and TYBW preset.
 - KDE desktop and lock-screen wallpaper, color schemes and terminal accents; independent terminal portrait and art preferences.
 - Hollow-mask tray icon colored for the saved character; updates after command-line changes.
 - Tray preset selection, terminal and monitor launchers, snapshot creation, and window reopening.
@@ -82,8 +83,8 @@ References: [Rust FFI](https://doc.rust-lang.org/nomicon/ffi.html), [Qt tray API
 ## Validation
 
 - The initial five Rust unit tests passed before toolchain removal.
-- Twenty integration checks pass against the compiled release executable using disposable homes. They cover all eighteen presets and two desktop containments, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, and independent autostart settings.
-- The native offscreen smoke check passed: eighteen previews and exact mask accents, nonmutating preview selection, tray action population, cleanup protection, searchable character selection, background Rust worker, and screenshots at normal/smaller sizes.
+- Twenty-two integration checks pass against the compiled release executable using disposable homes. They cover all eighteen presets and two desktop containments, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, independent autostart settings, and appearance reset behavior and recovery.
+- The native offscreen smoke check passed: eighteen previews and exact mask accents, searchable desktop and terminal character selection, nonmutating preview selection, tray action population, cleanup protection, confirmed appearance reset, background Rust worker, and screenshots at normal/smaller sizes.
 - The existing real baseline snapshot was verified read-only by Rust.
 - No real desktop settings were changed and no real snapshots were deleted during validation.
 - Live KDE tray display, cross-process single-instance activation and live color/wallpaper application remain unverified from this sandbox because it blocks session-bus and Unix-socket access.
@@ -115,7 +116,7 @@ The benchmark measurements above are historical results from the original eight-
 
 ## Lightweight interface polish
 
-The main preview decodes to at most 1024 × 640 pixels and reuses its scaled image between repaints. Original wallpaper files remain full resolution. Character cards switch between three and four columns as the window resizes. Ctrl+1, Ctrl+2 and Ctrl+3 open Appearance, Backups & restore and Terminal & tools.
+The main preview decodes to at most 1024 × 640 pixels and reuses its scaled image between repaints. Original wallpaper files remain full resolution. Character cards switch between three and four columns as the window resizes. Press `/` to focus desktop preset search. Ctrl+1, Ctrl+2 and Ctrl+3 open Appearance, Backups & restore and Terminal & tools.
 
 Backup scanning starts when Backups & restore is opened. Status checks retain unsaved portrait choices and skip decoding portrait previews when saved preferences and the desktop character are unchanged.
 

@@ -71,7 +71,7 @@ These settings control Bankai only. Minimizing other restored applications is a 
 
 ## Appearance options shared by both editions
 
-The background page offers Color/Manga wallpaper edition, an optional custom accent, fixed/following manga login scene, and a character pool for optional shuffle at login. Saving these options does not apply a desktop preset; use Apply afterward for wallpaper/accents. Login-scene choice syncs after system setup. Preferences live in `~/.local/share/bleach-desktop/appearance.json`, survive updates/uninstall and are captured by desktop snapshots. The default is color wallpaper, character accent, following login scene, and no login shuffle.
+The background page offers Color/Manga wallpaper edition, an optional custom accent, fixed/following manga login scene, and a character pool for optional shuffle at login. Saving these options does not apply a desktop preset; use Apply afterward for wallpaper/accents. In the Rust edition, **Reset to defaults** confirms and restores the default options and TYBW desktop preset; saved custom presets and separate Fastfetch portrait preferences stay intact. Login-scene choice syncs after system setup. Preferences live in `~/.local/share/bleach-desktop/appearance.json`, survive updates/uninstall and are captured by desktop snapshots. The default is color wallpaper, character accent, following login scene, and no login shuffle.
 
 Use **Save current choices** to store a named combination of the selected character wallpaper, accent and login-scene choice. Saved combinations can be previewed, applied and deleted in both editions; Bankai stores them in `~/.local/share/bleach-desktop/custom-presets.json`.
 

@@ -36,6 +36,24 @@ pub fn save(app: &App, request: &Value) -> Result<Value> {
     fsutil::atomic_write(&path,format!("{}\n",value.dump()).as_bytes(),None)?;
     Ok(obj! {"message"=>"Appearance saved. Apply a background to update wallpaper and accents. Login choice syncs after system setup."})
 }
+pub fn reset(app: &App) -> Result<Value> {
+    let previous = load(app)?;
+    save(app, &obj! { "appearance" => defaults(app)? })?;
+    match crate::presets::apply(app, "tybw") {
+        Ok(mut result) => {
+            if let Value::Object(ref mut fields) = result {
+                fields.insert("message".into(), Value::from("Appearance settings and desktop reset to Bankai defaults."));
+            }
+            Ok(result)
+        }
+        Err(error) => {
+            if let Err(restore_error) = save(app, &obj! { "appearance" => previous }) {
+                return Err(format!("{error}; failed to restore previous appearance settings: {restore_error}"));
+            }
+            Err(error)
+        }
+    }
+}
 pub fn shuffle_login(app: &App) -> Result<Value> {
     let value=load(app)?;
     if !value.get("shuffle_login")?.boolean()? {return Ok(obj!{"message"=>"Login shuffle is disabled."});}

@@ -174,6 +174,27 @@ class CompiledRustChecks(unittest.TestCase):
             self.rpc('save-appearance', appearance=bad, fail=True)
         self.assertFalse(appearance.load(self.home)['shuffle_login'])
 
+    def test_reset_appearance_restores_defaults_and_default_preset(self):
+        portrait = self.write('.config/fastfetch/portrait-choice', 'random')
+        options = dict(edition='manga', accent='#123456', login='rukia', shuffle_login=True, pool=['rukia'])
+        self.rpc('save-appearance', appearance=options)
+        self.write('Pictures/Bleach-TYBW/Wallpapers/rukia-manga.png', 'manga wallpaper')
+        self.rpc('apply', preset='rukia')
+        result = self.rpc('reset-appearance')
+        self.assertEqual(result['message'], 'Appearance settings and desktop reset to Bankai defaults.')
+        self.assertEqual(self.rpc('appearance'), dict(edition='color', accent='', login='follow',
+                                                      shuffle_login=False, pool=[row['id'] for row in CATALOG['presets']]))
+        self.assertEqual(self.rpc('status')['current'], 'tybw')
+        self.assertIn('bleach-tybw.png', (self.home / '.config/kscreenlockerrc').read_text())
+        self.assertEqual(portrait.read_text(), 'random')
+
+    def test_failed_reset_preserves_saved_appearance_options(self):
+        options = dict(edition='manga', accent='#abcdef', login='rukia', shuffle_login=True, pool=['rukia'])
+        self.rpc('save-appearance', appearance=options)
+        (self.home / 'Pictures/Bleach-TYBW/Wallpapers/bleach-tybw.png').unlink()
+        self.rpc('reset-appearance', fail=True)
+        self.assertEqual(self.rpc('appearance'), options)
+
     def test_match_desktop_can_be_enabled_and_disabled(self):
         self.write('.config/fastfetch/portraits/ichigo-tybw.png', 'test image')
         self.write('.config/fastfetch/portraits/rukia-bankai.png', 'test image')

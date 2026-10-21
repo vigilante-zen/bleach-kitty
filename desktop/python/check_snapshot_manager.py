@@ -146,6 +146,21 @@ class SnapshotManagementChecks(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.store.plan(1)
 
+    def test_dangling_protection_symlink_blocks_cleanup(self):
+        self.store.state.mkdir()
+        path = self.store.state / 'protected-snapshots.json'
+        path.symlink_to(self.home / 'missing-protection-file')
+        with self.assertRaisesRegex(ValueError, 'must not contain symlinks'):
+            self.store.plan(1)
+
+    def test_oversized_protection_metadata_is_rejected_with_bounded_read(self):
+        self.store.state.mkdir()
+        path = self.store.state / 'protected-snapshots.json'
+        with path.open('wb') as stream:
+            stream.truncate(MAX_MANIFEST_BYTES + 1)
+        with self.assertRaisesRegex(ValueError, '16 MiB size limit'):
+            self.store.plan(1)
+
     def test_oversized_manifest_is_ineligible_without_parsing(self):
         path = self.store.root / self.names[0] / 'manifest.json'
         path.write_bytes(b' ' * (16 * 1024 * 1024 + 1))

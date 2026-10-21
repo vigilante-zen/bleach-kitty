@@ -24,12 +24,16 @@ def format_size(size):
         size /= 1024
 
 
-def read_manifest(path):
+def read_bounded(path, limit, message):
     with path.open('rb') as stream:
-        raw = stream.read(MAX_MANIFEST_BYTES + 1)
-    if len(raw) > MAX_MANIFEST_BYTES:
-        raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
+        raw = stream.read(limit + 1)
+    if len(raw) > limit:
+        raise ValueError(message)
     return raw
+
+
+def read_manifest(path):
+    return read_bounded(path, MAX_MANIFEST_BYTES, 'Snapshot manifest exceeds the 16 MiB size limit.')
 
 
 def reject_symlinks(path):
@@ -59,11 +63,12 @@ class SnapshotStore:
 
     def protections(self):
         path = self.state / 'protected-snapshots.json'
+        reject_symlinks(path)
         if not path.exists():
             return set()
-        if path.is_symlink():
-            raise ValueError('Snapshot protection metadata must not be a symlink.')
-        data = json.loads(path.read_text())
+        raw = read_bounded(path, MAX_MANIFEST_BYTES,
+                           'Snapshot protection metadata exceeds the 16 MiB size limit.')
+        data = json.loads(raw.decode('utf-8'))
         if not isinstance(data, list) or any(not isinstance(name, str) or not NAME.fullmatch(name) for name in data):
             raise ValueError('Snapshot protection metadata is unreadable; cleanup is disabled.')
         return set(data)

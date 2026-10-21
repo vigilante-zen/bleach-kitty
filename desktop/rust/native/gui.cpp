@@ -474,11 +474,9 @@ public:
     if(!accepted) return;
     try {
       auto options=rpc({{"op","appearance"}}).toObject();
-      auto result=rpc({{"op","save-custom-preset"},{"name",name},{"preset",selected},
-        {"accent",options.value("accent")},{"login",options.value("login")},{"edition",options.value("edition")}}).toObject();
-      refreshCustomPresets();
-      customPresetChoice->setCurrentIndex(customPresetChoice->count()-1);
-      notice->setText("Saved current wallpaper, accent, and login-scene choices.");
+      startTask({{"op","save-custom-preset"},{"name",name},{"preset",selected},
+        {"accent",options.value("accent")},{"login",options.value("login")},{"edition",options.value("edition")}},
+        "Saving custom preset…");
     } catch(const std::exception &e) { QMessageBox::information(this,"Save custom preset",e.what()); }
   }
   void previewCustomPreset(int index) {
@@ -493,8 +491,8 @@ public:
   }
   void deleteCustomPreset() {
     auto id=customPresetChoice->currentData().toString(); if(id.isEmpty()) return;
-    try { rpc({{"op","delete-custom-preset"},{"id",id}}); refreshCustomPresets(); notice->setText("Saved preset deleted."); }
-    catch(const std::exception &e) { QMessageBox::information(this,"Delete custom preset",e.what()); }
+    startTask({{"op","delete-custom-preset"},{"id",id}},
+              "Deleting custom preset…");
   }
   QWidget *appearancePage() {
     auto *page = new QWidget;
@@ -1556,6 +1554,19 @@ public:
                 showCleanupPlan(result);
               if (good && request.value("op").toString() == "reset-appearance")
                 selectPreset("tybw");
+              if (good && request.value("op").toString() == "save-appearance")
+                selectPreset(selected);
+              if (good && request.value("op").toString() == "save-custom-preset") {
+                refreshCustomPresets();
+                customPresetChoice->setCurrentIndex(
+                    customPresetChoice->findData(result.value("id").toString()));
+                notice->setText(
+                    "Saved current wallpaper, accent, and login-scene choices.");
+              }
+              if (good && request.value("op").toString() == "delete-custom-preset") {
+                refreshCustomPresets();
+                notice->setText("Saved preset deleted.");
+              }
               if (tray && tray->isVisible() && !isVisible())
                 tray->showMessage("Bankai Rust", notice->text(),
                                   good ? QSystemTrayIcon::Information
@@ -1622,12 +1633,8 @@ public:
               QString::fromUtf8(e.what()), QMessageBox::Yes | QMessageBox::No,
           QMessageBox::No);
       if (answer == QMessageBox::Yes) {
-        try {
-          const auto result = rpc({{"op", "repair-appearance"}}).toObject();
-          notice->setText(result.value("message").toString());
-        } catch (const std::exception &repairError) {
-          QMessageBox::information(this, "Appearance options", QString::fromUtf8(repairError.what()));
-        }
+        startTask({{"op", "repair-appearance"}},
+                  "Restoring appearance settings…");
       }
       return;
     }
@@ -1738,8 +1745,9 @@ public:
     connect(buttons,&QDialogButtonBox::accepted,&dialog,[&] {
       QJsonArray selectedPool; for(int i=0;i<pool->count();++i) if(pool->item(i)->checkState()==Qt::Checked) selectedPool.append(pool->item(i)->data(Qt::UserRole).toString());
       QJsonObject options{{"edition",edition->currentData().toString()},{"accent",accent->text().trimmed()},{"login",login->currentData().toString()},{"shuffle_login",shuffle->isChecked()},{"pool",selectedPool}};
-      try { rpc({{"op","save-appearance"},{"appearance",options},{"expected",value}}); selectPreset(selected); notice->setText("Appearance saved. Apply a background to update wallpaper and accents."); dialog.accept(); }
-      catch(const std::exception &e) {QMessageBox::information(&dialog,"Appearance options",QString::fromUtf8(e.what()));}
+      dialog.accept();
+      startTask({{"op","save-appearance"},{"appearance",options},{"expected",value}},
+                "Saving appearance options…");
     });
     dialog.exec();
   }
@@ -2055,14 +2063,13 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
 }
 static void smokeStaleAppearanceSave(Window &window, const QJsonObject &original) {
   QString failure;
-  bool messageHandled = false;
+  bool saveStarted = false;
   QTimer::singleShot(100, &window, [&] {
     auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
     auto *buttons = dialog ? dialog->findChild<QDialogButtonBox *>() : nullptr;
     if (!dialog || !buttons || !buttons->button(QDialogButtonBox::Save)) {
       failure = "Appearance options Save button is missing";
       if (dialog) dialog->reject();
-      messageHandled = true;
       return;
     }
     auto newer = original;
@@ -2077,39 +2084,32 @@ static void smokeStaleAppearanceSave(Window &window, const QJsonObject &original
       dialog->reject();
       return;
     }
-    QTimer::singleShot(50, &window, [&] {
-      auto *modal = QApplication::activeModalWidget();
-      auto *message = qobject_cast<QMessageBox *>(modal);
-      if (!message ||
-          !message->text().contains("changed in another Bankai window")) {
-        failure = "Stale Appearance save did not explain the conflict";
-        if (modal) modal->close();
-      } else {
-        message->accept();
-      }
-      messageHandled = true;
-    });
     buttons->button(QDialogButtonBox::Save)->click();
-    if (!dialog->isVisible())
-      failure = "Appearance dialog closed after its stale save was rejected";
-    try {
-      if (rpc({{"op", "appearance"}}).toObject() != newer)
-        failure = "Stale Appearance save replaced the newer shared settings";
-      rpc({{"op", "save-appearance"}, {"appearance", original}});
-    } catch (const std::exception &e) {
-      failure = QString("Could not restore smoke appearance settings: %1").arg(e.what());
-    }
-    dialog->reject();
+    if (dialog->isVisible())
+      failure = "Appearance dialog stayed open after starting its background save";
+    saveStarted = true;
   });
   window.appearanceOptions();
+  if (!saveStarted && failure.isEmpty())
+    failure = "Appearance save was not started from the UI";
   QElapsedTimer timer;
   timer.start();
-  while (!messageHandled && timer.elapsed() < 250) {
+  while (window.process && timer.elapsed() < 3000) {
     qApp->processEvents();
     QThread::msleep(5);
   }
-  if (!messageHandled && failure.isEmpty())
-    failure = "Stale Appearance conflict message was not handled";
+  if (window.process && failure.isEmpty())
+    failure = "Stale Appearance save worker did not finish";
+  if (!window.notice->text().contains("changed in another Bankai window") &&
+      failure.isEmpty())
+    failure = "Stale Appearance save did not explain the conflict";
+  try {
+    if (rpc({{"op", "appearance"}}).toObject() == original && failure.isEmpty())
+      failure = "Stale Appearance save replaced the newer shared settings";
+    rpc({{"op", "save-appearance"}, {"appearance", original}});
+  } catch (const std::exception &e) {
+    failure = QString("Could not restore smoke appearance settings: %1").arg(e.what());
+  }
   if (!failure.isEmpty())
     throw std::runtime_error(failure.toStdString());
 }
@@ -2132,6 +2132,14 @@ static void smokeMalformedAppearanceRecovery(Window &window, const QJsonObject &
   window.appearanceOptions();
   if (!handled)
     failure = "Malformed Appearance settings recovery prompt did not open";
+  QElapsedTimer recoveryTimeout;
+  recoveryTimeout.start();
+  while (window.process && recoveryTimeout.elapsed() < 3000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (window.process)
+    failure = "Appearance repair worker did not finish";
   auto repaired = rpc({{"op", "appearance"}}).toObject();
   if (repaired != original)
     failure = "Malformed Appearance settings were not restored to defaults";
@@ -2434,6 +2442,60 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Canceling appearance options changed preferences");
   smokeStaleAppearanceSave(window, appearanceBefore.toObject());
   smokeMalformedAppearanceRecovery(window, appearanceBefore.toObject());
+  bool appearanceSaveStarted = false;
+  QTimer::singleShot(100, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
+    auto *buttons = dialog ? dialog->findChild<QDialogButtonBox *>() : nullptr;
+    if (buttons && buttons->button(QDialogButtonBox::Save)) {
+      buttons->button(QDialogButtonBox::Save)->click();
+      appearanceSaveStarted = true;
+    } else if (dialog) {
+      dialog->reject();
+    }
+  });
+  window.appearanceOptions();
+  QElapsedTimer appearanceSaveTimeout;
+  appearanceSaveTimeout.start();
+  while (window.process && appearanceSaveTimeout.elapsed() < 5000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (!appearanceSaveStarted || window.process ||
+      !window.notice->text().contains("Appearance saved."))
+    throw std::runtime_error("Appearance options did not save through the background worker");
+  bool customPresetDialogHandled = false;
+  QTimer::singleShot(100, &window, [&] {
+    auto *input = qobject_cast<QInputDialog *>(QApplication::activeModalWidget());
+    if (!input) {
+      customPresetDialogHandled = false;
+      return;
+    }
+    input->setTextValue("Worker smoke preset");
+    input->accept();
+    customPresetDialogHandled = true;
+  });
+  window.saveCustomPreset();
+  if (!customPresetDialogHandled)
+    throw std::runtime_error("Custom-preset name dialog did not open for smoke test");
+  QElapsedTimer customSaveTimeout;
+  customSaveTimeout.start();
+  while (window.process && customSaveTimeout.elapsed() < 5000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (window.process ||
+      window.customPresetChoice->currentText() != "Worker smoke preset")
+    throw std::runtime_error("Custom-preset save did not complete through its worker");
+  window.deleteCustomPreset();
+  QElapsedTimer customDeleteTimeout;
+  customDeleteTimeout.start();
+  while (window.process && customDeleteTimeout.elapsed() < 5000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (window.process ||
+      window.customPresetChoice->findText("Worker smoke preset") >= 0)
+    throw std::runtime_error("Custom-preset delete did not complete through its worker");
   auto originalArtwork = rpc({{"op", "portraits"}}).toObject();
   window.navigation->setCurrentRow(2);
   window.portraitArt->setCurrentIndex(2);

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Run appearance-option saves and repairs, and custom-preset saves and deletes, in background workers so waiting for another Bankai edition's shared snapshot lock does not freeze the Rust interface.
 - Run confirmed appearance resets in a background worker, since resetting also creates a backup and applies a desktop preset; keep the current preview until reset succeeds.
 - Run cleanup planning in a background worker so reviewing and fingerprinting a large snapshot collection does not freeze the Rust window; retain the reviewed candidate list and confirmation flow.
 - Run Rust snapshot scans in a background worker, coalesce overlapping refresh requests, and keep the existing list visible while scans run so large backup sets do not freeze the window.

@@ -27,6 +27,8 @@ Python backup now checks its state directory and lock path for symlinks before o
 
 Python cleanup planning and reviewed-plan validation now enforce Rust's maximum of 1,000 retained snapshots. All 16 snapshot-manager checks and the Python runtime check pass.
 
+The Python control center now attempts snapshot scans, previews and protection changes without waiting on the cross-edition lock, avoiding a frozen UI while backup or restore is running elsewhere. A busy scan shows a status message and retries after one second; cleanup still waits in its background process and revalidates while holding the lock. All 17 snapshot-manager checks, 20 offscreen control-center checks (one local-socket check skipped because sockets are unavailable here), and the Python runtime check pass.
+
 The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 57 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
 Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.

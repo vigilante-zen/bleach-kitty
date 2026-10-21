@@ -1,4 +1,5 @@
 """Check cleanup against disposable snapshots; never remove real backups."""
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -39,10 +40,25 @@ class SnapshotManagementChecks(unittest.TestCase):
     def test_scans_and_previews_use_shared_snapshot_lock(self):
         with patch.object(self.store, 'locked', wraps=self.store.locked) as lock:
             self.store.scan()
-            lock.assert_called_once_with()
+            lock.assert_called_once_with(wait=False)
         with patch.object(self.store, 'locked', wraps=self.store.locked) as lock:
             self.store.plan(keep=2)
-            lock.assert_called_once_with()
+            lock.assert_called_once_with(wait=False)
+
+    def test_ui_snapshot_operations_fail_fast_when_lock_is_busy(self):
+        self.store.state.mkdir(parents=True)
+        lock_path = self.store.state / 'snapshot-management.lock'
+        with lock_path.open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            try:
+                with self.assertRaises(BlockingIOError):
+                    self.store.scan()
+                with self.assertRaises(BlockingIOError):
+                    self.store.plan(keep=2)
+                with self.assertRaises(BlockingIOError):
+                    self.store.protect(self.names[0])
+            finally:
+                fcntl.flock(lock, fcntl.LOCK_UN)
 
     def test_store_rejects_symlinked_lock_file(self):
         self.store.state.mkdir(parents=True)

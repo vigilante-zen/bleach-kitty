@@ -1,4 +1,5 @@
 """Exercise the control center offscreen without changing the real desktop."""
+import fcntl
 import importlib.util
 import json
 import os
@@ -201,6 +202,17 @@ class ControlCenterChecks(unittest.TestCase):
         self.assertEqual(self.window.snapshots.count(), 0)
         self.assertFalse(self.window.restore_button.isEnabled())
         self.assertFalse(self.window.verify_button.isEnabled())
+
+    def test_snapshot_refresh_reports_busy_lock_without_waiting(self):
+        state = self.home / '.local/state/bleach-desktop'
+        state.mkdir(parents=True, exist_ok=True)
+        with (state / 'snapshot-management.lock').open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            try:
+                self.window.refresh_snapshots()
+                self.assertIn('updating snapshots', self.window.storage_summary.text())
+            finally:
+                fcntl.flock(lock, fcntl.LOCK_UN)
 
     def test_tray_routes_every_preset_and_tracks_saved_selection(self):
         calls = []

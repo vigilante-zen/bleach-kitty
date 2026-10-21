@@ -515,7 +515,11 @@ class ControlCenter(QMainWindow):
                 self.snapshots.addItem(title, name)
         except (OSError, ValueError, TypeError) as error:
             self.snapshot_rows = {}
-            self.storage_summary.setText('Could not read snapshot storage: ' + str(error))
+            if isinstance(error, BlockingIOError):
+                self.storage_summary.setText('Another Bankai operation is updating snapshots. Refreshing shortly…')
+                QTimer.singleShot(1000, self.refresh_snapshots)
+            else:
+                self.storage_summary.setText('Could not read snapshot storage: ' + str(error))
             self.cleanup_button.setEnabled(False)
         index = self.snapshots.findData(selected)
         if index >= 0:
@@ -554,7 +558,9 @@ class ControlCenter(QMainWindow):
             self.refresh_snapshots()
             self.message.setText('Snapshot protected from cleanup.' if enabled else 'Snapshot protection removed.')
         except (OSError, ValueError, TypeError) as error:
-            self.message.setText('Could not update protection: ' + str(error))
+            message = ('Another snapshot operation is running. Try again shortly.'
+                       if isinstance(error, BlockingIOError) else str(error))
+            self.message.setText('Could not update protection: ' + message)
 
     def preview_cleanup(self):
         try:
@@ -566,7 +572,9 @@ class ControlCenter(QMainWindow):
                 self.run_task([sys.executable, str(DATA / 'snapshot_manager.py'), 'cleanup', '--plan', json.dumps(plan)],
                               'Removing the reviewed snapshots…', 'Older snapshots removed.')
         except (OSError, ValueError, TypeError) as error:
-            self.message.setText('Cleanup could not be prepared: ' + str(error))
+            message = ('Another snapshot operation is running. Try again shortly.'
+                       if isinstance(error, BlockingIOError) else str(error))
+            self.message.setText('Cleanup could not be prepared: ' + message)
 
     def confirm_cleanup(self, plan):
         dialog = QMessageBox(self)

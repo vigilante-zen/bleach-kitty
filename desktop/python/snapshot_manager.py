@@ -46,14 +46,15 @@ class SnapshotStore:
         self.state = Path(state) if state is not None else home / '.local/state/bleach-desktop'
 
     @contextmanager
-    def locked(self):
+    def locked(self, wait=True):
         reject_symlinks(self.root)
         reject_symlinks(self.state)
         self.state.mkdir(parents=True, exist_ok=True)
         lock_path = self.state / 'snapshot-management.lock'
         reject_symlinks(lock_path)
         with lock_path.open('a') as stream:
-            fcntl.flock(stream, fcntl.LOCK_EX)
+            operation = fcntl.LOCK_EX if wait else fcntl.LOCK_EX | fcntl.LOCK_NB
+            fcntl.flock(stream, operation)
             yield
 
     def protections(self):
@@ -70,7 +71,7 @@ class SnapshotStore:
     def protect(self, name, enabled=True):
         if not isinstance(name, str) or not NAME.fullmatch(name):
             raise ValueError('Invalid snapshot name.')
-        with self.locked():
+        with self.locked(wait=False):
             path = self.root / name
             if path.is_symlink() or not path.is_dir() or not (path / 'manifest.json').is_file():
                 raise ValueError('The snapshot could not be found.')
@@ -91,7 +92,7 @@ class SnapshotStore:
                 Path(temporary).unlink(missing_ok=True)
 
     def scan(self):
-        with self.locked():
+        with self.locked(wait=False):
             return self._scan()
 
     def _scan(self):
@@ -161,7 +162,7 @@ class SnapshotStore:
     def plan(self, keep=5):
         if type(keep) is not int or not 1 <= keep <= MAX_KEEP:
             raise ValueError(f'Keep between 1 and {MAX_KEEP} snapshots.')
-        with self.locked():
+        with self.locked(wait=False):
             return self._plan(keep)
 
     def _plan(self, keep):

@@ -809,7 +809,10 @@ public:
     QDialog dialog(this);
     dialog.setObjectName("terminal-character-picker");
     dialog.setWindowTitle("Choose terminal character");
-    dialog.resize(760, 620);
+    const auto *screen = QGuiApplication::primaryScreen();
+    const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
+    dialog.resize(qMax(1, qMin(760, available.width() - 32)),
+                  qMax(1, qMin(620, available.height() - 32)));
     auto *layout = new QVBoxLayout(&dialog);
     auto *search = new QLineEdit;
     search->setObjectName("portrait-search");
@@ -885,7 +888,8 @@ public:
     });
     random->setObjectName("portrait-random");
     random->setEnabled(!rotationPool.isEmpty());
-    auto *randomRow = new QHBoxLayout;
+    auto *randomRow = new QBoxLayout(
+        dialog.width() <= 740 ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight);
     randomRow->addWidget(random, 1);
     auto *poolPreview = new QPushButton("Preview eligible characters");
     poolPreview->setObjectName("random-pool-preview");
@@ -964,6 +968,7 @@ public:
           return displayNames.value(left, left).compare(displayNames.value(right, right), Qt::CaseInsensitive) < 0;
         });
       }
+      const int columnCount = qBound(1, (dialog.width() - 100) / 164, 4);
       int row = 0, column = 0;
       for (const auto &id : ids) {
         auto title = displayNames.value(id, id);
@@ -981,7 +986,8 @@ public:
         card->setDefault(false);
         card->setProperty("gridRow", row);
         card->setProperty("gridColumn", column);
-        card->setFixedSize(154, 142);
+        card->setFixedWidth(154);
+        card->setMinimumHeight(142);
         card->setStyleSheet("padding: 4px;");
         auto *cardLayout = new QVBoxLayout(card);
         cardLayout->setContentsMargins(3, 3, 3, 3);
@@ -994,6 +1000,7 @@ public:
         caption->setWordWrap(true);
         cardLayout->addWidget(thumbnail);
         cardLayout->addWidget(caption, 1);
+        card->setMinimumHeight(qMax(142, card->minimumSizeHint().height()));
         const auto color = home + "/.config/fastfetch/portraits/" + id + ".png";
         const auto manga = home + "/.config/fastfetch/manga/" + id + ".png";
         const auto image = portraitArt->currentData().toString() == "manga" && QFile::exists(manga) ? manga : color;
@@ -1033,7 +1040,7 @@ public:
           connect(shortcut, &QShortcut::activated, card, [card] { card->click(); });
         }
         grid->addWidget(card, row, column++);
-        if (column == 4) { column = 0; ++row; }
+        if (column == columnCount) { column = 0; ++row; }
       }
       const bool noCards = grid->count() == 0;
       if (noCards && !query.isEmpty())
@@ -1683,8 +1690,14 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     if (!dialog) { failure = "Character picker did not open"; return; }
     auto *search = dialog->findChild<QLineEdit *>("portrait-search");
     auto *filter = dialog->findChild<QComboBox *>("portrait-filter");
+    auto *cardScroll = dialog->findChild<QScrollArea *>();
+    const auto *screen = dialog->screen();
+    const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
     if (!search || !filter || filter->findData("quincy") < 0 ||
         filter->findData("recent") < 0 || filter->findData("favorites") < 0 ||
+        !cardScroll || cardScroll->horizontalScrollBar()->maximum() > 0 ||
+        dialog->width() > available.width() - 32 ||
+        dialog->height() > available.height() - 32 ||
         !dialog->findChild<QShortcut *>("portrait-search-shortcut") ||
         !dialog->findChild<QLabel *>("random-pool-summary") ||
         !dialog->findChild<QPushButton *>("random-pool-preview")) {

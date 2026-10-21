@@ -234,11 +234,25 @@ public:
   QProcess *snapshotScanProcess = nullptr;
   QByteArray output;
   QByteArray snapshotScanOutput;
+  bool outputExceededLimit = false;
+  bool snapshotScanOutputExceededLimit = false;
   bool snapshotRefreshPending = false;
   bool snapshotScanInProgress = false;
   QFileSystemWatcher watcher;
   QTimer debounce, poll, slowTimer;
   bool quitting = false;
+  static constexpr qsizetype maxRpcOutputBytes = 32 * 1024 * 1024;
+  void appendWorkerOutput(QByteArray &buffer, QProcess *worker, bool &exceeded) {
+    const QByteArray chunk = worker->readAllStandardOutput();
+    if (exceeded)
+      return;
+    if (chunk.size() > maxRpcOutputBytes - buffer.size()) {
+      exceeded = true;
+      worker->kill();
+      return;
+    }
+    buffer += chunk;
+  }
   Window() {
     bootstrap = rpc({{"op", "bootstrap"}}).toObject();
     presets = bootstrap.value("presets").toArray();
@@ -1326,21 +1340,29 @@ public:
   void finishSnapshotScan(QProcess *worker, int code, QProcess::ExitStatus status) {
     if (snapshotScanProcess != worker)
       return;
-    snapshotScanOutput += worker->readAllStandardOutput();
-    auto reply = QJsonDocument::fromJson(snapshotScanOutput).object();
-    bool good = code == 0 && status == QProcess::NormalExit &&
+    appendWorkerOutput(snapshotScanOutput, worker,
+                       snapshotScanOutputExceededLimit);
+    auto reply = snapshotScanOutputExceededLimit
+                     ? QJsonObject{}
+                     : QJsonDocument::fromJson(snapshotScanOutput).object();
+    bool good = !snapshotScanOutputExceededLimit && code == 0 &&
+                status == QProcess::NormalExit &&
                 reply.value("ok").toBool() && reply.value("result").isArray();
     const auto values = reply.value("result").toArray();
-    const auto error = reply.value("error").toString(
-        "Snapshot scan failed. Use Refresh to try again.");
+    const auto error = snapshotScanOutputExceededLimit
+                           ? "Snapshot list exceeded the 32 MiB response limit."
+                           : reply.value("error").toString(
+                                 "Snapshot scan failed. Use Refresh to try again.");
     snapshotScanProcess = nullptr;
     if (good)
       applySnapshotResults(values);
     else
       snapshotScanFailed(error);
     worker->deleteLater();
-    if (snapshotRefreshPending) {
-      snapshotRefreshPending = false;
+    const bool shouldRefresh = snapshotRefreshPending &&
+                               !snapshotScanOutputExceededLimit;
+    snapshotRefreshPending = false;
+    if (shouldRefresh) {
       refreshSnapshots();
     }
   }
@@ -1357,13 +1379,13 @@ public:
                          : "Loading saved snapshots…");
     snapshotChanged();
     snapshotScanOutput.clear();
+    snapshotScanOutputExceededLimit = false;
     auto *worker = new QProcess(this);
     snapshotScanProcess = worker;
     worker->setProcessChannelMode(QProcess::MergedChannels);
     connect(worker, &QProcess::readyReadStandardOutput, this, [this, worker] {
-      snapshotScanOutput += worker->readAllStandardOutput();
-      if (snapshotScanOutput.size() > 2 * 1024 * 1024)
-        snapshotScanOutput = snapshotScanOutput.right(2 * 1024 * 1024);
+      appendWorkerOutput(snapshotScanOutput, worker,
+                         snapshotScanOutputExceededLimit);
     });
     connect(worker, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             this, [this, worker](int code, QProcess::ExitStatus status) {
@@ -1513,6 +1535,7 @@ public:
     portraitArt->setEnabled(false);
     matchDesktop->setEnabled(false);
     output.clear();
+    outputExceededLimit = false;
     log->clear();
     for (auto *b : buttons)
       b->setEnabled(false);
@@ -1527,22 +1550,27 @@ public:
     process = worker;
     worker->setProcessChannelMode(QProcess::MergedChannels);
     connect(worker, &QProcess::readyReadStandardOutput, this, [this, worker] {
-      output += worker->readAllStandardOutput();
-      if (output.size() > 2 * 1024 * 1024)
-        output = output.right(2 * 1024 * 1024);
+      appendWorkerOutput(output, worker, outputExceededLimit);
     });
     connect(worker, &QProcess::finished, this,
             [this, worker, request](int code, QProcess::ExitStatus status) {
-              output += worker->readAllStandardOutput();
-              auto reply = QJsonDocument::fromJson(output).object();
-              bool good = code == 0 && status == QProcess::NormalExit &&
+              appendWorkerOutput(output, worker, outputExceededLimit);
+              auto reply = outputExceededLimit
+                               ? QJsonObject{}
+                               : QJsonDocument::fromJson(output).object();
+              bool good = !outputExceededLimit && code == 0 &&
+                          status == QProcess::NormalExit &&
                           reply.value("ok").toBool();
               auto result = reply.value("result").toObject();
+              const auto error = outputExceededLimit
+                                     ? "Worker response exceeded the 32 MiB UI limit. Reduce the snapshot or file count and retry."
+                                     : reply.value("error").toString(
+                                           "Action failed. See activity.");
               notice->setText(
                   good ? result.value("message").toString("Action completed.")
-                       : reply.value("error").toString(
-                             "Action failed. See activity."));
-              log->setPlainText(QString::fromUtf8(output));
+                       : error);
+              log->setPlainText(
+                  QString::fromUtf8(output.right(2 * 1024 * 1024)));
               if (!good) {
                 log->show();
                 logButton->setText("Hide activity");
@@ -2721,6 +2749,22 @@ static int smoke(Window &window, const QString &directory) {
             .arg(window.selected)
             .arg(window.notice->text())
             .toStdString());
+  QProcess outputProbe;
+  outputProbe.setProcessChannelMode(QProcess::MergedChannels);
+  outputProbe.start("/usr/bin/head", {"-c", "3145728", "/dev/zero"});
+  if (!outputProbe.waitForStarted(1000))
+    throw std::runtime_error("Could not start worker-output size smoke probe");
+  QByteArray probeOutput;
+  bool probeExceededLimit = false;
+  while (outputProbe.state() != QProcess::NotRunning) {
+    qApp->processEvents();
+    window.appendWorkerOutput(probeOutput, &outputProbe, probeExceededLimit);
+    QThread::msleep(1);
+  }
+  window.appendWorkerOutput(probeOutput, &outputProbe, probeExceededLimit);
+  if (probeExceededLimit || probeOutput.size() != 3 * 1024 * 1024)
+    throw std::runtime_error(
+        "Worker responses larger than 2 MiB were still truncated");
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset, character and snapshot lists, "

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Preserve worker RPC responses up to 32 MiB so large snapshot lists, cleanup reviews and restore previews remain parseable; stop oversized responses with a clear limit message instead of silently truncating JSON.
 - Run appearance-option saves and repairs, and custom-preset saves and deletes, in background workers so waiting for another Bankai edition's shared snapshot lock does not freeze the Rust interface.
 - Run confirmed appearance resets in a background worker, since resetting also creates a backup and applies a desktop preset; keep the current preview until reset succeeds.
 - Run cleanup planning in a background worker so reviewing and fingerprinting a large snapshot collection does not freeze the Rust window; retain the reviewed candidate list and confirmation flow.

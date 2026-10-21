@@ -956,6 +956,7 @@ public:
     layout->addWidget(resultCount);
     auto *announcementTimer = new QTimer(&dialog);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    announcementTimer->setObjectName("portrait-results-announcement");
     announcementTimer->setSingleShot(true);
     announcementTimer->setInterval(350);
     connect(announcementTimer, &QTimer::timeout, announcementTimer,
@@ -984,9 +985,10 @@ public:
     connect(close, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     layout->addWidget(close);
     int gridAvailableWidth = dialog.width();
+    QStringList previousVisibleIds;
     auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites,
                     &recentlyUsed, &displayNames, &dialog, &gridAvailableWidth,
-                    announcementTimer,
+                    &previousVisibleIds, announcementTimer,
                     resultCount]() {
       QString focusedId;
       for (int index = 0; index < grid->count(); ++index)
@@ -1015,6 +1017,7 @@ public:
       const int columnCount = qBound(1, (gridAvailableWidth - 100) / 164, 4);
       int row = 0, column = 0;
       QPushButton *restoreFocus = nullptr;
+      QStringList visibleIds;
       for (const auto &id : ids) {
         auto title = displayNames.value(id, id);
         if (title == id) {
@@ -1023,6 +1026,7 @@ public:
         }
         if (!query.isEmpty() && !id.contains(query, Qt::CaseInsensitive) &&
             !title.contains(query, Qt::CaseInsensitive)) continue;
+        visibleIds << id;
         auto *card = new QPushButton;
         card->setObjectName("portrait-card");
         card->setAccessibleName(title);
@@ -1107,16 +1111,17 @@ public:
       const auto countText = QString("%1 character%2")
                                  .arg(grid->count())
                                  .arg(grid->count() == 1 ? "" : "s");
-      const bool resultCountChanged = resultCount->text() != countText;
+      const bool visibleResultsChanged = previousVisibleIds != visibleIds;
+      previousVisibleIds = visibleIds;
       resultCount->setText(countText);
       resultCount->setAccessibleDescription(
           QString("%1 shown by the current search and faction filter.").arg(countText));
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-      if (resultCountChanged && dialog.isVisible())
+      if (visibleResultsChanged && dialog.isVisible())
         announcementTimer->start();
 #else
       Q_UNUSED(announcementTimer);
-      Q_UNUSED(resultCountChanged);
+      Q_UNUSED(visibleResultsChanged);
 #endif
       gridPage->adjustSize();
       if (restoreFocus)
@@ -1806,9 +1811,14 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       auto *items = preview ? preview->findChild<QListWidget *>("random-pool-items") : nullptr;
       const auto *screen = preview ? preview->screen() : nullptr;
       const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
+      bool containsUryu = false;
+      if (items)
+        for (int index = 0; index < items->count(); ++index)
+          containsUryu = containsUryu ||
+                         items->item(index)->text().contains("uryu", Qt::CaseInsensitive);
       if (!preview || preview->width() > available.width() - 32 ||
-          preview->height() > available.height() - 32 || !items || items->count() != 1 ||
-          !items->item(0)->text().contains("uryu", Qt::CaseInsensitive))
+          preview->height() > available.height() - 32 || !items || items->count() < 1 ||
+          !containsUryu)
         poolPreviewFailure = "Random pool preview does not show the configured eligible portrait";
       if (preview) preview->reject();
     });
@@ -1841,6 +1851,36 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       failure = "Character card does not explain its selection action to screen readers";
     if (cards.isEmpty() || cards.first()->findChildren<QShortcut *>().size() < 6)
       failure = "Character cards are missing keyboard navigation shortcuts";
+    filter->setCurrentIndex(filter->findData("all"));
+    QString replacementId;
+    for (int index = 0; index < window.portraitChoice->count(); ++index) {
+      const auto id = window.portraitChoice->itemData(index).toString();
+      if (!id.isEmpty() && id != "random" && id != "uryu") {
+        replacementId = id;
+        break;
+      }
+    }
+    search->setText(replacementId);
+    qApp->processEvents();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    auto *announcementTimer = dialog->findChild<QTimer *>("portrait-results-announcement");
+    const bool announcementTimerActive = announcementTimer && announcementTimer->isActive();
+#else
+    const bool announcementTimerActive = false;
+#endif
+    QPushButton *replacementCard = nullptr;
+    for (auto *card : dialog->findChildren<QPushButton *>("portrait-card"))
+      if (card->isVisible()) { replacementCard = card; break; }
+    if (!resultCount || resultCount->text() != "1 character" || !replacementCard ||
+        replacementCard->property("portraitId").toString() != replacementId
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        || !announcementTimerActive
+#endif
+    )
+      failure = QString("Character picker did not schedule an announcement when one result replaced another (count=%1, id=%2, timer=%3)")
+                    .arg(resultCount ? resultCount->text() : "missing")
+                    .arg(replacementCard ? replacementCard->property("portraitId").toString() : "missing")
+                    .arg(announcementTimerActive);
     search->setText("no-such-character");
     qApp->processEvents();
     auto *empty = dialog->findChild<QLabel *>("portrait-empty-state");
@@ -2434,6 +2474,10 @@ static bool prepareSmokeHome(const QString &source, const QString &destination) 
                      destination + "/.local/bin/bankai-roster") ||
       !copySmokeFile(source + "/.config/fastfetch/portraits/uryu.png",
                      destination + "/.config/fastfetch/portraits/uryu.png"))
+    return false;
+  QImage testPortrait(24, 24, QImage::Format_ARGB32);
+  testPortrait.fill(QColor("#38bdf8"));
+  if (!testPortrait.save(destination + "/.config/fastfetch/portraits/test-portrait.png"))
     return false;
   for (const auto &name : {"portrait-choice", "portrait-art-mode", "portrait-follow-desktop"}) {
     const QString path = "/.config/fastfetch/" + QString(name);

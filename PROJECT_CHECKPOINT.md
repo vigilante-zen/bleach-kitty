@@ -83,4 +83,6 @@ The latest Rust UI change adds a live, singular/plural-aware matching-character 
 
 Latest continuation work adds a polite, 350 ms debounced screen-reader announcement when the terminal picker's search or faction filter changes its result count, guarded for Qt 6.8+, where Qt introduced `QAccessibleAnnouncementEvent`. The live count and existing picker smoke checks pass. Offscreen Qt does not deliver announcement events to the installed test update handler, so spoken output still requires a live KDE screen-reader check. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized build and the native offscreen smoke test.
 
+The current environment has Wayland display variables but no Orca process, and querying the session accessibility bus fails with `Operation not permitted`. Do not mark spoken output verified here; repeat that check from an unrestricted KDE session with a running screen reader.
+
 To resume, open this repository, read this checkpoint, then check `git status --short --branch` and inspect the implementation related to the next requested change. Keep `artifacts/` untouched. GitHub may still need syncing: push `main` only when network access is available and after checking the remote state.

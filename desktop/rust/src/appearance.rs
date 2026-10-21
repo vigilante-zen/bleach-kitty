@@ -57,7 +57,7 @@ pub fn reset(app: &App) -> Result<Value> {
 pub fn shuffle_login(app: &App) -> Result<Value> {
     let value=load(app)?;
     if !value.get("shuffle_login")?.boolean()? {return Ok(obj!{"message"=>"Login shuffle is disabled."});}
-    let current=app.current();
+    let current=app.current()?;
     let all=value.get("pool")?.array()?;
     let mut pool=all.iter().filter(|v|v.text().ok()!=Some(current.as_str())).collect::<Vec<_>>();
     if pool.is_empty(){pool=all.iter().collect();}

@@ -47,7 +47,7 @@ pub fn save(app: &App, request: &Value) -> Result<Value> {
     if !matches!(art, "color" | "manga" | "mixed") { return Err("Choose color, manga or mixed art.".into()); }
     fsutil::reject_links(&app.state, &app.home)?;
     let _lock = Lock::acquire(&app.state)?;
-    let desktop = app.current();
+    let desktop = app.current()?;
     let choice = if follow { app.preset(&desktop)?.get("portrait")?.text()? } else { requested };
     let current = status(app)?;
     if choice != "random" && (!valid_name(choice) || !current.get("portraits")?.array()?.iter().any(|v| v.text().ok() == Some(choice))) {

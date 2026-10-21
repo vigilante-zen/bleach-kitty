@@ -29,9 +29,15 @@ impl App {
     fn preset(&self, name: &str) -> Result<&Value> {
         self.catalog.get("presets")?.array()?.iter().find(|p| p.get("id").and_then(Value::text).ok() == Some(name)).ok_or_else(||format!("Unknown preset: {name}"))
     }
-    fn current(&self) -> String {
-        let current = fs::read_to_string(self.data.join("current")).unwrap_or_default();
-        if self.preset(current.trim()).is_ok() { current.trim().to_string() } else { "tybw".into() }
+    fn current(&self) -> Result<String> {
+        let path = self.data.join("current");
+        fsutil::reject_links(&path, &self.home)?;
+        let current = match fs::read_to_string(path) {
+            Ok(current) => current,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok("tybw".into()),
+            Err(error) => return Err(error.to_string()),
+        };
+        if self.preset(current.trim()).is_ok() { Ok(current.trim().into()) } else { Ok("tybw".into()) }
     }
     fn dispatch(&self, request: &Value) -> Result<Value> {
         let op = request.get("op")?.text()?;
@@ -39,7 +45,7 @@ impl App {
             "bootstrap" => Ok(obj! { "presets" => self.catalog.get("presets")?.clone(), "custom_presets" => Value::from(custom_presets::list(self).unwrap_or_default()), "style" => include_str!("../assets/style.qss"),
                 "home" => self.home.to_string_lossy().to_string(), "data" => self.data.to_string_lossy().to_string(), "version" => env!("CARGO_PKG_VERSION"),
                 "mask_svg" => include_str!("../assets/bleach-tray.svg"), "terminal_svg" => include_str!("../assets/bleach-terminal.svg"), "monitor_svg" => include_str!("../assets/bleach-monitor.svg"), "backups_svg" => include_str!("../assets/bleach-backups.svg") }),
-            "status" => Ok(obj! { "current" => self.current(), "pending" => self.state.join("pending").exists(),
+            "status" => Ok(obj! { "current" => self.current()?, "pending" => self.state.join("pending").exists(),
                 "autostart" => self.home.join(".config/autostart/bleach-bankai-rust.desktop").exists(), "offline" => self.offline }),
             "appearance" => appearance::load(self),
             "save-appearance" => appearance::save(self,request),

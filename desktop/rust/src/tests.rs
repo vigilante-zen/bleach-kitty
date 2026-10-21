@@ -29,6 +29,21 @@ fn rename_snapshot(f:&Fixture,name:&str){let created=snapshot(f);fs::rename(f.ap
     assert!(!snapshots::allowed(&app,".ssh/id_rsa"));
     assert!(!snapshots::allowed(&app,".config/fish/functions/bankai-x/secret.fish"));
 }
+
+#[test]
+fn current_preset_rejects_symlinked_state_and_defaults_missing_or_invalid_values() {
+    let f=Fixture::new();
+    assert_eq!(f.app.current().unwrap(),"tybw");
+    write(&f.app.data.join("current"),"urahara\n");
+    assert_eq!(f.app.current().unwrap(),"urahara");
+    write(&f.app.data.join("current"),"not-a-preset\n");
+    assert_eq!(f.app.current().unwrap(),"tybw");
+    fs::remove_file(f.app.data.join("current")).unwrap();
+    let outside=f.app.home.join("external-current");
+    write(&outside,"urahara\n");
+    symlink(&outside,f.app.data.join("current")).unwrap();
+    assert!(f.app.current().is_err());
+}
 #[test]fn hash_matches_known_sha256(){assert_eq!(fsutil::hash_bytes(b"abc"),"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");let f=Fixture::new();let path=f.app.home.join("data");fs::write(&path,b"abc").unwrap();assert_eq!(fsutil::hash(&path).unwrap(),fsutil::hash_bytes(b"abc"));}
 #[test]fn snapshot_round_trip_preserves_mode_and_absent_files(){
     let f=Fixture::new();let target=f.app.home.join(".config/kitty/kitty.conf");fs::set_permissions(&target,fs::Permissions::from_mode(0o640)).unwrap();let name=snapshot(&f);

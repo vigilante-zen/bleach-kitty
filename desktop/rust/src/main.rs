@@ -69,7 +69,7 @@ impl App {
             "snapshots" => { let _lock = fsutil::Lock::acquire(&self.state)?; Ok(Value::from(snapshots::scan(self)?)) },
             "plan" => { let _lock = fsutil::Lock::acquire(&self.state)?; snapshots::plan(self,usize::try_from(request.get("keep")?.number()?).text()?) },
             "apply" => presets::apply(self,request.get("preset")?.text()?),
-            "backup" | "verify" | "restore" | "protect" | "cleanup" => snapshots::locked_dispatch(self,op,request),
+            "backup" | "verify" | "inspect-snapshot" | "restore" | "protect" | "cleanup" => snapshots::locked_dispatch(self,op,request),
             "autostart" => {
                 let path = self.home.join(".config/autostart/bleach-bankai-rust.desktop"); fsutil::reject_links(&path,&self.home)?;
                 if request.get("enabled")?.boolean()? {

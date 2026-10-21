@@ -27,6 +27,8 @@ The native UI smoke test now queries Qt's `QAccessibleInterface` for names and d
 
 The Rust Backups & restore page now filters snapshots case-insensitively by their displayed name and status. Empty matches disable restore and explain how to clear the search, distinct from the true empty-backup state. The offscreen smoke test verifies case-insensitive matching, clearing, empty-result safety and external snapshot refresh. Validation passed all 40 Rust tests, Clippy, the optimized build and native UI smoke checks.
 
+The Backups page now offers an asynchronous, integrity-checked restore preview. It lists every file that would be restored and every path that would be removed because it was absent in the selected snapshot; it does not apply changes. A Rust test confirms inspection leaves current files untouched, and the native smoke test opens and verifies the actual preview dialog. All 41 Rust tests, Clippy, optimized build and native smoke checks pass.
+
 The Rust sidebar now uses a content-sized maximum width and tighter navigation spacing so “Backups & restore” is fully visible without a horizontal scrollbar; tooltips include full labels and Ctrl+1/2/3 shortcuts. The UI smoke test asserts sidebar navigation needs no horizontal scrolling. Rust tests, Clippy, optimized build and native smoke checks pass.
 
 Single-instance startup in Python and Rust now rejects symlinked state-directory ancestors and existing control lock/socket symlinks before creating or using IPC paths. Rust bootstrap validates the state path before the Qt launcher creates it. The offscreen Python UI suite passes 21 checks (one socket test skipped because sockets are blocked), and all 40 Rust tests, Clippy, and the optimized build pass.

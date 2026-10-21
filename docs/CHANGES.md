@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add an integrity-checked restore preview to the Rust Backups page, listing every saved file to restore and every setting to remove before the user confirms an actual restore.
 - Widen the Rust sidebar enough to show full navigation labels and keyboard shortcuts; tighten its internal spacing so labels still fit on narrower displays.
 - Add case-insensitive search to the Rust saved-snapshot list, with a helpful empty-results message and disabled restore actions when no snapshots match.
 - Add screen-reader names and live character descriptions to the Rust appearance and terminal artwork previews, and accessible names/descriptions to terminal search, filters, and Random. Extend the native UI smoke test to verify those descriptions.

@@ -141,6 +141,21 @@ fn failed_custom_preset_apply_restores_previous_appearance_settings() {
     assert!(fs::read_dir(&f.app.snapshots).unwrap().count()>=2);
 }
 #[test]
+fn snapshot_inspection_lists_restore_and_removal_paths_without_changes() {
+    let f=Fixture::new();
+    let removed=f.app.home.join(".config/kdeglobals");
+    fs::remove_file(&removed).unwrap();
+    let name=snapshot(&f);
+    write(&removed,"new settings");
+    let inspected=snapshots::inspect(&f.app,&name).unwrap();
+    let files=inspected.get("files").unwrap().array().unwrap();
+    let absent=inspected.get("absent").unwrap().array().unwrap();
+    assert!(files.iter().any(|path|path.text().unwrap()==".config/kitty/kitty.conf"));
+    assert!(absent.iter().any(|path|path.text().unwrap()==".config/kdeglobals"));
+    assert_eq!(fs::read_to_string(removed).unwrap(),"new settings");
+    assert!(inspected.get("message").unwrap().text().unwrap().contains("will be removed"));
+}
+#[test]
 fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
     let f=Fixture::new();
     let first=f.app.home.join(".config/kitty/restore-a");let removed=f.app.home.join(".config/kitty/restore-b");let last=f.app.home.join(".config/kitty/restore-c");

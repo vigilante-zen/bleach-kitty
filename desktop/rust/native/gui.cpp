@@ -172,6 +172,7 @@ public:
   QSpinBox *keep;
   QCheckBox *autostart, *matchDesktop;
   QPushButton *portraitChooser;
+  QPushButton *inspectButton;
   QLabel *portraitPreview, *mangaPreview, *portraitCaption;
   QString savedDesktop;
   QPushButton *verifyButton, *restoreButton, *protectButton, *cleanupButton,
@@ -569,7 +570,17 @@ public:
     layout->addWidget(snapshots);
     snapshotDetails = label("", "muted");
     snapshotDetails->setAccessibleName("Selected snapshot details");
-    layout->addWidget(snapshotDetails);
+    auto *snapshotInfo = new QHBoxLayout;
+    snapshotInfo->addWidget(snapshotDetails, 1);
+    inspectButton = button("Preview restore…", [this] {
+      startTask({{"op", "inspect-snapshot"},
+                 {"name", snapshots->currentData().toString()}},
+                "Verifying snapshot contents…");
+    });
+    inspectButton->setAccessibleDescription(
+        "Verify the selected snapshot and preview the files it restores or removes.");
+    snapshotInfo->addWidget(inspectButton);
+    layout->addLayout(snapshotInfo);
     storage = label("", "notice");
     storage->setAccessibleName("Snapshot storage status");
     layout->addWidget(storage);
@@ -1125,6 +1136,7 @@ public:
     auto row = rows.value(snapshots->currentData().toString());
     bool available = !row.isEmpty() && !process;
     verifyButton->setEnabled(available);
+    inspectButton->setEnabled(available);
     restoreButton->setEnabled(available);
     protectButton->setEnabled(available && !row.value("baseline").toBool());
     protectButton->setText(row.value("protected").toBool()
@@ -1156,6 +1168,40 @@ public:
     if (dialog.clickedButton() == restore)
       startTask({{"op", "restore"}, {"name", name}},
                 "Checking and restoring snapshot…");
+  }
+  void showSnapshotPreview(const QJsonObject &result) {
+    QDialog dialog(this);
+    dialog.setObjectName("snapshot-contents-dialog");
+    dialog.setWindowTitle("Preview snapshot restore");
+    dialog.resize(620, 500);
+    auto *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(label(
+        QString("%1 passed its integrity check. Restoring first saves your current settings.")
+            .arg(result.value("name").toString()), "muted"));
+    QStringList lines;
+    const auto files = result.value("files").toArray();
+    lines << QString("Files restored from this snapshot (%1):").arg(files.size());
+    for (const auto &file : files)
+      lines << file.toString();
+    lines << "";
+    const auto absent = result.value("absent").toArray();
+    lines << QString("Settings removed because they were absent in this snapshot (%1):")
+                 .arg(absent.size());
+    if (absent.isEmpty())
+      lines << "(none)";
+    else
+      for (const auto &file : absent)
+        lines << file.toString();
+    auto *contents = new QPlainTextEdit;
+    contents->setObjectName("snapshot-restore-files");
+    contents->setAccessibleName("Files changed by snapshot restore");
+    contents->setReadOnly(true);
+    contents->setPlainText(lines.join("\n"));
+    layout->addWidget(contents, 1);
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+    dialog.exec();
   }
   void previewCleanup() {
     try {
@@ -1223,7 +1269,7 @@ public:
         output = output.right(2 * 1024 * 1024);
     });
     connect(worker, &QProcess::finished, this,
-            [this, worker](int code, QProcess::ExitStatus status) {
+            [this, worker, request](int code, QProcess::ExitStatus status) {
               output += worker->readAllStandardOutput();
               auto reply = QJsonDocument::fromJson(output).object();
               bool good = code == 0 && status == QProcess::NormalExit &&
@@ -1239,6 +1285,8 @@ public:
                 logButton->setText("Hide activity");
               }
               finishTask(worker);
+              if (good && request.value("op").toString() == "inspect-snapshot")
+                showSnapshotPreview(result);
               if (tray && tray->isVisible() && !isVisible())
                 tray->showMessage("Bankai Rust", notice->text(),
                                   good ? QSystemTrayIcon::Information
@@ -1759,6 +1807,7 @@ static int smoke(Window &window, const QString &directory) {
       accessibleText(window.snapshotSearch, QAccessible::Name).isEmpty() ||
       accessibleText(window.snapshotDetails, QAccessible::Name).isEmpty() ||
       accessibleText(window.storage, QAccessible::Name).isEmpty() ||
+      accessibleText(window.inspectButton, QAccessible::Description).isEmpty() ||
       accessibleText(window.restoreButton, QAccessible::Description).isEmpty() ||
       accessibleText(window.cleanupButton, QAccessible::Description).isEmpty())
     throw std::runtime_error("Backup controls are missing screen-reader descriptions");
@@ -2023,6 +2072,34 @@ static int smoke(Window &window, const QString &directory) {
   qApp->processEvents();
   if (window.snapshots->count() != allSnapshots)
     throw std::runtime_error("Clearing snapshot search did not restore the full list");
+  QString previewFailure;
+  QTimer previewTimer;
+  previewTimer.setInterval(10);
+  QObject::connect(&previewTimer, &QTimer::timeout, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("snapshot-contents-dialog");
+    if (!dialog)
+      return;
+    auto *contents = dialog->findChild<QPlainTextEdit *>("snapshot-restore-files");
+    if (!contents || !contents->toPlainText().contains("Files restored from this snapshot (") ||
+        !contents->toPlainText().contains("Settings removed because they were absent") ||
+        accessibleText(contents, QAccessible::Name).isEmpty())
+      previewFailure = "Restore preview is missing verified file or removal details";
+    dialog->grab().save(directory + "/rust-restore-preview.png");
+    dialog->accept();
+    previewTimer.stop();
+  });
+  previewTimer.start();
+  window.inspectButton->click();
+  QElapsedTimer previewWait;
+  previewWait.start();
+  while ((window.process || previewTimer.isActive()) && previewWait.elapsed() < 5000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (previewTimer.isActive())
+    previewFailure = "Restore preview did not open";
+  if (!previewFailure.isEmpty())
+    throw std::runtime_error(previewFailure.toStdString());
   window.grab().save(directory + "/rust-backups.png");
   window.trayMenu->ensurePolished();
   window.trayMenu->adjustSize();

@@ -108,6 +108,27 @@ pub fn verify(app: &App, name: &str) -> Result<Value> {
     }
     Ok(manifest)
 }
+pub fn inspect(app: &App, name: &str) -> Result<Value> {
+    let manifest = verify(app, name)?;
+    let mut files = Vec::new();
+    for entry in manifest.get("files")?.array()? {
+        files.push(Value::from(entry.get("path")?.text()?));
+    }
+    let mut absent = Vec::new();
+    if let Some(entries) = manifest.opt("absent") {
+        for entry in entries.array()? {
+            absent.push(Value::from(entry.text()?));
+        }
+    }
+    let file_count = files.len();
+    let absent_count = absent.len();
+    Ok(obj! {
+        "name" => name,
+        "files" => files,
+        "absent" => absent,
+        "message" => format!("Integrity verified. {file_count} files will be restored; {absent_count} will be removed.")
+    })
+}
 pub fn restore(app: &App, name: &str) -> Result<Value> {
     let manifest = verify(app, name)?;
     let mut edits = std::collections::BTreeMap::new();
@@ -280,6 +301,7 @@ pub fn locked_dispatch(app: &App, op: &str, request: &Value) -> Result<Value> {
     match op {
         "backup" => create(app),
         "verify" => { let manifest = verify(app, request.get("name")?.text()?)?; Ok(obj! { "message" => format!("Verified {} snapshot files.", manifest.get("files")?.array()?.len()) }) },
+        "inspect-snapshot" => inspect(app, request.get("name")?.text()?),
         "restore" => restore(app, request.get("name")?.text()?),
         "protect" => protect(app, request.get("name")?.text()?, request.get("enabled")?.boolean()?),
         "cleanup" => cleanup(app, request.get("plan")?),

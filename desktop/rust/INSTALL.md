@@ -80,6 +80,7 @@ For a source checkout:
 
 ```bash
 cd desktop/rust
+cargo clippy --all-targets --locked -- -D warnings
 cargo test --locked
 cargo build --release --locked
 QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test

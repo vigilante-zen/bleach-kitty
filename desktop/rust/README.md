@@ -90,6 +90,7 @@ References: [Rust FFI](https://doc.rust-lang.org/nomicon/ffi.html), [Qt tray API
 - Live KDE tray display, cross-process single-instance activation and live color/wallpaper application remain unverified from this sandbox because it blocks session-bus and Unix-socket access.
 
 ```sh
+cargo clippy --all-targets --locked -- -D warnings
 cargo test --locked --offline
 python3 scripts/check_binary.py
 QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test

@@ -77,9 +77,9 @@ The active Codex project goal tracks this continuation across sessions. Start by
 
 ## Resume here
 
-The latest code commit is `70ff5e3` (`Announce terminal character result changes`) on `main`, tracking `origin/main`; at that code commit the branch was 76 commits ahead of its upstream. There are no uncommitted tracked changes after the accompanying checkpoint note is committed. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
+The latest code commit is `233195a` (`Expose matching counts in accessible description`) on `main`, tracking `origin/main`; at that code commit the branch was 79 commits ahead of its upstream. There are no uncommitted tracked changes after the accompanying checkpoint note is committed. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
 
-The latest Rust UI change adds a live, singular/plural-aware matching-character count to the terminal picker. Its accessible label reflects both search text and faction filter, and the smoke test covers matching and empty results. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized Rust build, the offscreen GUI smoke test and `git diff --check`.
+The latest Rust UI change adds a live, singular/plural-aware matching-character count to the terminal picker. Its accessible description now includes the current count, including zero results, so assistive technology can query it on Qt versions without live announcement support. The smoke test verifies both accessible descriptions. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized Rust build, the offscreen GUI smoke test and `git diff --check`.
 
 Latest continuation work adds a polite, 350 ms debounced screen-reader announcement when the terminal picker's search or faction filter changes its result count, guarded for Qt 6.8+, where Qt introduced `QAccessibleAnnouncementEvent`. The live count and existing picker smoke checks pass. Offscreen Qt does not deliver announcement events to the installed test update handler, so spoken output still requires a live KDE screen-reader check. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized build and the native offscreen smoke test.
 

@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import random
 import re
+import stat
 import sys
 import tempfile
 
@@ -59,10 +60,28 @@ GROUPS = {
 }
 
 
-def read_json(path, default):
+MAX_STATE_FILE_BYTES = 64 * 1024
+
+
+def read_state_bytes(path, limit=MAX_STATE_FILE_BYTES):
     try:
-        return json.loads(path.read_text())
-    except (OSError, ValueError):
+        descriptor = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(descriptor, 'rb') as stream:
+            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                return None
+            data = stream.read(limit + 1)
+            return data if len(data) <= limit else None
+    except OSError:
+        return None
+
+
+def read_json(path, default):
+    data = read_state_bytes(path)
+    if data is None:
+        return default
+    try:
+        return json.loads(data)
+    except (RecursionError, UnicodeError, ValueError):
         return default
 
 
@@ -131,9 +150,10 @@ def main():
     with (state / 'roster.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         shuffle_file = config / 'shuffle-mode'
+        shuffle_data = read_state_bytes(shuffle_file, 128)
         try:
-            shuffle = shuffle_file.read_text().strip()
-        except OSError:
+            shuffle = shuffle_data.decode('utf-8').strip() if shuffle_data is not None else 'portrait'
+        except UnicodeError:
             shuffle = 'portrait'
         if shuffle not in ['portrait', 'character']:
             shuffle = 'portrait'

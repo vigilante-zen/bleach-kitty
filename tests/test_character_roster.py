@@ -73,6 +73,33 @@ class CharacterRosterChecks(unittest.TestCase):
         self.assertIn('uryu', data['favorites'])
         self.assertEqual(data['rotation'], 'favorites')
 
+    def test_roster_state_reads_are_bounded_and_reject_links_and_special_files(self):
+        default = {'fallback': True}
+        state = self.home / '.config/fastfetch'
+        valid = state / 'valid.json'
+        valid.write_text('{"shuffle": "character"}')
+        self.assertEqual(self.roster.read_json(valid, default), {'shuffle': 'character'})
+
+        oversized = state / 'oversized.json'
+        oversized.write_bytes(b' ' * (self.roster.MAX_STATE_FILE_BYTES + 1))
+        self.assertEqual(self.roster.read_json(oversized, default), default)
+
+        malformed = state / 'malformed.json'
+        malformed.write_text('{"broken":')
+        self.assertEqual(self.roster.read_json(malformed, default), default)
+
+        linked = state / 'linked.json'
+        linked.symlink_to(valid)
+        self.assertEqual(self.roster.read_json(linked, default), default)
+
+        fifo = state / 'state.fifo'
+        os.mkfifo(fifo)
+        self.assertEqual(self.roster.read_json(fifo, default), default)
+
+        long_text = state / 'shuffle-mode'
+        long_text.write_bytes(b'character' + b' ' * 129)
+        self.assertIsNone(self.roster.read_state_bytes(long_text, 128))
+
     def test_new_pairs_are_valid_distinct_square_pngs_with_recorded_hashes(self):
         records = json.loads((ROOT / 'docs/prompts/additions-20261020/PROMPTS.json').read_text())
         self.assertEqual({record['id'] for record in records['characters']}, NEW)

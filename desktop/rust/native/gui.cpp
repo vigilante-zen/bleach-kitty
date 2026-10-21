@@ -5,6 +5,7 @@
 #include <QRunnable>
 #include <QThreadPool>
 #include <algorithm>
+#include <atomic>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -128,6 +129,8 @@ public:
   quint64 loadGeneration = 0;
   quint64 imageGeneration = 0;
   bool previewReady = false;
+  std::shared_ptr<std::atomic<quint64>> requestedGeneration =
+      std::make_shared<std::atomic<quint64>>(0);
   Artwork() {
     setObjectName("appearance-artwork-preview");
     setAccessibleName("Appearance wallpaper preview");
@@ -136,6 +139,7 @@ public:
   quint64 select(const QJsonObject &p) {
     preset = p;
     const auto generation = ++loadGeneration;
+    requestedGeneration->store(generation, std::memory_order_release);
     image = QPixmap();
     scaledPreview = QPixmap();
     previewSize = QSize();
@@ -516,15 +520,19 @@ public:
   }
   void loadArtworkPreview(const QJsonObject &p, quint64 generation) {
     QPointer<Artwork> previewGuard(art);
+    auto requestedGeneration = art->requestedGeneration;
     const QString path = wallpapers + "/" + p.value("image").toString();
     responseParserPool.start(QRunnable::create(
-        [previewGuard, path, generation] {
+        [previewGuard, requestedGeneration, path, generation] {
+          if (requestedGeneration->load(std::memory_order_acquire) != generation)
+            return;
           QImageReader reader(path);
           if (reader.size().isValid())
             reader.setScaledSize(
                 reader.size().scaled(1024, 640, Qt::KeepAspectRatio));
           QImage image = reader.read();
-          if (!previewGuard)
+          if (!previewGuard ||
+              requestedGeneration->load(std::memory_order_acquire) != generation)
             return;
           QMetaObject::invokeMethod(
               previewGuard.data(),
@@ -2421,6 +2429,25 @@ static int smoke(Window &window, const QString &directory) {
   if (!window.presetThumbnailsLoaded())
     throw std::runtime_error(
         "Background preset thumbnail loading did not finish for every character");
+  const int rapidSelectionCount = qMin(6, int(window.presets.size()));
+  for (int i = 0; i < rapidSelectionCount; ++i)
+    window.selectPreset(window.presets.at(i).toObject().value("id").toString());
+  const auto rapidSelection =
+      window.presets.at(rapidSelectionCount - 1)
+          .toObject()
+          .value("id")
+          .toString();
+  QElapsedTimer rapidPreviewTimeout;
+  rapidPreviewTimeout.start();
+  while (!window.art->previewReady && rapidPreviewTimeout.elapsed() < 5000) {
+    qApp->processEvents();
+    QThread::msleep(1);
+  }
+  if (!window.art->previewReady ||
+      window.art->imageGeneration != window.art->loadGeneration ||
+      window.art->preset.value("id").toString() != rapidSelection)
+    throw std::runtime_error(
+        "Rapid preset changes did not leave the newest wallpaper preview selected");
   QTemporaryDir missingThumbnailDirectory;
   QToolButton missingThumbnailCard(&window);
   missingThumbnailCard.setAccessibleDescription("Missing thumbnail smoke case");

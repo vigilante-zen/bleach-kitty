@@ -536,10 +536,15 @@ public:
     layout->addSpacing(8);
     layout->addWidget(label("SAVED SNAPSHOTS", "eyebrow"));
     snapshots = new QComboBox;
+    snapshots->setAccessibleName("Saved snapshots");
+    snapshots->setAccessibleDescription(
+        "Choose a snapshot to inspect, verify, protect, or restore.");
     layout->addWidget(snapshots);
     snapshotDetails = label("", "muted");
+    snapshotDetails->setAccessibleName("Selected snapshot details");
     layout->addWidget(snapshotDetails);
     storage = label("", "notice");
+    storage->setAccessibleName("Snapshot storage status");
     layout->addWidget(storage);
     connect(snapshots, &QComboBox::currentIndexChanged, this,
             [this] { snapshotChanged(); });
@@ -551,6 +556,8 @@ public:
     });
     row->addWidget(verifyButton);
     restoreButton = button("Restore…", [this] { restoreSelected(); });
+    restoreButton->setAccessibleDescription(
+        "Review the restore plan before changing desktop files.");
     row->addWidget(restoreButton);
     protectButton = button("Protect snapshot", [this] {
       auto name = snapshots->currentData().toString();
@@ -559,6 +566,8 @@ public:
                  {"enabled", !rows[name].value("protected").toBool()}},
                 "Updating protection…");
     });
+    protectButton->setAccessibleDescription(
+        "Keep the selected snapshot safe from automatic cleanup.");
     row->addWidget(protectButton);
     row->addWidget(button("Refresh", [this] { refreshSnapshots(); }));
     layout->addLayout(row);
@@ -569,10 +578,15 @@ public:
     keep = new QSpinBox;
     keep->setRange(1, 100);
     keep->setValue(5);
+    keep->setAccessibleName("Number of newest snapshots to keep");
+    keep->setAccessibleDescription(
+        "Protected snapshots are kept in addition to this number.");
     cleanup->addWidget(keep);
     cleanup->addWidget(label("plus all protected snapshots"));
     cleanup->addStretch();
     cleanupButton = button("Preview cleanup…", [this] { previewCleanup(); });
+    cleanupButton->setAccessibleDescription(
+        "Review the exact snapshots that cleanup would remove.");
     cleanup->addWidget(cleanupButton);
     layout->addLayout(cleanup);
     layout->addStretch();
@@ -1295,16 +1309,21 @@ public:
     auto *poolSearch = new QLineEdit;
     poolSearch->setObjectName("shuffle-pool-search");
     poolSearch->setPlaceholderText("Filter shuffle characters…");
+    poolSearch->setAccessibleName("Filter login shuffle characters");
     poolSearch->setClearButtonEnabled(true);
     layout->addWidget(poolSearch);
     auto *poolActions = new QHBoxLayout;
     auto *selectShown = new QPushButton("Select shown");
     selectShown->setObjectName("shuffle-pool-select-shown");
+    selectShown->setAccessibleDescription(
+        "Include every character currently visible in the filtered list.");
     auto *clearShown = new QPushButton("Clear shown");
     clearShown->setObjectName("shuffle-pool-clear-shown");
+    clearShown->setAccessibleDescription(
+        "Exclude every character currently visible in the filtered list.");
     poolActions->addWidget(selectShown); poolActions->addWidget(clearShown); poolActions->addStretch();
     layout->addLayout(poolActions);
-    auto *pool = new QListWidget; pool->setObjectName("shuffle-pool-list"); pool->setMaximumHeight(190); layout->addWidget(pool);
+    auto *pool = new QListWidget; pool->setObjectName("shuffle-pool-list"); pool->setAccessibleName("Characters for login shuffle"); pool->setAccessibleDescription("Check at least one character when login shuffle is enabled."); pool->setMaximumHeight(190); layout->addWidget(pool);
     auto *poolEmpty = label("No shuffle characters match this filter.", "muted");
     poolEmpty->setObjectName("shuffle-pool-empty-state"); poolEmpty->hide(); layout->addWidget(poolEmpty);
     for (auto row : presets) {
@@ -1344,6 +1363,8 @@ public:
       for (int i = 0; i < pool->count(); ++i)
         if (pool->item(i)->checkState() == Qt::Checked) ++checked;
       poolCount->setText(checked == 0 ? "None selected" : QString("%1 selected").arg(checked));
+      poolCount->setAccessibleDescription(poolCount->text() +
+          " in the login shuffle pool.");
       buttons->button(QDialogButtonBox::Save)->setEnabled(checked > 0);
     };
     auto filterPool = [pool, poolSearch, poolEmpty] {
@@ -1694,6 +1715,12 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Window minimum size does not adapt to display geometry");
   if (!qobject_cast<QScrollArea *>(window.pages->widget(1)))
     throw std::runtime_error("Backup controls are not scrollable on short displays");
+  if (window.snapshots->accessibleName().isEmpty() ||
+      window.snapshotDetails->accessibleName().isEmpty() ||
+      window.storage->accessibleName().isEmpty() ||
+      window.restoreButton->accessibleDescription().isEmpty() ||
+      window.cleanupButton->accessibleDescription().isEmpty())
+    throw std::runtime_error("Backup controls are missing screen-reader descriptions");
   if (!window.notice->text().startsWith("Saved presets could not be loaded:"))
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
   if (!window.watcher.files().contains(window.data + "/custom-presets.json"))
@@ -1811,7 +1838,11 @@ static int smoke(Window &window, const QString &directory) {
       auto *clearShown = dialog->findChild<QPushButton *>("shuffle-pool-clear-shown");
       auto *poolEmpty = dialog->findChild<QLabel *>("shuffle-pool-empty-state");
       auto *optionButtons = dialog->findChild<QDialogButtonBox *>();
-      if (!poolSearch || !pool || !poolCount || !selectShown || !clearShown || !poolEmpty || !optionButtons) {
+      if (!poolSearch || !pool || !poolCount || !selectShown || !clearShown || !poolEmpty || !optionButtons ||
+          poolSearch->accessibleName().isEmpty() || pool->accessibleName().isEmpty() ||
+          selectShown->accessibleDescription().isEmpty() ||
+          clearShown->accessibleDescription().isEmpty() ||
+          poolCount->accessibleDescription().isEmpty()) {
         poolFailure = "Appearance options are missing searchable shuffle-pool controls";
       } else {
         int originalSelection = 0;

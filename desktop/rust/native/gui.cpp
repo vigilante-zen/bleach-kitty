@@ -2293,6 +2293,19 @@ static int smoke(Window &window, const QString &directory) {
             .arg(eventLoopRemainedResponsive)
             .arg(parsedPayloadSize)
             .toStdString());
+  bool completionAfterWindowDestruction = false;
+  {
+    Window retiringWindow;
+    retiringWindow.parseWorkerResponse(
+        asyncResponse,
+        [&completionAfterWindowDestruction](const QJsonObject &) {
+          completionAfterWindowDestruction = true;
+        });
+  }
+  qApp->processEvents();
+  if (completionAfterWindowDestruction)
+    throw std::runtime_error(
+        "Worker parse completion was delivered after its window was destroyed");
   if (fitDialogSize(QSize(620, 500), QSize(640, 480)) != QSize(608, 448) ||
       fitDialogSize(QSize(380, 460), QSize(800, 600)) != QSize(380, 460))
     throw std::runtime_error("Dialog sizing does not respect available display geometry");

@@ -13,6 +13,8 @@ At `58c938a` and later, the full local CI-equivalent check passed: 57 repository
 
 The current branch remains local-only because this environment cannot resolve `github.com`; `main` is ahead of `origin/main`. The untracked `artifacts/` screenshots remain user data.
 
+Single-instance startup in Python and Rust now rejects symlinked state-directory ancestors and existing control lock/socket symlinks before creating or using IPC paths. Rust bootstrap validates the state path before the Qt launcher creates it. The offscreen Python UI suite passes 21 checks (one socket test skipped because sockets are blocked), and all 40 Rust tests, Clippy, and the optimized build pass.
+
 ## Latest completed work
 
 Snapshot restore in both Rust and Python now stages and verifies all target bytes before applying them. Replacements and absent-file deletions are transactional: if a later operation fails, earlier files are restored with their original contents and permissions. Failure-injection tests cover a restore that has already replaced and deleted files before failing. Python and Rust also reject a boolean manifest version instead of treating JSON `true` as integer version `1`.

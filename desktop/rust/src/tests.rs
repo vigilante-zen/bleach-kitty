@@ -63,6 +63,16 @@ fn bootstrap_reports_invalid_custom_presets_without_hiding_the_problem() {
 }
 
 #[test]
+fn bootstrap_rejects_symlinked_state_ancestors_before_gui_startup() {
+    let f=Fixture::new();
+    let local=f.app.home.join(".local");fs::create_dir_all(&local).unwrap();
+    let outside=f.app.home.join("external-state");fs::create_dir_all(&outside).unwrap();
+    symlink(&outside,local.join("state")).unwrap();
+    assert!(f.app.dispatch(&obj!{"op"=>"bootstrap"}).unwrap_err().contains("Symlinks are unsupported"));
+    assert!(!outside.join("bleach-desktop").exists());
+}
+
+#[test]
 fn stale_appearance_save_does_not_replace_newer_shared_preferences() {
     let f=Fixture::new();
     let expected=appearance::load(&f.app).unwrap();

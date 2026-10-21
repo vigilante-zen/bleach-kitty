@@ -1955,6 +1955,9 @@ extern "C" int bankai_gui(int argc, char **argv) {
     QLocalServer server;
     if (!smokeTest && !bench) {
       QDir().mkpath(state);
+      if (QFileInfo(state).isSymLink() || QFileInfo(socketName).isSymLink() ||
+          QFileInfo(lock.fileName()).isSymLink())
+        throw std::runtime_error("Bankai state, control socket and lock paths must not be symlinks");
       QLocalSocket client;
       client.connectToServer(socketName);
       if (client.waitForConnected(300)) {

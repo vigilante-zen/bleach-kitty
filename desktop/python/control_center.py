@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QListWidget, QMainWindow, QMenu, QMessageBox, QPushButton, QSpinBox, QStackedWidget,
     QScrollArea, QSystemTrayIcon, QTextEdit, QToolButton, QVBoxLayout, QWidget,
 )
-from snapshot_manager import SnapshotStore, format_size
+from snapshot_manager import SnapshotStore, format_size, reject_symlinks
 
 HOME = Path.home()
 DATA = HOME / '.local/share/bleach-desktop'
@@ -891,9 +891,16 @@ class ControlCenter(QMainWindow):
 class InstanceCoordinator:
     """Route a second launch to the existing window without a second tray icon."""
     def __init__(self, state):
+        reject_symlinks(state)
         state.mkdir(parents=True, exist_ok=True)
-        self.socket_name = str(state / 'bankai-control.sock')
-        self.lock = QLockFile(str(state / 'bankai-control.lock'))
+        self.state_path = state
+        self.socket_path = state / 'bankai-control.sock'
+        self.lock_path = state / 'bankai-control.lock'
+        reject_symlinks(state)
+        reject_symlinks(self.socket_path)
+        reject_symlinks(self.lock_path)
+        self.socket_name = str(self.socket_path)
+        self.lock = QLockFile(str(self.lock_path))
         self.server = QLocalServer()
         self.server.setSocketOptions(QLocalServer.SocketOption.UserAccessOption)
         self.callback = None
@@ -910,6 +917,9 @@ class InstanceCoordinator:
         return True
 
     def start(self):
+        reject_symlinks(self.state_path)
+        reject_symlinks(self.socket_path)
+        reject_symlinks(self.lock_path)
         if not self.lock.tryLock(0):
             return False
         QLocalServer.removeServer(self.socket_name)

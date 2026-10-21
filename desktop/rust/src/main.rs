@@ -43,6 +43,7 @@ impl App {
         let op = request.get("op")?.text()?;
         match op {
             "bootstrap" => {
+                fsutil::reject_links(&self.state, &self.home)?;
                 let (saved_presets, saved_presets_error) = match custom_presets::list(self) {
                     Ok(rows) => (Value::from(rows), Value::from("")),
                     Err(error) => (Value::from(Vec::<Value>::new()), Value::from(error)),

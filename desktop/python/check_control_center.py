@@ -305,6 +305,27 @@ class ControlCenterChecks(unittest.TestCase):
         finally:
             first.close()
 
+    def test_instance_coordinator_rejects_symlinked_state_and_lock_paths(self):
+        outside = self.home / 'outside-instance-state'
+        outside.mkdir()
+        alias = self.home / 'instance-state-alias'
+        alias.symlink_to(outside, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, 'must not contain symlinks'):
+            center.InstanceCoordinator(alias)
+
+        state = self.home / 'instance-state'
+        state.mkdir()
+        outside_file = self.home / 'outside-instance-lock'
+        outside_file.write_text('keep')
+        (state / 'bankai-control.lock').symlink_to(outside_file)
+        with self.assertRaisesRegex(ValueError, 'must not contain symlinks'):
+            center.InstanceCoordinator(state)
+        (state / 'bankai-control.lock').unlink()
+        (state / 'bankai-control.sock').symlink_to(outside_file)
+        with self.assertRaisesRegex(ValueError, 'must not contain symlinks'):
+            center.InstanceCoordinator(state)
+        self.assertEqual(outside_file.read_text(), 'keep')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

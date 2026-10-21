@@ -23,6 +23,8 @@ Appearance-options shuffle controls now describe the character filter, list, liv
 
 Keyboard focus now has a high-contrast pink border on buttons, character cards, combo boxes, search fields, spin boxes, lists, checkboxes and activity text. The smoke test checks that these control families have focus styling, and its keyboard-search test confirms focus reaches the search field. The 40 Rust tests, Clippy, optimized build and offscreen smoke test pass.
 
+The native UI smoke test now queries Qt's `QAccessibleInterface` for names and descriptions on appearance previews, terminal search/filter/Random controls, shuffle-pool controls, and snapshot actions. It also verifies character descriptions change after selection. This checks the accessibility values exposed by Qt, beyond checking widget properties; actual spoken output still requires a live KDE accessibility session.
+
 Single-instance startup in Python and Rust now rejects symlinked state-directory ancestors and existing control lock/socket symlinks before creating or using IPC paths. Rust bootstrap validates the state path before the Qt launcher creates it. The offscreen Python UI suite passes 21 checks (one socket test skipped because sockets are blocked), and all 40 Rust tests, Clippy, and the optimized build pass.
 
 ## Latest completed work

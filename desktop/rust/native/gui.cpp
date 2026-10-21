@@ -65,6 +65,12 @@ static QLabel *label(const QString &text, const QString &name = {}) {
   w->setObjectName(name);
   return w;
 }
+static QString accessibleText(QWidget *widget, QAccessible::Text field) {
+  if (!widget)
+    return {};
+  const auto *interface = QAccessible::queryAccessibleInterface(widget);
+  return interface ? interface->text(field) : QString();
+}
 static QIcon svgIcon(QByteArray source, const QString &accent = {}) {
   if (!accent.isEmpty())
     source.replace("#d72f43", accent.toUtf8());
@@ -1541,10 +1547,11 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       return;
     }
     auto *random = dialog->findChild<QPushButton *>("portrait-random");
-    if (search->accessibleName().isEmpty() || filter->accessibleName().isEmpty() ||
-        !random || random->accessibleName().isEmpty() ||
-        window.portraitPreview->accessibleName().isEmpty() ||
-        window.portraitPreview->accessibleDescription().isEmpty()) {
+    if (accessibleText(search, QAccessible::Name).isEmpty() ||
+        accessibleText(filter, QAccessible::Name).isEmpty() ||
+        !random || accessibleText(random, QAccessible::Name).isEmpty() ||
+        accessibleText(window.portraitPreview, QAccessible::Name).isEmpty() ||
+        accessibleText(window.portraitPreview, QAccessible::Description).isEmpty()) {
       failure = "Character selection or artwork preview is missing accessibility descriptions";
       dialog->reject();
       return;
@@ -1601,7 +1608,7 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     selectedCharacter.replace('-', ' ');
     if (!selectedCharacter.isEmpty())
       selectedCharacter[0] = selectedCharacter[0].toUpper();
-    if (!window.portraitPreview->accessibleDescription().contains(
+    if (!accessibleText(window.portraitPreview, QAccessible::Description).contains(
             selectedCharacter, Qt::CaseInsensitive))
       failure = "Terminal artwork description did not update after character selection";
     dialog->reject();
@@ -1721,11 +1728,11 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Window minimum size does not adapt to display geometry");
   if (!qobject_cast<QScrollArea *>(window.pages->widget(1)))
     throw std::runtime_error("Backup controls are not scrollable on short displays");
-  if (window.snapshots->accessibleName().isEmpty() ||
-      window.snapshotDetails->accessibleName().isEmpty() ||
-      window.storage->accessibleName().isEmpty() ||
-      window.restoreButton->accessibleDescription().isEmpty() ||
-      window.cleanupButton->accessibleDescription().isEmpty())
+  if (accessibleText(window.snapshots, QAccessible::Name).isEmpty() ||
+      accessibleText(window.snapshotDetails, QAccessible::Name).isEmpty() ||
+      accessibleText(window.storage, QAccessible::Name).isEmpty() ||
+      accessibleText(window.restoreButton, QAccessible::Description).isEmpty() ||
+      accessibleText(window.cleanupButton, QAccessible::Description).isEmpty())
     throw std::runtime_error("Backup controls are missing screen-reader descriptions");
   if (!window.notice->text().startsWith("Saved presets could not be loaded:"))
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
@@ -1786,10 +1793,10 @@ static int smoke(Window &window, const QString &directory) {
   auto *appearancePreview = window.art;
   auto *presetCard = window.cards.value(initial.toString());
   const auto selectedTitle = window.preset(initial.toString()).value("title").toString();
-  if (!appearancePreview || appearancePreview->accessibleName().isEmpty() ||
-      !appearancePreview->accessibleDescription().contains(selectedTitle) ||
-      !presetCard || presetCard->accessibleName().isEmpty() ||
-      presetCard->accessibleDescription().isEmpty())
+  if (accessibleText(appearancePreview, QAccessible::Name).isEmpty() ||
+      !accessibleText(appearancePreview, QAccessible::Description).contains(selectedTitle) ||
+      !presetCard || accessibleText(presetCard, QAccessible::Name).isEmpty() ||
+      accessibleText(presetCard, QAccessible::Description).isEmpty())
     throw std::runtime_error("Appearance artwork controls are missing screen-reader descriptions");
   presetSearch->setText("quincy");
   QMetaObject::invokeMethod(presetSearchShortcut, "activated");
@@ -1845,10 +1852,11 @@ static int smoke(Window &window, const QString &directory) {
       auto *poolEmpty = dialog->findChild<QLabel *>("shuffle-pool-empty-state");
       auto *optionButtons = dialog->findChild<QDialogButtonBox *>();
       if (!poolSearch || !pool || !poolCount || !selectShown || !clearShown || !poolEmpty || !optionButtons ||
-          poolSearch->accessibleName().isEmpty() || pool->accessibleName().isEmpty() ||
-          selectShown->accessibleDescription().isEmpty() ||
-          clearShown->accessibleDescription().isEmpty() ||
-          poolCount->accessibleDescription().isEmpty()) {
+          accessibleText(poolSearch, QAccessible::Name).isEmpty() ||
+          accessibleText(pool, QAccessible::Name).isEmpty() ||
+          accessibleText(selectShown, QAccessible::Description).isEmpty() ||
+          accessibleText(clearShown, QAccessible::Description).isEmpty() ||
+          accessibleText(poolCount, QAccessible::Description).isEmpty()) {
         poolFailure = "Appearance options are missing searchable shuffle-pool controls";
       } else {
         int originalSelection = 0;
@@ -1927,7 +1935,8 @@ static int smoke(Window &window, const QString &directory) {
   window.matchDesktop->setChecked(false);
   window.portraitChoice->setCurrentIndex(window.portraitChoice->findData("random"));
   window.updatePortraitPreview();
-  if (!window.portraitPreview->accessibleDescription().contains("Rotation example"))
+  if (!accessibleText(window.portraitPreview, QAccessible::Description)
+           .contains("Rotation example"))
     throw std::runtime_error("Random artwork preview is missing its screen-reader description");
   window.grab().save(directory + "/rust-terminal-art.png");
   window.navigation->setCurrentRow(1);

@@ -263,6 +263,8 @@ public:
   QMap<QString, QToolButton *> cards;
   QList<QPushButton *> buttons;
   QMap<QString, QJsonObject> rows;
+  QHash<QString, QImage> portraitThumbnailCache;
+  QSet<QString> portraitThumbnailFailures;
   bool snapshotScanSucceeded = false;
   QMap<QString, QAction *> presetActions;
   QList<QAction *> taskActions;
@@ -547,10 +549,35 @@ public:
       QLabel *thumbnail, const QString &path, const QString &title,
       const std::shared_ptr<std::atomic<quint64>> &requestedGeneration,
       quint64 generation) {
+    const QFileInfo file(path);
+    const QString cacheKey =
+        QString("%1|%2|%3")
+            .arg(path)
+            .arg(file.size())
+            .arg(file.lastModified().toMSecsSinceEpoch());
+    if (portraitThumbnailCache.contains(cacheKey)) {
+      thumbnail->setProperty("portrait-thumbnail-cache-hit", true);
+      thumbnail->setPixmap(
+          QPixmap::fromImage(portraitThumbnailCache.value(cacheKey)));
+      thumbnail->setAccessibleDescription(title + " portrait thumbnail.");
+      thumbnail->setProperty("portrait-thumbnail-complete", true);
+      return;
+    }
+    if (portraitThumbnailFailures.contains(cacheKey)) {
+      thumbnail->setText("Artwork unavailable");
+      thumbnail->setAccessibleDescription(title + " portrait artwork unavailable.");
+      thumbnail->setProperty("portrait-thumbnail-error", true);
+      if (auto *card = qobject_cast<QPushButton *>(thumbnail->parentWidget()))
+        card->setAccessibleDescription(card->accessibleDescription() +
+                                       " Portrait artwork unavailable.");
+      thumbnail->setProperty("portrait-thumbnail-cache-hit", true);
+      thumbnail->setProperty("portrait-thumbnail-complete", true);
+      return;
+    }
     QPointer<Window> windowGuard(this);
     QPointer<QLabel> thumbnailGuard(thumbnail);
     responseParserPool.start(QRunnable::create(
-        [windowGuard, thumbnailGuard, path, title, requestedGeneration,
+        [windowGuard, thumbnailGuard, path, cacheKey, title, requestedGeneration,
          generation] {
           if (requestedGeneration->load(std::memory_order_acquire) != generation)
             return;
@@ -564,10 +591,14 @@ public:
             return;
           QMetaObject::invokeMethod(
               windowGuard.data(),
-              [thumbnailGuard, title, image = std::move(image)]() mutable {
-                if (!thumbnailGuard)
+              [windowGuard, thumbnailGuard, cacheKey, title,
+               requestedGeneration, generation,
+               image = std::move(image)]() mutable {
+                if (!windowGuard || !thumbnailGuard ||
+                    requestedGeneration->load(std::memory_order_acquire) != generation)
                   return;
                 if (image.isNull()) {
+                  windowGuard->portraitThumbnailFailures.insert(cacheKey);
                   thumbnailGuard->setText("Artwork unavailable");
                   thumbnailGuard->setAccessibleDescription(
                       title + " portrait artwork unavailable.");
@@ -578,10 +609,17 @@ public:
                         card->accessibleDescription() +
                         " Portrait artwork unavailable.");
                 } else {
+                  if (!windowGuard->portraitThumbnailCache.contains(cacheKey)) {
+                    if (windowGuard->portraitThumbnailCache.size() >= 64)
+                      windowGuard->portraitThumbnailCache.erase(
+                          windowGuard->portraitThumbnailCache.begin());
+                    windowGuard->portraitThumbnailCache.insert(cacheKey, image);
+                  }
                   thumbnailGuard->setPixmap(QPixmap::fromImage(image));
                   thumbnailGuard->setAccessibleDescription(
                       title + " portrait thumbnail.");
                 }
+                thumbnailGuard->setProperty("portrait-thumbnail-cache-hit", false);
                 thumbnailGuard->setProperty("portrait-thumbnail-complete", true);
               },
               Qt::QueuedConnection);
@@ -2233,6 +2271,12 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     if (!matchingCard || accessibleText(matchingCard, QAccessible::Name) != "Uryu" ||
         !accessibleText(matchingCard, QAccessible::Description).contains("arrow keys"))
       failure = "Character card does not explain its selection action to screen readers";
+    auto *matchingThumbnail = matchingCard
+                                  ? matchingCard->findChild<QLabel *>("portrait-thumbnail")
+                                  : nullptr;
+    if (!matchingThumbnail ||
+        !matchingThumbnail->property("portrait-thumbnail-cache-hit").toBool())
+      failure = "Filtering did not reuse the decoded terminal portrait thumbnail";
     if (cards.isEmpty() || cards.first()->findChildren<QShortcut *>().size() < 6)
       failure = "Character cards are missing keyboard navigation shortcuts";
     filter->setCurrentIndex(filter->findData("all"));

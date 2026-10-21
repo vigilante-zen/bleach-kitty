@@ -1,6 +1,7 @@
 """Shared Bankai appearance preferences; no settings are written on import."""
-import json
 import fcntl
+from contextlib import contextmanager
+import json
 import os
 from pathlib import Path
 import random
@@ -32,6 +33,21 @@ def checked(path, home):
         if part.is_symlink(): raise ValueError('Linked appearance preferences are unsupported')
         if part == Path(home): break
 
+@contextmanager
+def shared_state_lock(home):
+    """Coordinate read-modify-write operations with Rust and snapshot tools."""
+    state = Path(home) / '.local/state/bleach-desktop'
+    checked(state, home)
+    state.mkdir(parents=True, exist_ok=True)
+    lock_path = state / 'snapshot-management.lock'
+    checked(lock_path, home)
+    with lock_path.open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
+
 def load(home):
     path = Path(home) / '.local/share/bleach-desktop/appearance.json'
     checked(path, home)
@@ -43,22 +59,14 @@ def save(home, value, expected=None):
     path = Path(home) / '.local/share/bleach-desktop/appearance.json'
     checked(path, home)
     path.parent.mkdir(parents=True, exist_ok=True)
-    state = Path(home) / '.local/state/bleach-desktop'
-    checked(state, home); state.mkdir(parents=True, exist_ok=True)
-    lock_path = state / 'snapshot-management.lock'
-    checked(lock_path, home)
-    with lock_path.open('a') as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with shared_state_lock(home):
+        if expected is not None and load(home) != validate(expected):
+            raise ValueError('Appearance settings changed in another Bankai window. Close and reopen Appearance options before saving.')
+        fd, temp = tempfile.mkstemp(dir=path.parent)
         try:
-            if expected is not None and load(home) != validate(expected):
-                raise ValueError('Appearance settings changed in another Bankai window. Close and reopen Appearance options before saving.')
-            fd, temp = tempfile.mkstemp(dir=path.parent)
-            try:
-                with os.fdopen(fd, 'w') as stream: json.dump(value, stream, indent=2); stream.write('\n')
-                os.replace(temp, path)
-            finally: Path(temp).unlink(missing_ok=True)
-        finally:
-            fcntl.flock(lock, fcntl.LOCK_UN)
+            with os.fdopen(fd, 'w') as stream: json.dump(value, stream, indent=2); stream.write('\n')
+            os.replace(temp, path)
+        finally: Path(temp).unlink(missing_ok=True)
 
 def shuffled(home, current):
     settings = load(home)
@@ -90,28 +98,31 @@ def save_custom_preset(home, name, preset, options):
     name = name.strip()
     if not name or len(name) > 40: raise ValueError('Name the preset with 1–40 characters')
     if preset not in {p['id'] for p in catalog()}: raise ValueError('Choose a Bankai character or form first')
-    rows = custom_presets(home)
-    if any(row['name'].casefold() == name.casefold() for row in rows): raise ValueError('A saved preset already has that name')
-    if len(rows) >= 50: raise ValueError('You can save up to 50 custom presets')
     value = validate(options)
-    rows.append(dict(id='custom-' + uuid.uuid4().hex, name=name, preset=preset, accent=value['accent'], login=value['login'], edition=value['edition']))
     path = Path(home) / '.local/share/bleach-desktop/custom-presets.json'
-    checked(path, home); path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temp = tempfile.mkstemp(dir=path.parent)
-    try:
-        with os.fdopen(fd,'w') as stream: json.dump(rows,stream,indent=2); stream.write('\n')
-        os.replace(temp,path)
-    finally: Path(temp).unlink(missing_ok=True)
-    return rows[-1]
+    with shared_state_lock(home):
+        rows = custom_presets(home)
+        if any(row['name'].casefold() == name.casefold() for row in rows): raise ValueError('A saved preset already has that name')
+        if len(rows) >= 50: raise ValueError('You can save up to 50 custom presets')
+        row = dict(id='custom-' + uuid.uuid4().hex, name=name, preset=preset, accent=value['accent'], login=value['login'], edition=value['edition'])
+        rows.append(row)
+        checked(path, home); path.parent.mkdir(parents=True, exist_ok=True)
+        fd, temp = tempfile.mkstemp(dir=path.parent)
+        try:
+            with os.fdopen(fd,'w') as stream: json.dump(rows,stream,indent=2); stream.write('\n')
+            os.replace(temp,path)
+        finally: Path(temp).unlink(missing_ok=True)
+        return row
 
 def delete_custom_preset(home, identifier):
-    rows = custom_presets(home)
-    kept = [row for row in rows if row['id'] != identifier]
-    if len(kept) == len(rows): raise ValueError('Saved preset not found')
     path = Path(home) / '.local/share/bleach-desktop/custom-presets.json'
-    checked(path,home)
-    fd,temp = tempfile.mkstemp(dir=path.parent)
-    try:
-        with os.fdopen(fd,'w') as stream: json.dump(kept,stream,indent=2); stream.write('\n')
-        os.replace(temp,path)
-    finally: Path(temp).unlink(missing_ok=True)
+    with shared_state_lock(home):
+        rows = custom_presets(home)
+        kept = [row for row in rows if row['id'] != identifier]
+        if len(kept) == len(rows): raise ValueError('Saved preset not found')
+        checked(path,home)
+        fd,temp = tempfile.mkstemp(dir=path.parent)
+        try:
+            with os.fdopen(fd,'w') as stream: json.dump(kept,stream,indent=2); stream.write('\n')
+            os.replace(temp,path)
+        finally: Path(temp).unlink(missing_ok=True)

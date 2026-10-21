@@ -1,8 +1,10 @@
 """Validate shared preference boundaries without changing the live desktop."""
 import importlib.util
+import fcntl
 import json
 from pathlib import Path
 import tempfile
+import threading
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,5 +57,28 @@ class AppearanceChecks(unittest.TestCase):
             with self.assertRaises(ValueError): appearance.save_custom_preset(home,'night rukia','ichigo',options)
             appearance.delete_custom_preset(home,row['id'])
             self.assertEqual(appearance.custom_presets(home),[])
+
+    def test_custom_preset_writes_wait_for_the_shared_state_lock(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder); state=home/'.local/state/bleach-desktop'; state.mkdir(parents=True)
+            lock=(state/'snapshot-management.lock').open('a')
+            fcntl.flock(lock,fcntl.LOCK_EX)
+            started=threading.Event(); finished=threading.Event(); errors=[]
+            def save():
+                started.set()
+                try: appearance.save_custom_preset(home,'Concurrent Rukia','rukia',appearance.defaults())
+                except Exception as error: errors.append(error)
+                finally: finished.set()
+            worker=threading.Thread(target=save)
+            try:
+                worker.start()
+                self.assertTrue(started.wait(2))
+                self.assertFalse(finished.wait(.1), 'custom preset write bypassed the shared Rust/snapshot lock')
+            finally:
+                fcntl.flock(lock,fcntl.LOCK_UN); lock.close()
+            worker.join(2)
+            self.assertFalse(worker.is_alive())
+            self.assertEqual(errors,[])
+            self.assertEqual([row['name'] for row in appearance.custom_presets(home)],['Concurrent Rukia'])
 
 if __name__ == '__main__': unittest.main()

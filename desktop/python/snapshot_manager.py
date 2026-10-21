@@ -80,7 +80,9 @@ class SnapshotStore:
             raise ValueError('Invalid snapshot name.')
         with self.locked(wait=False):
             path = self.root / name
-            if path.is_symlink() or not path.is_dir() or not (path / 'manifest.json').is_file():
+            manifest = path / 'manifest.json'
+            reject_symlinks(manifest)
+            if not path.is_dir() or not manifest.is_file():
                 raise ValueError('The snapshot could not be found.')
             if name == BASELINE and not enabled:
                 raise ValueError('The original restore baseline always stays protected.')

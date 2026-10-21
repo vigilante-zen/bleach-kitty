@@ -114,6 +114,17 @@ class SnapshotManagementChecks(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.store.protect(BASELINE, False)
 
+    def test_cannot_protect_snapshot_with_symlinked_manifest(self):
+        snapshot = self.store.root / self.names[0]
+        manifest = snapshot / 'manifest.json'
+        manifest.rename(snapshot / 'saved-manifest')
+        outside = self.home / 'outside-manifest'
+        outside.write_text('not a snapshot manifest')
+        manifest.symlink_to(outside)
+        with self.assertRaisesRegex(ValueError, 'must not contain symlinks'):
+            self.store.protect(self.names[0])
+        self.assertFalse((self.store.state / 'protected-snapshots.json').exists())
+
     def test_protection_added_after_preview_cancels_every_deletion(self):
         plan = self.store.plan(1)
         self.store.protect(plan['candidates'][-1]['name'])

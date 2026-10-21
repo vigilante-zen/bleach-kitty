@@ -186,7 +186,8 @@ fn protections(app: &App) -> Result<BTreeSet<String>> {
 pub fn protect(app: &App, name: &str, enabled: bool) -> Result<Value> {
     if !valid_name(name) { return Err("Invalid snapshot name".into()); }
     let path = app.snapshots.join(name); fsutil::reject_links(&path, &app.home)?;
-    if !path.join("manifest.json").is_file() { return Err("Snapshot was not found".into()); }
+    let manifest = path.join("manifest.json"); fsutil::reject_links(&manifest, &path)?;
+    if !manifest.is_file() { return Err("Snapshot was not found".into()); }
     if name == BASELINE && !enabled { return Err("The original restore baseline stays protected".into()); }
     let mut names = protections(app)?;
     if enabled { names.insert(name.to_string()); } else { names.remove(name); }

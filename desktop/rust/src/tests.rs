@@ -263,6 +263,7 @@ fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
 #[test]fn corrupt_protection_metadata_disables_cleanup(){let f=Fixture::new();write(&f.app.state.join("protected-snapshots.json"),"not json");assert!(snapshots::plan(&f.app,1).is_err());}
 #[test]fn dangling_protection_metadata_symlink_disables_cleanup(){let f=Fixture::new();fs::create_dir_all(&f.app.state).unwrap();symlink(f.app.home.join("missing-protection-file"),f.app.state.join("protected-snapshots.json")).unwrap();assert!(snapshots::plan(&f.app,1).is_err());}
 #[test]fn fifo_protection_metadata_disables_cleanup_without_reading(){let f=Fixture::new();fs::create_dir_all(&f.app.state).unwrap();make_fifo(&f.app.state.join("protected-snapshots.json"));assert!(snapshots::plan(&f.app,1).unwrap_err().contains("regular file"));}
+#[test]fn snapshot_with_symlinked_manifest_cannot_be_protected(){let f=Fixture::new();let name=snapshot(&f);let manifest=f.app.snapshots.join(&name).join("manifest.json");let outside=f.app.home.join("outside-manifest");write(&outside,"not a manifest");fs::remove_file(&manifest).unwrap();symlink(&outside,&manifest).unwrap();assert!(snapshots::protect(&f.app,&name,true).is_err());assert!(!f.app.state.join("protected-snapshots.json").exists());}
 
 #[test] fn portrait_preferences_validate_and_survive_presets() {
     let f = Fixture::new();

@@ -61,6 +61,26 @@
         "0d27fde5bffac217b3409e5f90e9f109d23ec0f95e03ff0d17629550d74f22fd",
         "0dfc6ab66e56be998da6139c1b44e1e5e8957793a47d2fb05661fb3c9c3e9583"
       ]
+    },
+    {
+      "preset": "nelliel",
+      "edition": "color",
+      "path": "desktop/shared/wallpapers/nelliel-desktop.png",
+      "width": 1916,
+      "height": 821,
+      "sha256": "75f91cd5a4d292d003dd69b3defba82f20bb5487ae7ca626fa74980297fdbb4c",
+      "character_weapon_or_ability": "Gamuza, her Zanpakutō; sheathed katana with green hilt and crescent-moon guard.",
+      "prompt": "Create a polished ultrawide 21:9 anime desktop wallpaper featuring Nelliel Tu Odelschwanck from Bleach in her clearly adult, mature woman form (not her child form). Make her strikingly beautiful, confident, alluring and glamorous in a tasteful, non-explicit way. She has long flowing teal-green hair, luminous green eyes, a recognizable broken white skull-mask fragment with small curved horns on her forehead, and her familiar Espada markings. Her outfit is an elegant fitted black combat bodysuit beneath an open white Arrancar coat, with a green sash and high-waisted white trousers: stylish and flattering, fully opaque, no nudity, no lingerie, no exposed breasts. Pose her with relaxed confident poise and a subtle knowing smile, full figure on the RIGHT third of frame; keep the LEFT half dark and uncluttered for desktop icons. She carries her own Zanpakuto Gamuza, a graceful sheathed katana with a green-wrapped hilt and distinctive crescent-moon guard, clearly attached at her side; do not give her another character’s weapon. Setting: moonlit Hueco Mundo dunes and distant Las Noches towers under a deep emerald-tinted night sky, drifting sand and delicate green spiritual light. Cinematic painterly anime illustration, sophisticated palette of jade, black, ivory and moon silver, rich but restrained highlights, seductive mature elegance rather than pin-up exaggeration. Exact wide wallpaper composition, edge-to-edge image, no text, logos, UI, borders, watermarks, extra characters, extra arms, or duplicate weapons."
+    },
+    {
+      "preset": "nelliel",
+      "edition": "manga",
+      "path": "login/theme/assets/scene-nelliel.png",
+      "width": 1915,
+      "height": 821,
+      "sha256": "5a3647977d7614b4b9be75deede92765785e4553a1de94a7802c9a8af7244ba8",
+      "character_weapon_or_ability": "Gamuza, her Zanpakutō; sheathed katana with green hilt and crescent-moon guard.",
+      "prompt": "Create the matching monochrome Manga edition of this exact Nelliel Tu Odelschwanck wallpaper. Preserve her clearly adult mature appearance, alluring but fully clothed design, face, teal hair, broken white skull-mask fragment, same pose and outfit, and the same sheathed Gamuza Zanpakuto with its green hilt and crescent-moon guard. Preserve Hueco Mundo dunes, distant Las Noches, moon, exact ultrawide composition and dark negative space on the left. Convert to sophisticated black-and-white manga ink with crisp linework, fine screentones, restrained crosshatching and deep graphic shadows. Keep the composition legible as a desktop/login scene. No nudity, no lingerie, no text, panels, logo, UI, border, watermark, extra characters or weapon changes."
     }
   ]
 }

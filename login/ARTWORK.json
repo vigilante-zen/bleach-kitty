@@ -4,7 +4,7 @@
   "use_case": "style-transfer",
   "prompt": "Use case: style-transfer. Edit target: the supplied full desktop wallpaper. Convert this SAME full scene into a refined black-and-white manga ink illustration for a login screen. Preserve character identities, facial features, costume designs, poses, camera, all major architecture and environmental elements, and the complete wide landscape composition. This is a style conversion of the full wallpaper, NOT a headshot or cropped portrait. Keep the subject positions and generous dark central negative space. Use expressive crisp black brush ink, bone-white highlights, varied crosshatching and fine screentones; convert colored energy effects into white ink and halftone. Strictly black, white and neutral gray, no colored accents, no sepia. No typography, no text, no speech bubbles, no panels, no logo, no watermark, no UI. Output one standalone landscape image preserving the source aspect ratio and full scene.",
   "transparent_background": false,
-  "notes": "Seventeen full manga wallpaper scenes. Four TYBW presets and corrected Ichigo/Yamamoto designs were added in the TYBW expansion. Ichigo now has a weapon-free standing pose; the matching monochrome login scene is derived locally from the same wallpaper. Exact prompts, conversion details and output hashes are in docs/prompts/tybw-expansion-20261020/PROMPTS.json. All are unofficial AI-generated fan art, excluded from the code MIT license. Aizen was added on 2026-10-21 with paired Color and Manga wallpapers; the exact prompts, dimensions and hashes are recorded in docs/prompts/aizen-wallpaper-20261021/PROMPTS.json. Grimmjow and Yoruichi were added with character-specific paired scenes; Yoruichi’s paired Color and Manga scenes were regenerated with both hands forward and a clear two-arm pose; prior hashes and prompts are preserved; prompt notes, dimensions and hashes are in docs/prompts/roster-wallpapers-20261021/PROMPTS.json. Gin and Orihime add Shinso and Santen Kesshun (no Zanpakutō) scenes in the same prompt record.",
+  "notes": "Eighteen full manga wallpaper scenes. Four TYBW presets and corrected Ichigo/Yamamoto designs were added in the TYBW expansion. Ichigo now has a weapon-free standing pose; the matching monochrome login scene is derived locally from the same wallpaper. Exact prompts, conversion details and output hashes are in docs/prompts/tybw-expansion-20261020/PROMPTS.json. All are unofficial AI-generated fan art, excluded from the code MIT license. Aizen was added on 2026-10-21 with paired Color and Manga wallpapers; the exact prompts, dimensions and hashes are recorded in docs/prompts/aizen-wallpaper-20261021/PROMPTS.json. Grimmjow and Yoruichi were added with character-specific paired scenes; Yoruichi’s paired Color and Manga scenes were regenerated with both hands forward and a clear two-arm pose; prior hashes and prompts are preserved; prompt notes, dimensions and hashes are in docs/prompts/roster-wallpapers-20261021/PROMPTS.json. Gin and Orihime add Shinso and Santen Kesshun (no Zanpakutō) scenes in the same prompt record. Nelliel adds an adult, fully clothed, sensual design with her own Gamuza Zanpakutō.",
   "assets": [
     {
       "preset": "ichigo",
@@ -171,6 +171,16 @@
       "reference_sha256": "371ea6f7344e43eea2a52bcb275e915a7460741e317a6a71e207bf75401a76c5",
       "path": "login/theme/assets/scene-orihime.png",
       "sha256": "be144120b2454cd056b164cb7e94941bd58df66c2662740c42bfc8535330acaf",
+      "width": 1915,
+      "height": 821,
+      "prompt_record": "docs/prompts/roster-wallpapers-20261021/PROMPTS.json"
+    },
+    {
+      "preset": "nelliel",
+      "reference": "desktop/shared/wallpapers/nelliel-desktop.png",
+      "reference_sha256": "75f91cd5a4d292d003dd69b3defba82f20bb5487ae7ca626fa74980297fdbb4c",
+      "path": "login/theme/assets/scene-nelliel.png",
+      "sha256": "5a3647977d7614b4b9be75deede92765785e4553a1de94a7802c9a8af7244ba8",
       "width": 1915,
       "height": 821,
       "prompt_record": "docs/prompts/roster-wallpapers-20261021/PROMPTS.json"

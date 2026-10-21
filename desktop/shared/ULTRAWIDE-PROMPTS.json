@@ -14,7 +14,8 @@
     "grimmjow": "Use case: stylized-concept. Asset type: panoramic KDE desktop and lock-screen wallpaper, 21:9 ultrawide. Full figure safely in the far right quarter; central 55 percent remains dark, quiet negative space; edge-to-edge painterly anime illustration, no text, logo, UI, border or watermark. Grimmjow Jaegerjaquez, blue spiky hair, broken jawbone mask fragment on the right side of his face, open white Espada jacket and black hakama, standing under a cold Hueco Mundo moon. He holds his sealed Zanpakutō Pantera: a straight katana with a vivid blue-wrapped hilt and compact guard, blade lowered. Keep the sword slender and clearly held by Grimmjow; no other character’s weapon. Deep cobalt moonlight and restrained blue reiatsu along the edges; dark ruined Las Noches skyline low in frame, empty black center.",
     "yoruichi": "Use case: stylized-concept. Asset type: panoramic KDE desktop and lock-screen wallpaper, 21:9 ultrawide. Full figure safely in the far right quarter; central 55 percent remains dark, quiet negative space; edge-to-edge painterly anime illustration, no text, logo, UI, border or watermark. Yoruichi Shihōin, athletic dark-skinned woman with long flowing violet hair, black sleeveless shunpo outfit and white sash, standing on moonlit Soul Society rooftops. Yoruichi has no Zanpakutō: do not give her any sword or weapon. Show her signature Shunkō as restrained gold lightning with subtle violet arcs around her arms and shoulders. Warm gold spiritual light at the far edges, muted violet night sky, distant Seireitei architecture along the bottom, quiet dark center.",
     "gin": "Use case: stylized-concept. Asset type: panoramic KDE desktop and lock-screen wallpaper, 21:9 ultrawide. Full figure safely in the far right quarter; central 55 percent remains dark, quiet negative space; edge-to-edge painterly anime illustration, no text, logo, UI, border or watermark. Gin Ichimaru, narrow foxlike eyes, short silver hair, sly calm expression, black captain robes and white captain haori. He holds his Zanpakutō Shinso in its released state: normal katana hilt, blade visibly extended into one exceptionally long, thin, straight silver line toward the far lower left. Keep the blade continuous and clearly connected to the hilt; no broad sword. Moonlit ruined Soul Society street, pale lavender reiatsu at the edges, dark rooftops at bottom and empty central sky.",
-    "orihime": "Use case: stylized-concept. Asset type: panoramic KDE desktop and lock-screen wallpaper, 21:9 ultrawide. Full figure safely in the far right quarter; central 55 percent remains dark, quiet negative space; edge-to-edge painterly anime illustration, no text, logo, UI, border or watermark. Orihime Inoue with recognizable long orange hair and six hairpins, TYBW white blouse and dark skirt, standing on moonlit Soul Society rooftops. She has no Zanpakutō: no sword or weapon. Show Santen Kesshun as a delicate translucent golden-white protective hexagonal shield formed by her six hairpins around one hand, subtle rather than explosive. Muted rose and warm ivory edge light, distant Seireitei along bottom, very dark uncluttered center."
+    "orihime": "Use case: stylized-concept. Asset type: panoramic KDE desktop and lock-screen wallpaper, 21:9 ultrawide. Full figure safely in the far right quarter; central 55 percent remains dark, quiet negative space; edge-to-edge painterly anime illustration, no text, logo, UI, border or watermark. Orihime Inoue with recognizable long orange hair and six hairpins, TYBW white blouse and dark skirt, standing on moonlit Soul Society rooftops. She has no Zanpakutō: no sword or weapon. Show Santen Kesshun as a delicate translucent golden-white protective hexagonal shield formed by her six hairpins around one hand, subtle rather than explosive. Muted rose and warm ivory edge light, distant Seireitei along bottom, very dark uncluttered center.",
+    "nelliel": "Use case: stylized-concept. Asset type: panoramic KDE desktop and lock-screen wallpaper, 21:9 ultrawide. Nelliel Tu Odelschwanck in her clearly adult mature woman form, confident and alluring, fully clothed in a fitted black combat outfit beneath an open white Arrancar coat, green sash, long teal hair and broken white skull-mask fragment with curved horns. Full-figure on the right third; left half dark, clean negative space. Show her own Zanpakuto Gamuza: a sheathed katana with green-wrapped hilt and distinctive crescent-moon guard; no other character’s weapon. Moonlit Hueco Mundo dunes and Las Noches towers, jade spiritual glow, black, ivory and emerald palette. Sensual high-fashion energy, tasteful and non-explicit; opaque clothing, no nudity or lingerie. No text, logos, UI, border, watermark or extra characters."
   },
   "saved_files": {
     "urahara": "~/Pictures/Bleach-TYBW/Wallpapers/urahara-desktop.png",
@@ -25,7 +26,8 @@
     "grimmjow": "~/Pictures/Bleach-TYBW/Wallpapers/grimmjow-desktop.png",
     "yoruichi": "~/Pictures/Bleach-TYBW/Wallpapers/yoruichi-desktop.png",
     "gin": "~/Pictures/Bleach-TYBW/Wallpapers/gin-desktop.png",
-    "orihime": "~/Pictures/Bleach-TYBW/Wallpapers/orihime-desktop.png"
+    "orihime": "~/Pictures/Bleach-TYBW/Wallpapers/orihime-desktop.png",
+    "nelliel": "~/Pictures/Bleach-TYBW/Wallpapers/nelliel-desktop.png"
   },
   "actual_dimensions": {
     "urahara": {
@@ -61,6 +63,10 @@
       "height": 821
     },
     "orihime": {
+      "width": 1916,
+      "height": 821
+    },
+    "nelliel": {
       "width": 1916,
       "height": 821
     }

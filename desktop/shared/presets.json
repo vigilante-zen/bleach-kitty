@@ -152,6 +152,15 @@
       "image": "orihime-desktop.png",
       "portrait": "orihime",
       "manga": "orihime-manga.png"
+    },
+    {
+      "id": "nelliel",
+      "title": "Nelliel",
+      "subtitle": "Jade · Gamuza",
+      "accent": "#54d4a0",
+      "image": "nelliel-desktop.png",
+      "portrait": "random",
+      "manga": "nelliel-manga.png"
     }
   ]
 }

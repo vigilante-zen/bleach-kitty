@@ -132,7 +132,7 @@ class CompiledRustChecks(unittest.TestCase):
         manifest.write_text(json.dumps(data))
         self.rpc('restore', name=name, fail=True)
 
-    def test_all_seventeen_presets_are_native_and_update_both_screens(self):
+    def test_all_eighteen_presets_are_native_and_update_both_screens(self):
         for preset in CATALOG['presets']:
             result = self.rpc('apply', preset=preset['id'])
             self.assertTrue(result['pending'])

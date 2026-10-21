@@ -350,7 +350,7 @@ class ControlCenter(QMainWindow):
         header.addWidget(label('Make it yours', 'heading')); header.addStretch()
         header.addWidget(self.button('Appearance options', self.appearance_options))
         layout.addLayout(header)
-        layout.addWidget(label('Thirteen characters and forms, color or manga wallpapers, and matching login scenes.', 'muted'))
+        layout.addWidget(label('Eighteen characters and forms, color or manga wallpapers, and matching login scenes.', 'muted'))
         self.art = Artwork()
         layout.addWidget(self.art, 1)
         cards = QGridLayout()

@@ -77,7 +77,7 @@ Both Bankai apps provide **Appearance options** beside the background controls: 
 
 Save your current character wallpaper, accent, and login-scene choices as a named custom preset from the appearance page. Saved combinations can be previewed, applied, or deleted in either edition.
 
-There are seventeen desktop presets, including Aizen, Grimmjow, Yoruichi, Gin, Orihime, TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. The terminal roster also includes TYBW True Shikai Ichigo and Bankai Kenpachi as separate forms.
+There are eighteen desktop presets, including Nelliel, Aizen, Grimmjow, Yoruichi, Gin, Orihime, TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. Nelliel's adult, fully clothed scene features Gamuza. The terminal roster also includes TYBW True Shikai Ichigo and Bankai Kenpachi as separate forms.
 
 ## Daily commands
 

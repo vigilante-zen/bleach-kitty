@@ -2,6 +2,14 @@
 
 This file records a continuation point for the Bankai desktop project.
 
+## Current handoff (2026-10-21)
+
+- Repository: `/home/zen/Projects/bleach-kitty`; branch `main`; latest feature commit `b2e14db` (`Keep cached portrait errors accessible once`). The handoff note is saved in a later local commit; use `git log -5 --oneline` for the current head. Before that note was committed, the tracked worktree was clean and `main` was 118 commits ahead of `origin/main`.
+- Preserve the untracked `artifacts/` directory. It contains user screenshots; do not remove, replace, or add it to commits.
+- The latest Rust picker change makes cached missing portraits keep one accessible error description. Its smoke assertion covers a repeated cache hit. Clippy, all 43 Rust tests, the optimized build, the offscreen native smoke test, and `git diff --check` passed.
+- Remaining verification is environmental: push the local commits when GitHub resolves; verify tray, single-instance activation, wallpaper/color application, and spoken picker announcements in a live KDE session. The offscreen smoke suite also passed with `QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1`, but this session has no Orca and blocks access to its session accessibility bus, so that does not verify spoken output.
+- To resume, check `git status --short --branch`, preserve `artifacts/`, and continue with the next requested feature. There is no uncommitted implementation work at this handoff.
+
 - Repository: `bleach-kitty`
 - Branch: `main`
 - Starting checkpoint: `b28bb11` (`Make Python preset application transactional`); the continuation note was committed as `35c3443`.

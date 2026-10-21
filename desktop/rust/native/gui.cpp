@@ -226,6 +226,7 @@ public:
     side->addWidget(label("Bankai · 0.1", "muted"));
     side->addSpacing(28);
     navigation = new QListWidget;
+    navigation->setAccessibleName("Main pages");
     navigation->addItems(
         {"Appearance", "Backups & restore", "Terminal & tools"});
     navigation->item(0)->setIcon(svgIcon(bootstrap.value("mask_svg").toString().toUtf8()));
@@ -248,13 +249,16 @@ public:
     right->addWidget(pages, 1);
     notice =
         label("Choose a character to preview. Click Apply when you are ready.", "notice");
+    notice->setAccessibleName("Bankai status");
     if (!customPresetError.isEmpty())
       notice->setText("Saved presets could not be loaded: " + customPresetError);
     right->addWidget(notice);
     logButton = new QPushButton("Show activity");
+    logButton->setAccessibleDescription("Show or hide Bankai's action and error log.");
     logButton->setMaximumWidth(140);
     right->addWidget(logButton);
     log = new QPlainTextEdit;
+    log->setAccessibleName("Bankai activity log");
     log->setReadOnly(true);
     log->setMaximumHeight(110);
     log->hide();
@@ -516,12 +520,26 @@ public:
     auto *savedRow=new QHBoxLayout;
     customPresetChoice=new QComboBox;
     customPresetChoice->setObjectName("custom-preset-choice");
+    customPresetChoice->setAccessibleName("Saved custom presets");
+    customPresetChoice->setAccessibleDescription(
+        "Choose a saved combination of wallpaper, accent, and login scene.");
     customPresetChoice->setMinimumWidth(190);
     connect(customPresetChoice,&QComboBox::currentIndexChanged,this,[this](int index){previewCustomPreset(index);});
     savedRow->addWidget(customPresetChoice,1);
-    savedRow->addWidget(button("Save current choices",[this]{saveCustomPreset();}));
-    savedRow->addWidget(button("Apply saved",[this]{applyCustomPreset();},true));
-    savedRow->addWidget(button("Delete",[this]{deleteCustomPreset();}));
+    auto *saveCustom = button("Save current choices",[this]{saveCustomPreset();});
+    saveCustom->setObjectName("save-custom-preset");
+    saveCustom->setAccessibleDescription(
+        "Save the selected character with the current accent and login scene.");
+    savedRow->addWidget(saveCustom);
+    auto *applyCustom = button("Apply saved",[this]{applyCustomPreset();},true);
+    applyCustom->setObjectName("apply-custom-preset");
+    applyCustom->setAccessibleDescription(
+        "Apply the selected saved character, accent, and login scene.");
+    savedRow->addWidget(applyCustom);
+    auto *deleteCustom = button("Delete",[this]{deleteCustomPreset();});
+    deleteCustom->setObjectName("delete-custom-preset");
+    deleteCustom->setAccessibleDescription("Delete the selected saved custom preset.");
+    savedRow->addWidget(deleteCustom);
     layout->addLayout(savedRow);
     refreshCustomPresets();
     auto *scroll = new QScrollArea;
@@ -654,9 +672,14 @@ public:
     portraitChooser->setAccessibleName("Choose terminal character");
     layout->addWidget(portraitChooser);
     matchDesktop = new QCheckBox("Match desktop character");
+    matchDesktop->setAccessibleDescription(
+        "Follow the character selected for the desktop; "
+        "turn off to choose terminal art independently.");
     layout->addWidget(matchDesktop);
     portraitArt = new QComboBox;
     portraitArt->setAccessibleName("Portrait art style");
+    portraitArt->setAccessibleDescription(
+        "Choose color, manga, or both artwork styles for new terminal tabs.");
     portraitArt->addItem("Color", "color");
     portraitArt->addItem("Manga", "manga");
     portraitArt->addItem("Mixed color and manga", "mixed");
@@ -707,6 +730,9 @@ public:
     layout->addWidget(button("Setup & restore guide",
                              [this] { openFile(data + "/README.md"); }));
     autostart = new QCheckBox("Start the Rust edition in the tray at login");
+    autostart->setAccessibleDescription(
+        "Starts the Bankai Rust tray app when this user logs in. "
+        "The Python edition has a separate setting.");
     layout->addWidget(autostart);
     connect(autostart, &QCheckBox::toggled, this, [this](bool enabled) {
       startTask({{"op", "autostart"}, {"enabled", enabled}},
@@ -1807,6 +1833,20 @@ static int smoke(Window &window, const QString &directory) {
       accessibleText(window.snapshotSearch, QAccessible::Name).isEmpty() ||
       accessibleText(window.snapshotDetails, QAccessible::Name).isEmpty() ||
       accessibleText(window.storage, QAccessible::Name).isEmpty() ||
+      accessibleText(window.navigation, QAccessible::Name).isEmpty() ||
+      accessibleText(window.customPresetChoice, QAccessible::Name).isEmpty() ||
+      accessibleText(window.customPresetChoice, QAccessible::Description).isEmpty() ||
+      accessibleText(window.matchDesktop, QAccessible::Description).isEmpty() ||
+      accessibleText(window.portraitArt, QAccessible::Description).isEmpty() ||
+      accessibleText(window.autostart, QAccessible::Description).isEmpty() ||
+      accessibleText(window.log, QAccessible::Name).isEmpty() ||
+      accessibleText(window.logButton, QAccessible::Description).isEmpty() ||
+      accessibleText(window.findChild<QPushButton *>("save-custom-preset"),
+                     QAccessible::Description).isEmpty() ||
+      accessibleText(window.findChild<QPushButton *>("apply-custom-preset"),
+                     QAccessible::Description).isEmpty() ||
+      accessibleText(window.findChild<QPushButton *>("delete-custom-preset"),
+                     QAccessible::Description).isEmpty() ||
       accessibleText(window.inspectButton, QAccessible::Description).isEmpty() ||
       accessibleText(window.restoreButton, QAccessible::Description).isEmpty() ||
       accessibleText(window.cleanupButton, QAccessible::Description).isEmpty())

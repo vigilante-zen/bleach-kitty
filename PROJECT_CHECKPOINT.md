@@ -25,6 +25,8 @@ Keyboard focus now has a high-contrast pink border on buttons, character cards, 
 
 The native UI smoke test now queries Qt's `QAccessibleInterface` for names and descriptions on appearance previews, terminal search/filter/Random controls, shuffle-pool controls, and snapshot actions. It also verifies character descriptions change after selection. This checks the accessibility values exposed by Qt, beyond checking widget properties; actual spoken output still requires a live KDE accessibility session.
 
+The accessibility interface check now also covers main navigation, custom preset selection and actions, terminal desktop-follow and art-style choices, Rust autostart, and the activity log. The 41 Rust tests, Clippy, optimized build and offscreen native smoke test pass. Live announcements remain unverified because this environment has no Orca and cannot access its session D-Bus.
+
 The Rust Backups & restore page now filters snapshots case-insensitively by their displayed name and status. Empty matches disable restore and explain how to clear the search, distinct from the true empty-backup state. The offscreen smoke test verifies case-insensitive matching, clearing, empty-result safety and external snapshot refresh. Validation passed all 40 Rust tests, Clippy, the optimized build and native UI smoke checks.
 
 The Backups page now offers an asynchronous, integrity-checked restore preview. It lists every file that would be restored and every path that would be removed because it was absent in the selected snapshot; it does not apply changes. A Rust test confirms inspection leaves current files untouched, and the native smoke test opens and verifies the actual preview dialog. All 41 Rust tests, Clippy, optimized build and native smoke checks pass.

@@ -1293,6 +1293,9 @@ public:
   void applySnapshotResults(const QJsonArray &values) {
     auto previous = snapshots->currentData().toString();
     QSignalBlocker blocker(snapshots);
+    const bool updatesEnabled = snapshots->updatesEnabled();
+    snapshots->setUpdatesEnabled(false);
+    snapshotFilter->setDynamicSortFilter(false);
     snapshotModel->clear();
     rows.clear();
     snapshotScanSucceeded = true;
@@ -1315,6 +1318,9 @@ public:
       item->setData(name, Qt::UserRole);
       snapshotModel->appendRow(item);
     }
+    snapshotFilter->invalidate();
+    snapshotFilter->setDynamicSortFilter(true);
+    snapshots->setUpdatesEnabled(updatesEnabled);
     storage->setText(QString("%1 snapshots · %2 stored · %3 protected")
                          .arg(values.size())
                          .arg(sizeText(total))
@@ -2231,6 +2237,25 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
   if (window.snapshots->count() != 0)
     throw std::runtime_error("Smoke home unexpectedly contains saved snapshots");
+  QJsonArray largeSnapshotList;
+  for (int i = 0; i < 4096; ++i) {
+    const auto name = QString("smoke-large-%1").arg(i, 4, 10, QChar('0'));
+    largeSnapshotList.append(QJsonObject{
+        {"name", name}, {"bytes", 1024}, {"files", 1},
+        {"eligible", true}, {"protected", false}, {"baseline", false}});
+  }
+  window.applySnapshotResults(largeSnapshotList);
+  if (window.snapshots->count() != largeSnapshotList.size())
+    throw std::runtime_error("Batched snapshot refresh lost rows from a large list");
+  window.snapshotSearch->setText("smoke-large-2048");
+  if (window.snapshots->count() != 1)
+    throw std::runtime_error("Snapshot search failed after a batched large-list refresh");
+  window.snapshotSearch->clear();
+  if (window.snapshots->count() != largeSnapshotList.size())
+    throw std::runtime_error("Clearing search did not restore the large snapshot list");
+  window.applySnapshotResults({});
+  if (window.snapshots->count() != 0)
+    throw std::runtime_error("Could not reset the synthetic snapshot list for smoke test");
   window.snapshotSearch->clear();
   const QString staleSnapshot = "smoke-stale-snapshot";
   auto *staleSnapshotItem = new QStandardItem(staleSnapshot + " · 1 KiB");

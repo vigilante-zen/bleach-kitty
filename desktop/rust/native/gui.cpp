@@ -1469,43 +1469,42 @@ public:
     layout->addWidget(buttons);
     dialog.exec();
   }
-  void previewCleanup() {
-    try {
-      auto plan = rpc({{"op", "plan"}, {"keep", keep->value()}}).toObject();
-      auto candidates = plan.value("candidates").toArray();
-      if (candidates.isEmpty()) {
-        notice->setText("No older snapshots to remove. Recent and protected "
-                        "copies are kept.");
-        return;
-      }
-      QStringList names;
-      for (auto row : candidates) {
-        auto item = row.toObject();
-        names << item.value("name").toString() + " · " +
-                     sizeText(item.value("bytes").toDouble());
-      }
-      QMessageBox dialog(QMessageBox::Warning, "Review cleanup",
-                         QString("Permanently remove %1 older snapshots (%2)?")
-                             .arg(candidates.size())
-                             .arg(sizeText(plan.value("bytes").toDouble())),
-                         QMessageBox::NoButton, this);
-      dialog.setInformativeText(
-          "Recent snapshots, the original baseline and protected copies "
-          "stay.\n\n" +
-          (names.size() <= 8 ? names.join("\n")
-                             : "Expand details to review every snapshot."));
-      dialog.setDetailedText(names.join("\n"));
-      auto *cancel = dialog.addButton(QMessageBox::Cancel);
-      auto *remove = dialog.addButton("Delete reviewed snapshots",
-                                      QMessageBox::DestructiveRole);
-      dialog.setDefaultButton(cancel);
-      dialog.exec();
-      if (dialog.clickedButton() == remove)
-        startTask({{"op", "cleanup"}, {"plan", plan}},
-                  "Removing reviewed snapshots…");
-    } catch (const std::exception &e) {
-      notice->setText(QString::fromUtf8(e.what()));
+  void showCleanupPlan(const QJsonObject &plan) {
+    auto candidates = plan.value("candidates").toArray();
+    if (candidates.isEmpty()) {
+      notice->setText("No older snapshots to remove. Recent and protected "
+                      "copies are kept.");
+      return;
     }
+    QStringList names;
+    for (auto row : candidates) {
+      auto item = row.toObject();
+      names << item.value("name").toString() + " · " +
+                   sizeText(item.value("bytes").toDouble());
+    }
+    QMessageBox dialog(QMessageBox::Warning, "Review cleanup",
+                       QString("Permanently remove %1 older snapshots (%2)?")
+                           .arg(candidates.size())
+                           .arg(sizeText(plan.value("bytes").toDouble())),
+                       QMessageBox::NoButton, this);
+    dialog.setInformativeText(
+        "Recent snapshots, the original baseline and protected copies "
+        "stay.\n\n" +
+        (names.size() <= 8 ? names.join("\n")
+                           : "Expand details to review every snapshot."));
+    dialog.setDetailedText(names.join("\n"));
+    auto *cancel = dialog.addButton(QMessageBox::Cancel);
+    auto *remove = dialog.addButton("Delete reviewed snapshots",
+                                    QMessageBox::DestructiveRole);
+    dialog.setDefaultButton(cancel);
+    dialog.exec();
+    if (dialog.clickedButton() == remove)
+      startTask({{"op", "cleanup"}, {"plan", plan}},
+                "Removing reviewed snapshots…");
+  }
+  void previewCleanup() {
+    startTask({{"op", "plan"}, {"keep", keep->value()}},
+              "Reviewing snapshot cleanup…");
   }
   void startTask(const QJsonObject &request, const QString &progress) {
     if (process)
@@ -1553,6 +1552,8 @@ public:
               finishTask(worker);
               if (good && request.value("op").toString() == "inspect-snapshot")
                 showSnapshotPreview(result);
+              if (good && request.value("op").toString() == "plan")
+                showCleanupPlan(result);
               if (tray && tray->isVisible() && !isVisible())
                 tray->showMessage("Bankai Rust", notice->text(),
                                   good ? QSystemTrayIcon::Information
@@ -2579,9 +2580,26 @@ static int smoke(Window &window, const QString &directory) {
   window.updatePortraitPreview();
   smokePortraitPicker(window, directory);
   auto plan = rpc({{"op", "plan"}, {"keep", 5}}).toObject();
+  if (!plan.value("candidates").toArray().isEmpty())
+    throw std::runtime_error(
+        "Cleanup smoke home unexpectedly has removable snapshots");
   for (auto value : plan.value("candidates").toArray())
     if (value.toObject().value("protected").toBool())
       throw std::runtime_error("Cleanup selected a protected snapshot");
+  window.previewCleanup();
+  if (!window.process || !window.notice->text().contains("Reviewing snapshot cleanup"))
+    throw std::runtime_error("Cleanup preview did not start in a background worker");
+  QElapsedTimer cleanupPlanTimeout;
+  cleanupPlanTimeout.start();
+  while (window.process && cleanupPlanTimeout.elapsed() < 5000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (window.process ||
+      !window.notice->text().contains("No older snapshots to remove"))
+    throw std::runtime_error("Background cleanup review did not return its plan");
+  if (!window.waitForSnapshotScan(3000))
+    throw std::runtime_error("Cleanup review snapshot refresh did not finish");
   window.startTask({{"op", "status"}}, "Checking native worker…");
   QElapsedTimer timeout;
   timeout.start();

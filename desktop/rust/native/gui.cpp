@@ -231,7 +231,11 @@ public:
   QMenu *trayMenu = nullptr;
   QAction *trayStatus = nullptr;
   QProcess *process = nullptr;
+  QProcess *snapshotScanProcess = nullptr;
   QByteArray output;
+  QByteArray snapshotScanOutput;
+  bool snapshotRefreshPending = false;
+  bool snapshotScanInProgress = false;
   QFileSystemWatcher watcher;
   QTimer debounce, poll, slowTimer;
   bool quitting = false;
@@ -359,6 +363,15 @@ public:
     poll.start();
     refreshStatus();
     selectPreset(savedDesktop);
+  }
+  ~Window() override {
+    if (snapshotScanProcess) {
+      snapshotScanProcess->disconnect(this);
+      if (snapshotScanProcess->state() != QProcess::NotRunning) {
+        snapshotScanProcess->kill();
+        snapshotScanProcess->waitForFinished(250);
+      }
+    }
   }
   void resizeEvent(QResizeEvent *event) override {
     QMainWindow::resizeEvent(event);
@@ -1259,25 +1272,19 @@ public:
         watcher.addPath(path);
   }
   void snapshotScanFailed(const QString &message) {
+    snapshotScanInProgress = false;
     snapshotScanSucceeded = false;
     storage->setText(message);
     cleanupButton->setEnabled(false);
     snapshotChanged();
   }
-  void refreshSnapshots() {
-    watchBackupDirectories();
+  void applySnapshotResults(const QJsonArray &values) {
     auto previous = snapshots->currentData().toString();
-    QJsonArray values;
-    try {
-      values = rpc({{"op", "snapshots"}}).toArray();
-    } catch (const std::exception &e) {
-      snapshotScanFailed(QString::fromUtf8(e.what()));
-      return;
-    }
     QSignalBlocker blocker(snapshots);
     snapshotModel->clear();
     rows.clear();
     snapshotScanSucceeded = true;
+    snapshotScanInProgress = false;
     double total = 0;
     int protectedCount = 0;
     for (auto value : values) {
@@ -1291,8 +1298,7 @@ public:
                         ? sizeText(row.value("bytes").toDouble())
                         : "needs review");
       if (row.value("protected").toBool())
-        title +=
-            row.value("baseline").toBool() ? " · Baseline" : " · ★ Protected";
+        title += row.value("baseline").toBool() ? " · Baseline" : " · ★ Protected";
       auto *item = new QStandardItem(title);
       item->setData(name, Qt::UserRole);
       snapshotModel->appendRow(item);
@@ -1309,6 +1315,79 @@ public:
       snapshots->setCurrentIndex(0);
     snapshotChanged();
   }
+  bool waitForSnapshotScan(int timeoutMs) {
+    QElapsedTimer elapsed;
+    elapsed.start();
+    while ((snapshotScanProcess || snapshotRefreshPending || snapshotScanInProgress) &&
+           elapsed.elapsed() < timeoutMs) {
+      qApp->processEvents();
+      QThread::msleep(5);
+    }
+    return !snapshotScanProcess && !snapshotRefreshPending && !snapshotScanInProgress;
+  }
+  void finishSnapshotScan(QProcess *worker, int code, QProcess::ExitStatus status) {
+    if (snapshotScanProcess != worker)
+      return;
+    snapshotScanOutput += worker->readAllStandardOutput();
+    auto reply = QJsonDocument::fromJson(snapshotScanOutput).object();
+    bool good = code == 0 && status == QProcess::NormalExit &&
+                reply.value("ok").toBool() && reply.value("result").isArray();
+    const auto values = reply.value("result").toArray();
+    const auto error = reply.value("error").toString(
+        "Snapshot scan failed. Use Refresh to try again.");
+    snapshotScanProcess = nullptr;
+    if (good)
+      applySnapshotResults(values);
+    else
+      snapshotScanFailed(error);
+    worker->deleteLater();
+    if (snapshotRefreshPending) {
+      snapshotRefreshPending = false;
+      refreshSnapshots();
+    }
+  }
+  void refreshSnapshots() {
+    watchBackupDirectories();
+    if (snapshotScanProcess) {
+      snapshotRefreshPending = true;
+      return;
+    }
+    snapshotScanSucceeded = false;
+    snapshotScanInProgress = true;
+    storage->setText(snapshots->count() > 0
+                         ? "Refreshing snapshots; the current list is shown."
+                         : "Loading saved snapshots…");
+    snapshotChanged();
+    snapshotScanOutput.clear();
+    auto *worker = new QProcess(this);
+    snapshotScanProcess = worker;
+    worker->setProcessChannelMode(QProcess::MergedChannels);
+    connect(worker, &QProcess::readyReadStandardOutput, this, [this, worker] {
+      snapshotScanOutput += worker->readAllStandardOutput();
+      if (snapshotScanOutput.size() > 2 * 1024 * 1024)
+        snapshotScanOutput = snapshotScanOutput.right(2 * 1024 * 1024);
+    });
+    connect(worker, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
+            this, [this, worker](int code, QProcess::ExitStatus status) {
+              finishSnapshotScan(worker, code, status);
+            });
+    connect(worker, &QProcess::errorOccurred, this,
+            [this, worker](QProcess::ProcessError error) {
+              if (error != QProcess::FailedToStart || snapshotScanProcess != worker)
+                return;
+              snapshotScanProcess = nullptr;
+              snapshotScanFailed(worker->errorString());
+              worker->deleteLater();
+              if (snapshotRefreshPending) {
+                snapshotRefreshPending = false;
+                refreshSnapshots();
+              }
+            });
+    worker->start(QCoreApplication::applicationFilePath(), {"--rpc"});
+    worker->write(QJsonDocument(QJsonObject{{"op", "snapshots"}})
+                      .toJson(QJsonDocument::Compact));
+    worker->closeWriteChannel();
+  }
   void snapshotChanged() {
     auto row = rows.value(snapshots->currentData().toString());
     bool available = snapshotScanSucceeded && !row.isEmpty() && !process;
@@ -1319,7 +1398,9 @@ public:
     protectButton->setText(row.value("protected").toBool()
                                ? "Remove protection"
                                : "Protect snapshot");
-    if (!snapshotScanSucceeded)
+    if (snapshotScanInProgress)
+      snapshotDetails->setText("Snapshot scan running; actions are temporarily disabled.");
+    else if (!snapshotScanSucceeded)
       snapshotDetails->setText(
           "Snapshot refresh failed. The displayed list may be out of date; "
           "use Refresh to try again. Actions are disabled until a scan succeeds.");
@@ -2135,6 +2216,8 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error(
         "Snapshot scan failure did not preserve the stale selection safely");
   window.refreshSnapshots();
+  if (!window.waitForSnapshotScan(3000))
+    throw std::runtime_error("Successful empty snapshot refresh did not finish");
   if (!window.snapshotScanSucceeded || window.snapshots->count() != 0 ||
       !window.snapshotDetails->text().contains("No snapshots yet"))
     throw std::runtime_error("Successful empty snapshot refresh did not replace stale results");
@@ -2360,6 +2443,8 @@ static int smoke(Window &window, const QString &directory) {
   window.grab().save(directory + "/rust-terminal-art.png");
   window.navigation->setCurrentRow(1);
   qApp->processEvents();
+  if (!window.waitForSnapshotScan(3000))
+    throw std::runtime_error("Initial snapshot scan did not finish");
   const auto snapshotDirectory = window.home + "/Backups/Bleach-Desktop";
   if (!window.watcher.directories().contains(snapshotDirectory))
     throw std::runtime_error("Backups directory is not watched for external snapshots");

@@ -4,6 +4,7 @@
 #include <QPointer>
 #include <QRunnable>
 #include <QThreadPool>
+#include <algorithm>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -275,7 +276,7 @@ public:
                   completion(reply);
               },
               Qt::QueuedConnection);
-        }));
+        }), 1);
   }
   Window() {
     responseParserPool.setMaxThreadCount(2);
@@ -444,6 +445,33 @@ public:
       presetEmpty->setVisible(index == 0);
     presetGrid->parentWidget()->layout()->activate();
   }
+  void loadPresetThumbnail(QToolButton *card, const QString &path) {
+    QPointer<Window> windowGuard(this);
+    QPointer<QToolButton> cardGuard(card);
+    responseParserPool.start(QRunnable::create(
+        [windowGuard, cardGuard, path] {
+          QImageReader reader(path);
+          if (reader.size().isValid())
+            reader.setScaledSize(reader.size().scaled(138, 65, Qt::KeepAspectRatio));
+          QImage image = reader.read();
+          if (!windowGuard)
+            return;
+          QMetaObject::invokeMethod(
+              windowGuard.data(),
+              [windowGuard, cardGuard, image = std::move(image)]() mutable {
+                if (!windowGuard || !cardGuard || image.isNull())
+                  return;
+                cardGuard->setIcon(QIcon(QPixmap::fromImage(image)));
+                cardGuard->setProperty("thumbnail-loaded", true);
+              },
+              Qt::QueuedConnection);
+        }), -1);
+  }
+  bool presetThumbnailsLoaded() const {
+    return std::all_of(cards.cbegin(), cards.cend(), [](const auto &card) {
+      return card->property("thumbnail-loaded").toBool();
+    });
+  }
   QPushButton *button(const QString &text, std::function<void()> fn,
                       bool primary = false) {
     auto *b = new QPushButton(text);
@@ -580,11 +608,13 @@ public:
       card->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
       card->setText(p.value("title").toString());
       card->setToolTip(p.value("subtitle").toString());
-      QImageReader reader(wallpapers + "/" + p.value("image").toString());
-      reader.setScaledSize(reader.size().scaled(138, 65, Qt::KeepAspectRatio));
-      card->setIcon(QIcon(QPixmap::fromImage(reader.read())));
+      QPixmap placeholder(138, 65);
+      placeholder.fill(QColor("#0c121b"));
+      card->setIcon(QIcon(placeholder));
       card->setIconSize(QSize(138, 65));
       card->setMinimumHeight(96);
+      card->setProperty("thumbnail-loaded", false);
+      loadPresetThumbnail(card, wallpapers + "/" + p.value("image").toString());
       connect(card, &QToolButton::clicked, this,
               [this, id] { selectPreset(id); });
       group->addButton(card);
@@ -1943,9 +1973,11 @@ protected:
       event->accept();
   }
 };
-static QJsonObject benchmark(Window &window, qint64 elapsed) {
+static QJsonObject benchmark(Window &window, qint64 startupMs,
+                             qint64 thumbnailsReadyMs) {
   QFile status("/proc/self/status");
-  QJsonObject result{{"startup_ms", double(elapsed)},
+  QJsonObject result{{"startup_ms", double(startupMs)},
+                     {"thumbnail_ready_ms", double(thumbnailsReadyMs)},
                      {"edition", "rust-qt"},
                      {"qt_version", qVersion()}};
   if (status.open(QIODevice::ReadOnly))
@@ -2308,6 +2340,16 @@ static int smoke(Window &window, const QString &directory) {
   if (completionAfterWindowDestruction)
     throw std::runtime_error(
         "Worker parse completion was delivered after its window was destroyed");
+  QElapsedTimer thumbnailTimeout;
+  thumbnailTimeout.start();
+  while (!window.presetThumbnailsLoaded() &&
+         thumbnailTimeout.elapsed() < 10000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (!window.presetThumbnailsLoaded())
+    throw std::runtime_error(
+        "Background preset thumbnail loading did not finish for every character");
   if (fitDialogSize(QSize(620, 500), QSize(640, 480)) != QSize(608, 448) ||
       fitDialogSize(QSize(380, 460), QSize(800, 600)) != QSize(380, 460))
     throw std::runtime_error("Dialog sizing does not respect available display geometry");
@@ -3047,7 +3089,20 @@ extern "C" int bankai_gui(int argc, char **argv) {
     if (bench) {
       window.show();
       app.processEvents();
-      QTextStream(stdout) << QJsonDocument(benchmark(window, startup.elapsed()))
+      const qint64 startupMs = startup.elapsed();
+      QElapsedTimer thumbnailTimeout;
+      thumbnailTimeout.start();
+      while (!window.presetThumbnailsLoaded() &&
+             thumbnailTimeout.elapsed() < 10000) {
+        app.processEvents();
+        QThread::msleep(1);
+      }
+      if (!window.presetThumbnailsLoaded())
+        throw std::runtime_error(
+            "Preset thumbnails did not finish loading during benchmark");
+      const qint64 thumbnailsReadyMs = startup.elapsed();
+      QTextStream(stdout) << QJsonDocument(
+                                 benchmark(window, startupMs, thumbnailsReadyMs))
                                  .toJson(QJsonDocument::Compact)
                           << "\n";
       return 0;

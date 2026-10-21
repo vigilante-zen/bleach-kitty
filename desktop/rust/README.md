@@ -29,6 +29,10 @@ Desktop preset changes preserve independent terminal portrait and art preference
 
 The Rust unit suite, compiled-binary integration checks and offscreen native smoke checks pass. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
 
+## Keyboard and screen reader use
+
+Use Tab and Shift+Tab to move through controls. In the character picker, `/` focuses search, the arrow keys move between character cards, and Enter selects one. Focused buttons, fields, lists and checkboxes have a contrasting outline. Screen-reader names and descriptions identify the current artwork previews, character filters, Random pool, login shuffle controls and snapshot actions. Actual announcements still need checking with a screen reader in a live KDE session.
+
 ## Ported behavior
 
 - All eighteen presets, wallpaper previews, explicit Apply, automatic snapshots, and rollback if a preset write fails partway through.

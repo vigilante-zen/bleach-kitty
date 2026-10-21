@@ -42,9 +42,15 @@ impl App {
     fn dispatch(&self, request: &Value) -> Result<Value> {
         let op = request.get("op")?.text()?;
         match op {
-            "bootstrap" => Ok(obj! { "presets" => self.catalog.get("presets")?.clone(), "custom_presets" => Value::from(custom_presets::list(self).unwrap_or_default()), "style" => include_str!("../assets/style.qss"),
+            "bootstrap" => {
+                let (saved_presets, saved_presets_error) = match custom_presets::list(self) {
+                    Ok(rows) => (Value::from(rows), Value::from("")),
+                    Err(error) => (Value::from(Vec::<Value>::new()), Value::from(error)),
+                };
+                Ok(obj! { "presets" => self.catalog.get("presets")?.clone(), "custom_presets" => saved_presets, "custom_presets_error" => saved_presets_error, "style" => include_str!("../assets/style.qss"),
                 "home" => self.home.to_string_lossy().to_string(), "data" => self.data.to_string_lossy().to_string(), "version" => env!("CARGO_PKG_VERSION"),
-                "mask_svg" => include_str!("../assets/bleach-tray.svg"), "terminal_svg" => include_str!("../assets/bleach-terminal.svg"), "monitor_svg" => include_str!("../assets/bleach-monitor.svg"), "backups_svg" => include_str!("../assets/bleach-backups.svg") }),
+                "mask_svg" => include_str!("../assets/bleach-tray.svg"), "terminal_svg" => include_str!("../assets/bleach-terminal.svg"), "monitor_svg" => include_str!("../assets/bleach-monitor.svg"), "backups_svg" => include_str!("../assets/bleach-backups.svg") })
+            },
             "status" => Ok(obj! { "current" => self.current()?, "pending" => self.state.join("pending").exists(),
                 "autostart" => self.home.join(".config/autostart/bleach-bankai-rust.desktop").exists(), "offline" => self.offline }),
             "appearance" => appearance::load(self),

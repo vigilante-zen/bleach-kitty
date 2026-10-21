@@ -136,6 +136,7 @@ public:
   QJsonObject bootstrap;
   QJsonArray presets;
   QJsonArray customPresets;
+  QString customPresetError;
   QString home, data, wallpapers, selected, trayPreset;
   QListWidget *navigation;
   QStackedWidget *pages;
@@ -144,7 +145,8 @@ public:
   QLabel *presetEmpty = nullptr;
   int presetColumns = 4;
   Artwork *art;
-  QLabel *saved, *notice, *previewNote, *storage, *snapshotDetails;
+  QLabel *saved, *previewNote, *storage, *snapshotDetails;
+  QLabel *notice = nullptr;
   QComboBox *snapshots, *portraitChoice, *portraitArt;
   QComboBox *customPresetChoice = nullptr;
   QSpinBox *keep;
@@ -172,6 +174,7 @@ public:
     bootstrap = rpc({{"op", "bootstrap"}}).toObject();
     presets = bootstrap.value("presets").toArray();
     customPresets = bootstrap.value("custom_presets").toArray();
+    customPresetError = bootstrap.value("custom_presets_error").toString();
     home = bootstrap.value("home").toString();
     data = bootstrap.value("data").toString();
     wallpapers = home + "/Pictures/Bleach-TYBW/Wallpapers";
@@ -219,6 +222,8 @@ public:
     right->addWidget(pages, 1);
     notice =
         label("Choose a character to preview. Click Apply when you are ready.", "notice");
+    if (!customPresetError.isEmpty())
+      notice->setText("Saved presets could not be loaded: " + customPresetError);
     right->addWidget(notice);
     logButton = new QPushButton("Show activity");
     logButton->setMaximumWidth(140);
@@ -331,8 +336,15 @@ public:
   }
   void refreshCustomPresets() {
     if (!customPresetChoice) return;
-    try { customPresets = rpc({{"op", "custom-presets"}}).toArray(); }
-    catch (const std::exception &e) { customPresets = {}; }
+    try {
+      customPresets = rpc({{"op", "custom-presets"}}).toArray();
+      customPresetError.clear();
+    } catch (const std::exception &e) {
+      customPresetError = QString::fromUtf8(e.what());
+      if (notice)
+        notice->setText("Saved presets could not be loaded: " + customPresetError);
+      return;
+    }
     customPresetChoice->blockSignals(true);
     customPresetChoice->clear();
     for (auto value : customPresets) {
@@ -1465,6 +1477,8 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
   if (!failure.isEmpty()) throw std::runtime_error(failure.toStdString());
 }
 static int smoke(Window &window, const QString &directory) {
+  if (!window.notice->text().startsWith("Saved presets could not be loaded:"))
+    throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
   auto initial = rpc({{"op", "status"}}).toObject().value("current");
   for (auto value : window.presets) {
     auto p = value.toObject();
@@ -1658,8 +1672,8 @@ static int smoke(Window &window, const QString &directory) {
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset and character pickers, "
-                         "configured Random pool summary, reset confirmation, worker "
-                         "process and screenshots.\n";
+                         "configured Random pool summary, corrupt custom-preset warning, "
+                         "reset confirmation, worker process and screenshots.\n";
   return 0;
 }
 static bool copySmokeFile(const QString &source, const QString &destination) {
@@ -1689,6 +1703,14 @@ static bool prepareSmokeHome(const QString &source, const QString &destination) 
     if (QFileInfo(from).exists() && !copySmokeFile(from, destination + path))
       return false;
   }
+  const QString customPresets = destination + "/.local/share/bleach-desktop/custom-presets.json";
+  if (!QDir().mkpath(QFileInfo(customPresets).absolutePath()))
+    return false;
+  QFile corruptPresets(customPresets);
+  const QByteArray corruptData = "not valid json\n";
+  if (!corruptPresets.open(QIODevice::WriteOnly | QIODevice::Truncate) ||
+      corruptPresets.write(corruptData) != corruptData.size())
+    return false;
   return true;
 }
 extern "C" int bankai_gui(int argc, char **argv) {

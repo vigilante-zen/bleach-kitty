@@ -44,6 +44,15 @@ fn current_preset_rejects_symlinked_state_and_defaults_missing_or_invalid_values
     symlink(&outside,f.app.data.join("current")).unwrap();
     assert!(f.app.current().is_err());
 }
+
+#[test]
+fn bootstrap_reports_invalid_custom_presets_without_hiding_the_problem() {
+    let f=Fixture::new();
+    write(&f.app.data.join("custom-presets.json"),"not valid json");
+    let bootstrap=f.app.dispatch(&obj!{"op"=>"bootstrap"}).unwrap();
+    assert!(bootstrap.get("custom_presets").unwrap().array().unwrap().is_empty());
+    assert!(bootstrap.get("custom_presets_error").unwrap().text().unwrap().contains("Invalid JSON"));
+}
 #[test]fn hash_matches_known_sha256(){assert_eq!(fsutil::hash_bytes(b"abc"),"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");let f=Fixture::new();let path=f.app.home.join("data");fs::write(&path,b"abc").unwrap();assert_eq!(fsutil::hash(&path).unwrap(),fsutil::hash_bytes(b"abc"));}
 #[test]fn snapshot_round_trip_preserves_mode_and_absent_files(){
     let f=Fixture::new();let target=f.app.home.join(".config/kitty/kitty.conf");fs::set_permissions(&target,fs::Permissions::from_mode(0o640)).unwrap();let name=snapshot(&f);

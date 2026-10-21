@@ -53,7 +53,7 @@ Search **Bankai** in KDE's app menu, or run:
 
 Use `bankai tray` for tray mode and `bankai backups` for backup management. `bankai-rust` remains available as a direct compatibility command. If the short command is not found, open a new Fish session or use the absolute path above. Run `bankai-doctor` inside Fish to check the terminal theme.
 
-In **Terminal & tools**, open **Choose terminal character…** for a searchable thumbnail grid. Filter by faction, forms, new arrivals, recent use or favorites; Random stays available at the top. Press `/` to focus search, use arrow keys to move between cards, and press Enter to select. Choose Color/Manga/Mixed and click **Save terminal artwork**. Enable **Match desktop character** to follow desktop preset changes; leave it off for independent rotation. New tabs use the saved choice. `bankai-pick --session reset` in Fish clears a shell-only override.
+In **Terminal & tools**, open **Choose terminal character…** for a searchable thumbnail grid. Filter by faction, forms, new arrivals, recent use or favorites; Random stays available at the top. Its summary shows the active random source, portrait count and shuffle mode; search and faction filters only narrow direct choices. Press `/` to focus search, use arrow keys to move between cards, and press Enter to select. Choose Color/Manga/Mixed and click **Save terminal artwork**. Enable **Match desktop character** to follow desktop preset changes; leave it off for independent rotation. New tabs use the saved choice. `bankai-pick --session reset` in Fish clears a shell-only override.
 
 ## Update or switch editions
 

@@ -670,6 +670,15 @@ public:
       const auto fields = record.split('\t');
       if (fields.size() == 2) displayNames.insert(fields[0], fields[1]);
     }
+    QString rotation = "all portraits", shuffleMode = "portrait";
+    for (const auto &line : rosterCommand({"status"})) {
+      if (line.startsWith("Rotation: ")) rotation = line.mid(QString("Rotation: ").size());
+      else if (line.startsWith("Shuffle: ")) shuffleMode = line.mid(QString("Shuffle: ").size());
+    }
+    int poolCount = rotation == "favorites" ? favorites.size()
+        : rotation == "all portraits" ? displayNames.size()
+        : members.value(rotation).size();
+    const auto poolName = labels.value(rotation, rotation);
     layout->addWidget(filters);
     auto *random = new QPushButton("Random · shuffle current pool");
     random->setObjectName("primary");
@@ -680,6 +689,12 @@ public:
     });
     random->setObjectName("portrait-random");
     layout->addWidget(random);
+    auto *poolSummary = label(
+        QString("Random uses %1 (%2 %3, %4 shuffle). Search and faction filters below only narrow direct choices.")
+            .arg(poolName).arg(poolCount).arg(poolCount == 1 ? "portrait" : "portraits").arg(shuffleMode),
+        "muted");
+    poolSummary->setObjectName("random-pool-summary");
+    layout->addWidget(poolSummary);
     auto *scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
@@ -1308,11 +1323,16 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     auto *filter = dialog->findChild<QComboBox *>("portrait-filter");
     if (!search || !filter || filter->findData("quincy") < 0 ||
         filter->findData("recent") < 0 || filter->findData("favorites") < 0 ||
-        !dialog->findChild<QShortcut *>("portrait-search-shortcut")) {
+        !dialog->findChild<QShortcut *>("portrait-search-shortcut") ||
+        !dialog->findChild<QLabel *>("random-pool-summary")) {
       failure = "Character picker is missing search or faction filters";
       dialog->reject();
       return;
     }
+    const auto poolSummary = dialog->findChild<QLabel *>("random-pool-summary")->text();
+    if (!poolSummary.contains("Random uses") || !poolSummary.contains("shuffle") ||
+        !poolSummary.contains("direct choices"))
+      failure = "Random picker does not explain its configured pool";
     dialog->grab().save(directory + "/rust-character-picker.png");
     filter->setCurrentIndex(filter->findData("quincy"));
     qApp->processEvents();
@@ -1481,7 +1501,7 @@ static int smoke(Window &window, const QString &directory) {
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset and character pickers, "
-                         "appearance reset, worker "
+                         "configured Random pool summary, appearance reset, worker "
                          "process and screenshots.\n";
   return 0;
 }

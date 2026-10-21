@@ -59,6 +59,10 @@ static QSize minimumWindowSize(const QSize &available) {
   return QSize(qMax(1, qMin(850, available.width() - 32)),
                qMax(1, qMin(590, available.height() - 32)));
 }
+static QSize fitDialogSize(const QSize &requested, const QSize &available) {
+  return QSize(qMax(1, qMin(requested.width(), available.width() - 32)),
+               qMax(1, qMin(requested.height(), available.height() - 32)));
+}
 static QLabel *label(const QString &text, const QString &name = {}) {
   auto *w = new QLabel(text);
   w->setWordWrap(true);
@@ -811,8 +815,7 @@ public:
     dialog.setWindowTitle("Choose terminal character");
     const auto *screen = QGuiApplication::primaryScreen();
     const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
-    dialog.resize(qMax(1, qMin(760, available.width() - 32)),
-                  qMax(1, qMin(620, available.height() - 32)));
+    dialog.resize(fitDialogSize(QSize(760, 620), available));
     auto *layout = new QVBoxLayout(&dialog);
     auto *search = new QLineEdit;
     search->setObjectName("portrait-search");
@@ -901,7 +904,9 @@ public:
       QDialog preview(&dialog);
       preview.setObjectName("random-pool-dialog");
       preview.setWindowTitle("Random rotation pool");
-      preview.resize(380, 460);
+      const auto *screen = preview.screen();
+      const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
+      preview.resize(fitDialogSize(QSize(380, 460), available));
       auto *previewLayout = new QVBoxLayout(&preview);
       previewLayout->addWidget(label(
           QString("%1 · %2 portrait%3 · %4 shuffle")
@@ -1251,7 +1256,9 @@ public:
     QDialog dialog(this);
     dialog.setObjectName("snapshot-contents-dialog");
     dialog.setWindowTitle("Preview snapshot restore");
-    dialog.resize(620, 500);
+    const auto *screen = dialog.screen();
+    const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
+    dialog.resize(fitDialogSize(QSize(620, 500), available));
     auto *layout = new QVBoxLayout(&dialog);
     layout->addWidget(label(
         QString("%1 passed its integrity check. Restoring first saves your current settings.")
@@ -1725,7 +1732,10 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     QTimer::singleShot(50, &window, [&] {
       auto *preview = window.findChild<QDialog *>("random-pool-dialog");
       auto *items = preview ? preview->findChild<QListWidget *>("random-pool-items") : nullptr;
-      if (!items || items->count() != 1 ||
+      const auto *screen = preview ? preview->screen() : nullptr;
+      const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
+      if (!preview || preview->width() > available.width() - 32 ||
+          preview->height() > available.height() - 32 || !items || items->count() != 1 ||
           !items->item(0)->text().contains("uryu", Qt::CaseInsensitive))
         poolPreviewFailure = "Random pool preview does not show the configured eligible portrait";
       if (preview) preview->reject();
@@ -1876,6 +1886,9 @@ static void smokeMalformedAppearanceRecovery(Window &window, const QJsonObject &
     throw std::runtime_error(failure.toStdString());
 }
 static int smoke(Window &window, const QString &directory) {
+  if (fitDialogSize(QSize(620, 500), QSize(640, 480)) != QSize(608, 448) ||
+      fitDialogSize(QSize(380, 460), QSize(800, 600)) != QSize(380, 460))
+    throw std::runtime_error("Dialog sizing does not respect available display geometry");
   const auto style = window.bootstrap.value("style").toString();
   for (const auto &selector : {"QPushButton:focus", "QToolButton:focus",
                                "QComboBox:focus", "QLineEdit:focus",
@@ -2194,7 +2207,11 @@ static int smoke(Window &window, const QString &directory) {
     if (!dialog)
       return;
     auto *contents = dialog->findChild<QPlainTextEdit *>("snapshot-restore-files");
-    if (!contents || !contents->toPlainText().contains("Files restored from this snapshot (") ||
+    const auto *screen = dialog->screen();
+    const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
+    if (dialog->width() > available.width() - 32 ||
+        dialog->height() > available.height() - 32 || !contents ||
+        !contents->toPlainText().contains("Files restored from this snapshot (") ||
         !contents->toPlainText().contains("Settings removed because they were absent") ||
         accessibleText(contents, QAccessible::Name).isEmpty())
       previewFailure = "Restore preview is missing verified file or removal details";

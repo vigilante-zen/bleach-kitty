@@ -2884,6 +2884,26 @@ static int smoke(Window &window, const QString &directory) {
   if (probeExceededLimit || probeOutput.size() != 3 * 1024 * 1024)
     throw std::runtime_error(
         "Worker responses larger than 2 MiB were still truncated");
+  QProcess oversizedOutputProbe;
+  oversizedOutputProbe.setProcessChannelMode(QProcess::MergedChannels);
+  oversizedOutputProbe.start("/usr/bin/head",
+                             {"-c", "34603008", "/dev/zero"});
+  if (!oversizedOutputProbe.waitForStarted(1000))
+    throw std::runtime_error("Could not start oversized worker-output smoke probe");
+  QByteArray oversizedProbeOutput;
+  bool oversizedProbeExceededLimit = false;
+  while (oversizedOutputProbe.state() != QProcess::NotRunning) {
+    qApp->processEvents();
+    window.appendWorkerOutput(oversizedProbeOutput, &oversizedOutputProbe,
+                              oversizedProbeExceededLimit);
+    QThread::msleep(1);
+  }
+  window.appendWorkerOutput(oversizedProbeOutput, &oversizedOutputProbe,
+                            oversizedProbeExceededLimit);
+  if (!oversizedProbeExceededLimit ||
+      oversizedProbeOutput.size() > Window::maxRpcOutputBytes)
+    throw std::runtime_error(
+        "Oversized worker output was not stopped at the 32 MiB limit");
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset, character and snapshot lists, "

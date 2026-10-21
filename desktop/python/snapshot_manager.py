@@ -73,6 +73,10 @@ class SnapshotStore:
                 Path(temporary).unlink(missing_ok=True)
 
     def scan(self):
+        with self.locked():
+            return self._scan()
+
+    def _scan(self):
         if self.root.is_symlink():
             raise ValueError('The snapshot directory must not be a symlink.')
         protected = self.protections()
@@ -134,7 +138,11 @@ class SnapshotStore:
     def plan(self, keep=5):
         if type(keep) is not int or keep < 1:
             raise ValueError('Keep at least one recent snapshot.')
-        rows = self.scan()
+        with self.locked():
+            return self._plan(keep)
+
+    def _plan(self, keep):
+        rows = self._scan()
         # Keep the most recent usable snapshots, plus every protected snapshot.
         newest = {row['name'] for row in [r for r in rows if r['eligible']][:keep]}
         candidates = [row for row in rows if row['eligible'] and not row['protected'] and row['name'] not in newest]
@@ -144,8 +152,11 @@ class SnapshotStore:
     def cleanup(self, plan):
         if not isinstance(plan, dict) or plan.get('version') != 1 or not isinstance(plan.get('candidates'), list):
             raise ValueError('Invalid cleanup plan.')
+        keep = plan.get('keep')
+        if type(keep) is not int or keep < 1:
+            raise ValueError('Keep at least one recent snapshot.')
         with self.locked():
-            current = {row['name']: row for row in self.plan(plan.get('keep'))['candidates']}
+            current = {row['name']: row for row in self._plan(keep)['candidates']}
             reviewed = plan['candidates']
             seen = set()
             # Validate every target before removing any snapshot.

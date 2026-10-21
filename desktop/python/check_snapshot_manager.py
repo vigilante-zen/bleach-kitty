@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from snapshot_manager import BASELINE, SnapshotStore
 
@@ -31,6 +32,14 @@ class SnapshotManagementChecks(unittest.TestCase):
         expected = (path / 'files/.config/example').stat().st_size + (path / 'manifest.json').stat().st_size
         self.assertEqual(row['bytes'], expected)
         self.assertTrue(row['eligible'])
+
+    def test_scans_and_previews_use_shared_snapshot_lock(self):
+        with patch.object(self.store, 'locked', wraps=self.store.locked) as lock:
+            self.store.scan()
+            lock.assert_called_once_with()
+        with patch.object(self.store, 'locked', wraps=self.store.locked) as lock:
+            self.store.plan(keep=2)
+            lock.assert_called_once_with()
 
     def test_cleanup_keeps_newest_and_original_baseline(self):
         # The October baseline's timestamp is newer than these fixture snapshots.

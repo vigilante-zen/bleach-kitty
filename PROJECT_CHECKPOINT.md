@@ -17,10 +17,12 @@ Subprocess and extracted-package tests confirm the Python backup CLI includes an
 
 Python snapshot path checks now reject symlinked boundary directories and paths outside their allowed root, matching Rust behavior.
 
+Python snapshot scans and cleanup previews now take the same cross-edition lock used by Rust and the Python backup utility. Cleanup revalidates its reviewed plan through the internal scan while holding one lock, avoiding nested locking. This prevents the desktop UI from reading a partially written or concurrently removed snapshot. The snapshot-manager suite now has 10 passing checks, including lock use; `python desktop/python/check.py` also passed after this change.
+
 The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 57 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
 Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.
 
-The next project change can follow the user's next request. Push `main` when GitHub DNS is available; a push from this environment previously failed because `github.com` could not be resolved.
+The next project change can follow the user's next request. The latest push attempt failed because this environment could not resolve `github.com`; push `main` when GitHub DNS is available.
 
 The active Codex project goal tracks this continuation across sessions. Start by checking `git status` and reading the current implementation before editing.

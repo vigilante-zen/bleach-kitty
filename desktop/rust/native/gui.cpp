@@ -572,6 +572,11 @@ public:
                   thumbnailGuard->setAccessibleDescription(
                       title + " portrait artwork unavailable.");
                   thumbnailGuard->setProperty("portrait-thumbnail-error", true);
+                  if (auto *card = qobject_cast<QPushButton *>(
+                          thumbnailGuard->parentWidget()))
+                    card->setAccessibleDescription(
+                        card->accessibleDescription() +
+                        " Portrait artwork unavailable.");
                 } else {
                   thumbnailGuard->setPixmap(QPixmap::fromImage(image));
                   thumbnailGuard->setAccessibleDescription(
@@ -2541,6 +2546,27 @@ static int smoke(Window &window, const QString &directory) {
            .contains("thumbnail unavailable"))
     throw std::runtime_error(
         "Unavailable preset artwork was not shown to users and assistive technology");
+  QPushButton missingPortraitCard;
+  missingPortraitCard.setAccessibleDescription("Choose Missing Terminal");
+  QLabel missingPortraitLabel(&missingPortraitCard);
+  auto missingPortraitGeneration =
+      std::make_shared<std::atomic<quint64>>(1);
+  window.loadPortraitThumbnail(
+      &missingPortraitLabel,
+      missingThumbnailDirectory.path() + "/not-present-portrait.png",
+      "Missing Terminal", missingPortraitGeneration, 1);
+  QElapsedTimer missingPortraitTimeout;
+  missingPortraitTimeout.start();
+  while (!missingPortraitLabel.property("portrait-thumbnail-complete").toBool() &&
+         missingPortraitTimeout.elapsed() < 3000) {
+    qApp->processEvents();
+    QThread::msleep(1);
+  }
+  if (!missingPortraitLabel.property("portrait-thumbnail-error").toBool() ||
+      !accessibleText(&missingPortraitCard, QAccessible::Description)
+           .contains("Portrait artwork unavailable"))
+    throw std::runtime_error(
+        "Unavailable terminal portrait was not exposed in its card description");
   if (fitDialogSize(QSize(620, 500), QSize(640, 480)) != QSize(608, 448) ||
       fitDialogSize(QSize(380, 460), QSize(800, 600)) != QSize(380, 460))
     throw std::runtime_error("Dialog sizing does not respect available display geometry");

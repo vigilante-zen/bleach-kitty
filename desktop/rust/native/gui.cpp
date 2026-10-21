@@ -490,8 +490,24 @@ public:
           QMetaObject::invokeMethod(
               windowGuard.data(),
               [windowGuard, cardGuard, image = std::move(image)]() mutable {
-                if (!windowGuard || !cardGuard || image.isNull())
+                if (!windowGuard || !cardGuard)
                   return;
+                if (image.isNull()) {
+                  QPixmap unavailable(138, 65);
+                  unavailable.fill(QColor("#211923"));
+                  QPainter painter(&unavailable);
+                  painter.setPen(QColor("#fca5a5"));
+                  painter.drawText(unavailable.rect(), Qt::AlignCenter,
+                                   "Artwork unavailable");
+                  cardGuard->setIcon(QIcon(unavailable));
+                  cardGuard->setToolTip(cardGuard->toolTip() +
+                                        " · Artwork unavailable");
+                  cardGuard->setAccessibleDescription(
+                      cardGuard->accessibleDescription() +
+                      " Wallpaper thumbnail unavailable.");
+                  cardGuard->setProperty("thumbnail-error", true);
+                  return;
+                }
                 cardGuard->setIcon(QIcon(QPixmap::fromImage(image)));
                 cardGuard->setProperty("thumbnail-loaded", true);
               },
@@ -2405,6 +2421,27 @@ static int smoke(Window &window, const QString &directory) {
   if (!window.presetThumbnailsLoaded())
     throw std::runtime_error(
         "Background preset thumbnail loading did not finish for every character");
+  QTemporaryDir missingThumbnailDirectory;
+  QToolButton missingThumbnailCard(&window);
+  missingThumbnailCard.setAccessibleDescription("Missing thumbnail smoke case");
+  missingThumbnailCard.setToolTip("Missing test artwork");
+  window.loadPresetThumbnail(
+      &missingThumbnailCard,
+      missingThumbnailDirectory.path() + "/not-present.png");
+  QElapsedTimer missingThumbnailTimeout;
+  missingThumbnailTimeout.start();
+  while (!missingThumbnailCard.property("thumbnail-error").toBool() &&
+         missingThumbnailTimeout.elapsed() < 3000) {
+    qApp->processEvents();
+    QThread::msleep(1);
+  }
+  if (!missingThumbnailCard.property("thumbnail-error").toBool() ||
+      missingThumbnailCard.icon().isNull() ||
+      !missingThumbnailCard.toolTip().contains("Artwork unavailable") ||
+      !accessibleText(&missingThumbnailCard, QAccessible::Description)
+           .contains("thumbnail unavailable"))
+    throw std::runtime_error(
+        "Unavailable preset artwork was not shown to users and assistive technology");
   if (fitDialogSize(QSize(620, 500), QSize(640, 480)) != QSize(608, 448) ||
       fitDialogSize(QSize(380, 460), QSize(800, 600)) != QSize(380, 460))
     throw std::runtime_error("Dialog sizing does not respect available display geometry");

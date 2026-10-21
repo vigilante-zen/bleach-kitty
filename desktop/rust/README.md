@@ -27,7 +27,7 @@ The live preview updates before saving. Mixed mode shows color and manga side by
 
 Desktop preset changes preserve independent terminal portrait and art preferences. The Python app still uses its original preset behavior. Settings use the same files as `bankai-pick` and `bankai-art`, and external changes appear in the app.
 
-The current Rust appearance and terminal-artwork controls pass 22 Rust unit tests, 22 compiled-binary integration tests and the offscreen native smoke checks. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
+The Rust unit suite, compiled-binary integration checks and offscreen native smoke checks pass. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
 
 ## Ported behavior
 
@@ -76,14 +76,11 @@ cargo build --release --locked
 
 Requirements: Rust and Cargo, a C++17 compiler, pkg-config, and Qt 6 Widgets, SVG and Network development packages. Rust `cc` and `pkg-config` are build-only dependencies. The JSON codec is local and strict, with duplicate-key, UTF-8, nesting and size checks. Snapshot SHA-256 uses Qt's established `QCryptographicHash` through the narrow native bridge rather than a custom hash implementation.
 
-Rust/Cargo was restored before the terminal-artwork update. The current source was rebuilt successfully with the cached dependencies, and all Rust unit tests were rerun.
-
 References: [Rust FFI](https://doc.rust-lang.org/nomicon/ffi.html), [Qt tray API](https://doc.qt.io/qt-6/qsystemtrayicon.html), [Qt hashing](https://doc.qt.io/qt-6/qcryptographichash.html).
 
 ## Validation
 
-- The initial five Rust unit tests passed before toolchain removal.
-- Twenty-two integration checks pass against the compiled release executable using disposable homes. They cover all eighteen presets and two desktop containments, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, independent autostart settings, and appearance reset behavior and recovery.
+- The Rust unit suite passes. Compiled-binary integration checks pass against the release executable using disposable homes. They cover all eighteen presets and two desktop containments, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, independent autostart settings, and appearance reset behavior and recovery.
 - The native offscreen smoke check passed in an isolated temporary home: eighteen previews and exact mask accents, searchable desktop and terminal character selection, configured Random pool summary and eligible-name preview, visible recovery messaging for malformed custom presets, nonmutating preview selection, tray action population, cleanup protection, reset-confirmation cancellation without changing saved preferences, background Rust worker, and screenshots at normal/smaller sizes.
 - The existing real baseline snapshot was verified read-only by Rust.
 - No real desktop settings were changed and no real snapshots were deleted during validation.

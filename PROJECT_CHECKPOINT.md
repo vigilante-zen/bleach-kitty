@@ -71,13 +71,13 @@ The previous custom-preset improvement also remains in place: both editions snap
 
 Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.
 
-The next project change can follow the user's next request. The latest push attempt failed because this environment could not resolve `github.com`; push `main` when GitHub DNS is available.
+The last push attempt failed because this environment could not resolve `github.com`; the current local commits remain ahead of `origin/main` and should be pushed when GitHub DNS is available.
 
 The active Codex project goal tracks this continuation across sessions. Start by checking `git status` and reading the current implementation before editing.
 
 ## Resume here
 
-The latest code commit is `30094e3` (`Preserve snapshot list after scan failure`) on `main`, tracking `origin/main`; at that code commit the branch was 91 commits ahead of its upstream. There are no uncommitted tracked changes after the accompanying checkpoint note is committed. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
+The latest code commit is `04d8bda` (`Test coalesced snapshot refreshes`) on `main`, tracking `origin/main`; the branch is 94 commits ahead of its upstream. The worktree has no uncommitted tracked changes at this checkpoint. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
 
 The latest Rust UI change adds a live, singular/plural-aware matching-character count to the terminal picker. Its accessible description now includes the current count, including zero results, so assistive technology can query it on Qt versions without live announcement support. The smoke test verifies both accessible descriptions. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized Rust build, the offscreen GUI smoke test and `git diff --check`.
 
@@ -85,7 +85,7 @@ Latest continuation work adds a polite, 350 ms debounced screen-reader announcem
 
 The current environment has Wayland display variables but no Orca process, and querying the session accessibility bus fails with `Operation not permitted`. Do not mark spoken output verified here; repeat that check from an unrestricted KDE session with a running screen reader.
 
-An additional cross-edition validation sweep after `5e16d3f` passed all 57 repository tests, all 26 Python snapshot-manager checks, the Python runtime checks, all 22 compiled Rust binary integration checks, and shared command routing. The Rust-specific Clippy, 41 tests, optimized build and native offscreen smoke test also passed. GitHub remains unsynced because `git push origin main` still fails DNS lookup for `github.com`; the branch is 86 commits ahead and `artifacts/` remains untouched.
+An additional cross-edition validation sweep after `5e16d3f` passed all 57 repository tests, all 26 Python snapshot-manager checks, the Python runtime checks, all 22 compiled Rust binary integration checks, and shared command routing. The Rust-specific Clippy, 41 tests, optimized build and native offscreen smoke test also passed. At that sweep the branch was 86 commits ahead; GitHub remained unsynced because `git push origin main` failed DNS lookup for `github.com`, and `artifacts/` remained untouched.
 
 The Python offscreen control-center suite also passed 21 checks; its local-socket forwarding check was skipped because the sandbox rejects `QLocalServer::listen`. It ran after the prior cross-edition sweep and did not change tracked files.
 

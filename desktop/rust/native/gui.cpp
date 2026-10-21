@@ -83,9 +83,16 @@ public:
   QPixmap image, scaledPreview;
   QSize previewSize;
   QJsonObject preset;
-  Artwork() { setMinimumHeight(200); }
+  Artwork() {
+    setObjectName("appearance-artwork-preview");
+    setAccessibleName("Appearance wallpaper preview");
+    setMinimumHeight(200);
+  }
   void select(const QJsonObject &p, const QString &wallpapers) {
     preset = p;
+    setAccessibleDescription(
+        QString("%1. %2. Preview of the desktop and lock screen wallpaper.")
+            .arg(p.value("title").toString(), p.value("subtitle").toString()));
     QImageReader reader(wallpapers + "/" + p.value("image").toString());
     if (reader.size().isValid())
       reader.setScaledSize(reader.size().scaled(1024, 640, Qt::KeepAspectRatio));
@@ -447,6 +454,8 @@ public:
       card->setCheckable(true);
       card->setObjectName("preset-card");
       card->setAccessibleName(p.value("title").toString());
+      card->setAccessibleDescription(
+          p.value("subtitle").toString() + ". Select to preview this character.");
       card->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
       card->setText(p.value("title").toString());
       card->setToolTip(p.value("subtitle").toString());
@@ -590,6 +599,10 @@ public:
     auto *previewRow = new QHBoxLayout;
     portraitPreview = new QLabel;
     mangaPreview = new QLabel;
+    portraitPreview->setObjectName("terminal-color-preview");
+    portraitPreview->setAccessibleName("Terminal color artwork preview");
+    mangaPreview->setObjectName("terminal-manga-preview");
+    mangaPreview->setAccessibleName("Terminal manga artwork preview");
     for (auto *image : {portraitPreview, mangaPreview}) {
       image->setFixedSize(180, 180);
       image->setAlignment(Qt::AlignCenter);
@@ -670,6 +683,7 @@ public:
     auto *search = new QLineEdit;
     search->setObjectName("portrait-search");
     search->setPlaceholderText("Search characters and forms…  ( / to focus )");
+    search->setAccessibleName("Search terminal characters and forms");
     search->setClearButtonEnabled(true);
     layout->addWidget(search);
     auto *searchShortcut = new QShortcut(QKeySequence(Qt::Key_Slash), &dialog);
@@ -681,6 +695,7 @@ public:
     });
     auto *filters = new QComboBox;
     filters->setObjectName("portrait-filter");
+    filters->setAccessibleName("Filter terminal characters");
     filters->addItem("All characters", "all");
     QMap<QString, QStringList> members;
     const auto groups = rosterCommand({"groups"});
@@ -729,6 +744,9 @@ public:
     layout->addWidget(filters);
     auto *random = new QPushButton("Random · shuffle current pool");
     random->setObjectName("primary");
+    random->setAccessibleName("Choose a random terminal character");
+    random->setAccessibleDescription(
+        "Uses the configured terminal rotation pool and shuffle mode.");
     connect(random, &QPushButton::clicked, &dialog, [this, &dialog] {
       portraitChoice->setCurrentIndex(portraitChoice->findData("random"));
       updatePortraitPreview();
@@ -740,6 +758,8 @@ public:
     randomRow->addWidget(random, 1);
     auto *poolPreview = new QPushButton("Preview eligible characters");
     poolPreview->setObjectName("random-pool-preview");
+    poolPreview->setAccessibleDescription(
+        "Lists the characters currently eligible for Random selection.");
     poolPreview->setEnabled(!rotationPool.isEmpty());
     connect(poolPreview, &QPushButton::clicked, &dialog,
             [&dialog, rotationPool, poolName, shuffleMode, &displayNames] {
@@ -933,6 +953,9 @@ public:
          art == "manga" && available ? " · Manga" : " · Color") +
         (art != "color" && !available ? " (manga unavailable)" : "") +
         ". Previewing does not change your saved settings.");
+    const auto previewDescription = portraitCaption->text();
+    portraitPreview->setAccessibleDescription(previewDescription);
+    mangaPreview->setAccessibleDescription(previewDescription + " Manga version.");
     portraitChooser->setText("Terminal character: " +
         (sample ? QString("Random · shuffle current pool") : title));
   }
@@ -1483,6 +1506,15 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       dialog->reject();
       return;
     }
+    auto *random = dialog->findChild<QPushButton *>("portrait-random");
+    if (search->accessibleName().isEmpty() || filter->accessibleName().isEmpty() ||
+        !random || random->accessibleName().isEmpty() ||
+        window.portraitPreview->accessibleName().isEmpty() ||
+        window.portraitPreview->accessibleDescription().isEmpty()) {
+      failure = "Character selection or artwork preview is missing accessibility descriptions";
+      dialog->reject();
+      return;
+    }
     const auto poolSummary = dialog->findChild<QLabel *>("random-pool-summary")->text();
     if (!poolSummary.contains("Random uses") || !poolSummary.contains("shuffle") ||
         !poolSummary.contains("direct choices"))
@@ -1520,6 +1552,24 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       failure = "Character picker has no useful empty-search state";
     if (!dialog->findChild<QPushButton *>("portrait-random"))
       failure = "Character picker is missing the random option";
+    search->setText("uryu");
+    qApp->processEvents();
+    QPushButton *uryuCard = nullptr;
+    for (auto *card : dialog->findChildren<QPushButton *>("portrait-card"))
+      if (card->isVisible()) { uryuCard = card; break; }
+    if (!uryuCard) {
+      failure = "Character picker could not restore a matching card after an empty search";
+      dialog->reject();
+      return;
+    }
+    uryuCard->click();
+    auto selectedCharacter = window.portraitChoice->currentData().toString();
+    selectedCharacter.replace('-', ' ');
+    if (!selectedCharacter.isEmpty())
+      selectedCharacter[0] = selectedCharacter[0].toUpper();
+    if (!window.portraitPreview->accessibleDescription().contains(
+            selectedCharacter, Qt::CaseInsensitive))
+      failure = "Terminal artwork description did not update after character selection";
     dialog->reject();
   });
   window.choosePortrait();
@@ -1682,6 +1732,14 @@ static int smoke(Window &window, const QString &directory) {
   auto *presetSearchShortcut = window.findChild<QShortcut *>("preset-search-shortcut");
   if (!presetSearch || !window.findChild<QLabel *>("preset-empty-state") || !presetSearchShortcut)
     throw std::runtime_error("Appearance picker is missing search or its empty state");
+  auto *appearancePreview = window.art;
+  auto *presetCard = window.cards.value(initial.toString());
+  const auto selectedTitle = window.preset(initial.toString()).value("title").toString();
+  if (!appearancePreview || appearancePreview->accessibleName().isEmpty() ||
+      !appearancePreview->accessibleDescription().contains(selectedTitle) ||
+      !presetCard || presetCard->accessibleName().isEmpty() ||
+      presetCard->accessibleDescription().isEmpty())
+    throw std::runtime_error("Appearance artwork controls are missing screen-reader descriptions");
   presetSearch->setText("quincy");
   QMetaObject::invokeMethod(presetSearchShortcut, "activated");
   qApp->processEvents();
@@ -1814,6 +1872,8 @@ static int smoke(Window &window, const QString &directory) {
   window.matchDesktop->setChecked(false);
   window.portraitChoice->setCurrentIndex(window.portraitChoice->findData("random"));
   window.updatePortraitPreview();
+  if (!window.portraitPreview->accessibleDescription().contains("Rotation example"))
+    throw std::runtime_error("Random artwork preview is missing its screen-reader description");
   window.grab().save(directory + "/rust-terminal-art.png");
   window.navigation->setCurrentRow(1);
   qApp->processEvents();

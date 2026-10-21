@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add screen-reader names and live character descriptions to the Rust appearance and terminal artwork previews, and accessible names/descriptions to terminal search, filters, and Random. Extend the native UI smoke test to verify those descriptions.
 - Make snapshot restore transactional in both desktop editions. Stage and verify snapshot bytes before applying them, then restore replaced or deleted files with their original permissions if a later operation fails. Require the manifest version to be an integer in both editions.
 - Limit snapshot manifests to 16 MiB consistently across Rust verification, Python backup/restore and Python snapshot scanning; prevent either edition from creating an oversized manifest. Reject oversized manifests before parsing.
 - Coordinate Python and Rust snapshot operations through the shared lock. Keep the Python control center responsive during another edition's snapshot operation, and reject malformed absent-file metadata, symlinked paths, and special files before verification, protection or cleanup. Both editions now use one shared restore-path policy, so cleanup cannot mark a path eligible that Rust would refuse to restore; installers ship that policy with Python builds.

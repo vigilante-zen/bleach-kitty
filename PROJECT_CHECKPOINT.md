@@ -107,4 +107,6 @@ Snapshot-list model refresh now suspends dynamic proxy filtering and view repain
 
 The native smoke suite now also sends a 33 MiB worker response through the output collector and verifies it is stopped at the configured 32 MiB cap without retaining excess bytes. Clippy, all 43 Rust tests, the optimized release build, native offscreen smoke checks and `git diff --check` pass. GitHub synchronization remains blocked because `git ls-remote origin refs/heads/main` could not resolve `github.com`; the local branch was 105 commits ahead before this check-only commit. Preserve `artifacts/`.
 
+Worker JSON parsing now uses a two-thread pool owned by the Rust window instead of the process-wide pool. Window teardown waits for outstanding parses, preventing a parser job from outliving the callback target during tray-driven shutdown. Clippy, all 43 Rust tests, release build, native smoke checks and `git diff --check` pass.
+
 To resume, open this repository, read this checkpoint, then check `git status --short --branch` and inspect the implementation related to the next requested change. Keep `artifacts/` untouched. GitHub may still need syncing: push `main` only when network access is available and after checking the remote state.

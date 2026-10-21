@@ -242,6 +242,7 @@ public:
   bool snapshotRefreshPending = false;
   bool snapshotScanInProgress = false;
   bool snapshotScanParsing = false;
+  QThreadPool responseParserPool;
   QFileSystemWatcher watcher;
   QTimer debounce, poll, slowTimer;
   bool quitting = false;
@@ -261,7 +262,7 @@ public:
       QByteArray response,
       std::function<void(const QJsonObject &)> completion) {
     QPointer<Window> guard(this);
-    QThreadPool::globalInstance()->start(QRunnable::create(
+    responseParserPool.start(QRunnable::create(
         [guard, response = std::move(response),
          completion = std::move(completion)]() mutable {
           const auto reply = QJsonDocument::fromJson(response).object();
@@ -277,6 +278,7 @@ public:
         }));
   }
   Window() {
+    responseParserPool.setMaxThreadCount(2);
     bootstrap = rpc({{"op", "bootstrap"}}).toObject();
     presets = bootstrap.value("presets").toArray();
     customPresets = bootstrap.value("custom_presets").toArray();
@@ -402,6 +404,7 @@ public:
     selectPreset(savedDesktop);
   }
   ~Window() override {
+    responseParserPool.waitForDone();
     if (snapshotScanProcess) {
       snapshotScanProcess->disconnect(this);
       if (snapshotScanProcess->state() != QProcess::NotRunning) {

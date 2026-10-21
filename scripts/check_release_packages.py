@@ -2,6 +2,7 @@
 """Verify checksums, edition separation, extracted installers and snapshot restore."""
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -51,6 +52,32 @@ def check_snapshot_restore(root, edition, temporary):
         raise ValueError(f'{edition} packaged restore did not preserve a pre-restore snapshot')
 
 
+def check_installed_python_snapshot_policy(package_root, home):
+    subprocess.run(['python3', str(package_root / 'desktop/python/install.py'), '--home', str(home), '--skip-theme'],
+                   cwd=package_root, check=True, capture_output=True, text=True)
+    data = home / '.local/share/bleach-desktop'
+    manager = data / 'snapshot_manager.py'
+    if not manager.is_file() or not (data / 'snapshot_paths.json').is_file():
+        raise ValueError('Python install is missing its shared snapshot policy.')
+    spec = importlib.util.spec_from_file_location('installed_bankai_snapshot_manager', manager)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    snapshots = home / 'Backups/Bleach-Desktop'
+    allowed_path = '.local/share/plasma/look-and-feel/org.zen.bleach.desktop/metadata.json'
+    rejected_path = '.ssh/id_rsa'
+    for name, relative in [('20261020-120000-000000', allowed_path),
+                           ('20261020-120001-000000', rejected_path)]:
+        directory = snapshots / name
+        payload = directory / 'files' / relative
+        payload.parent.mkdir(parents=True, exist_ok=True)
+        payload.write_text('snapshot payload\n')
+        (directory / 'manifest.json').write_text(json.dumps({'version': 1, 'files': [{'path': relative}]}))
+    store = module.SnapshotStore(snapshots, home / '.local/state/bleach-desktop')
+    rows = {row['name']: row for row in store.scan()}
+    if not rows['20261020-120000-000000']['eligible'] or rows['20261020-120001-000000']['eligible']:
+        raise ValueError('Installed Python scanner does not enforce the shared snapshot policy.')
+
+
 def check(archive):
     with archive.open('rb') as stream:
         checksum = hashlib.file_digest(stream, 'sha256').hexdigest()
@@ -79,6 +106,8 @@ def check(archive):
                         '--dry-run', '--home', str(home)], cwd=root, check=True)
         if home.exists():
             raise ValueError('Dry run wrote to the staging home')
+        if edition == 'python':
+            check_installed_python_snapshot_policy(root, home)
         check_snapshot_restore(root, edition, Path(temp))
         login = root / 'login/install.py'
         required = ['login/README.md', 'login/ARTWORK.json', 'login/sync.py', 'login/greeter_preview.py', 'login/legacy-theme.json', 'login/theme/Main.qml', 'login/theme/metadata.desktop',

@@ -1,5 +1,7 @@
 """Check cleanup against disposable snapshots; never remove real backups."""
 import fcntl
+import importlib.machinery
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -26,14 +28,14 @@ class SnapshotManagementChecks(unittest.TestCase):
 
     def make_snapshot(self, name):
         path = self.store.root / name
-        (path / 'files/.config').mkdir(parents=True)
-        (path / 'files/.config/example').write_text('snapshot payload')
-        (path / 'manifest.json').write_text(json.dumps({'version': 1, 'files': [{'path': '.config/example'}]}))
+        (path / 'files/.config/kitty').mkdir(parents=True)
+        (path / 'files/.config/kitty/example.conf').write_text('snapshot payload')
+        (path / 'manifest.json').write_text(json.dumps({'version': 1, 'files': [{'path': '.config/kitty/example.conf'}]}))
 
     def test_sizes_count_actual_payload_and_manifest(self):
         row = self.store.scan()[0]
         path = self.store.root / row['name']
-        expected = (path / 'files/.config/example').stat().st_size + (path / 'manifest.json').stat().st_size
+        expected = (path / 'files/.config/kitty/example.conf').stat().st_size + (path / 'manifest.json').stat().st_size
         self.assertEqual(row['bytes'], expected)
         self.assertTrue(row['eligible'])
 
@@ -134,7 +136,7 @@ class SnapshotManagementChecks(unittest.TestCase):
 
     def test_file_changed_after_preview_cancels_every_deletion(self):
         plan = self.store.plan(1)
-        target = self.store.root / plan['candidates'][-1]['name'] / 'files/.config/example'
+        target = self.store.root / plan['candidates'][-1]['name'] / 'files/.config/kitty/example.conf'
         target.write_text('snapshot PAYLOAD')  # Same length, different content/mtime.
         with self.assertRaises(ValueError):
             self.store.cleanup(plan)
@@ -233,7 +235,7 @@ class SnapshotManagementChecks(unittest.TestCase):
         invalid_manifests = [
             {**original, 'version': True},
             {**original, 'files': original['files'] * 2},
-            {**original, 'files': [{'path': './.config/example'}]},
+            {**original, 'files': [{'path': './.config/kitty/example.conf'}]},
         ]
         for manifest in invalid_manifests:
             with self.subTest(manifest=manifest):
@@ -248,7 +250,7 @@ class SnapshotManagementChecks(unittest.TestCase):
         invalid_manifests = [
             {**original, 'absent': 'not a list'},
             {**original, 'absent': ['../outside']},
-            {**original, 'absent': ['.config/example']},
+            {**original, 'absent': ['.config/kitty/example.conf']},
         ]
         for manifest in invalid_manifests:
             with self.subTest(manifest=manifest):
@@ -256,6 +258,40 @@ class SnapshotManagementChecks(unittest.TestCase):
                 row = next(item for item in self.store.scan() if item['name'] == self.names[0])
                 self.assertFalse(row['eligible'])
         path.write_text(json.dumps(original))
+
+    def test_scanner_rejects_paths_outside_shared_restore_allowlist(self):
+        snapshot = self.store.root / self.names[0]
+        manifest = snapshot / 'manifest.json'
+        data = json.loads(manifest.read_text())
+        original = snapshot / 'files/.config/kitty/example.conf'
+        rejected = snapshot / 'files/.ssh/id_rsa'
+        rejected.parent.mkdir(parents=True)
+        original.rename(rejected)
+        data['files'][0]['path'] = '.ssh/id_rsa'
+        manifest.write_text(json.dumps(data))
+        row = next(item for item in self.store.scan() if item['name'] == self.names[0])
+        self.assertFalse(row['eligible'])
+
+    def test_shared_path_policy_matches_rust_catalog(self):
+        catalog = json.loads((Path(__file__).parents[1] / 'rust/assets/catalog.json').read_text())
+        self.assertEqual(self.store.path_policy['files'], catalog['files'])
+        self.assertEqual(self.store.path_policy['trees'], catalog['trees'])
+
+    def test_python_backup_manifests_are_eligible_under_shared_policy(self):
+        script = Path(__file__).parent / 'bin/bankai-desktop-backup'
+        loader = importlib.machinery.SourceFileLoader('snapshot_manager_backup_check', str(script))
+        spec = importlib.util.spec_from_loader(loader.name, loader)
+        backup = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(backup)
+        home = self.home / 'source-home'
+        settings = home / '.config/kitty/kitty.conf'
+        settings.parent.mkdir(parents=True)
+        settings.write_text('font_size 12\n')
+        snapshots = home / 'Backups/Bleach-Desktop'
+        snapshot, _ = backup.create(home, snapshots)
+        store = SnapshotStore(snapshots, home / '.local/state/bleach-desktop')
+        row = next(item for item in store.scan() if item['name'] == snapshot.name)
+        self.assertTrue(row['eligible'], row['reason'])
 
     def test_cannot_escape_snapshot_directory(self):
         plan = self.store.plan(1)

@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "trees": [
+    ".config/kitty",
+    ".config/fastfetch",
+    ".config/btop",
+    ".local/share/bleach-desktop",
+    ".local/share/plasma/look-and-feel/org.zen.bleach.desktop",
+    "Pictures/Bleach-TYBW"
+  ],
+  "files": [
+    ".config/fish/config.fish",
+    ".config/fish/functions/fish_prompt.fish",
+    ".config/fish/functions/fish_title.fish",
+    ".config/fish/functions/fish_right_prompt.fish",
+    ".local/bin/bankai-roster",
+    ".local/bin/bankai-preview",
+    ".local/bin/bankai-history-store",
+    ".local/bin/bankai-desktop-backup",
+    ".local/bin/bankai-doctor",
+    ".local/share/applications/bleach-terminal.desktop",
+    ".local/share/applications/bleach-monitor.desktop",
+    ".local/share/icons/hicolor/scalable/apps/bleach-bankai.svg",
+    ".config/kdeglobals",
+    ".config/plasmarc",
+    ".config/plasmashellrc",
+    ".config/plasma-org.kde.plasma.desktop-appletsrc",
+    ".config/kscreenlockerrc",
+    ".config/ksplashrc",
+    ".config/kglobalshortcutsrc",
+    ".config/environment.d/90-dms.conf",
+    ".config/autostart/bleach-desktop.desktop",
+    ".config/fastfetch/portrait-choice",
+    ".local/state/bleach-desktop/pending",
+    ".local/bin/bankai-desktop",
+    ".local/bin/bankai-desktop-restore",
+    ".local/bin/bankai",
+    ".local/bin/bankai-python",
+    ".local/share/applications/bleach-bankai.desktop",
+    ".config/fish/completions/bankai.fish",
+    ".config/autostart/bleach-bankai.desktop",
+    ".local/share/icons/hicolor/scalable/apps/bleach-terminal.svg",
+    ".local/share/icons/hicolor/scalable/apps/bleach-monitor.svg",
+    ".local/state/bleach-desktop/protected-snapshots.json",
+    ".local/share/applications/com.mitchellh.ghostty.desktop",
+    ".local/share/applications/org.kde.konsole.desktop"
+  ],
+  "patterns": [
+    {
+      "directory": ".config/fish/functions",
+      "prefix": "bankai-",
+      "suffix": ".fish"
+    },
+    {
+      "directory": ".config/fish/completions",
+      "prefix": "bankai-",
+      "suffix": ".fish"
+    },
+    {
+      "directory": ".local/share/color-schemes",
+      "prefix": "Bleach",
+      "suffix": ".colors"
+    },
+    {
+      "directory": ".local/share/applications",
+      "prefix": "bleach-preset-",
+      "suffix": ".desktop"
+    }
+  ]
+}

@@ -12,14 +12,15 @@ use fsutil::{Result,TextResult};
 
 pub struct App {
     home: PathBuf, data: PathBuf, state: PathBuf, snapshots: PathBuf, wallpapers: PathBuf,
-    catalog: Value, offline: bool,
+    catalog: Value, snapshot_paths: Value, offline: bool,
 }
 impl App {
     fn new(home: PathBuf, offline: bool) -> Result<Self> {
         if !home.is_absolute() || home.parent().is_none() { return Err("Use an absolute home directory".into()); }
         Ok(Self { data:home.join(".local/share/bleach-desktop"), state:home.join(".local/state/bleach-desktop"),
             snapshots:home.join("Backups/Bleach-Desktop"), wallpapers:home.join("Pictures/Bleach-TYBW/Wallpapers"), home,
-            catalog:json::parse(include_str!("../assets/catalog.json"))?, offline })
+            catalog:json::parse(include_str!("../assets/catalog.json"))?,
+            snapshot_paths:json::parse(include_str!("../../shared/snapshot_paths.json"))?, offline })
     }
     fn environment() -> Result<Self> {
         let staging = std::env::var_os("BANKAI_HOME");

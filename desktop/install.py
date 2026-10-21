@@ -81,6 +81,7 @@ def payload(edition, home, binary=None, dry=False):
             add(source, target + '/' + source.name)
     for name in ['appearance_settings.py', 'presets.json']:
         add(ROOT / 'desktop/shared' / name, '.local/share/bleach-desktop/' + name)
+    add(ROOT / 'desktop/shared/snapshot_paths.json', '.local/share/bleach-desktop/snapshot_paths.json')
     for item in sorted((ROOT / 'login/theme/assets').glob('scene-*.png')):
         add(item, 'Pictures/Bleach-TYBW/Wallpapers/' + item.stem.removeprefix('scene-') + '-manga.png')
     add(ROOT / 'desktop/README.md', '.local/share/bleach-desktop/README.md')

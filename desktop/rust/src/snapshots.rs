@@ -10,15 +10,17 @@ fn catalog_strings(app: &App, key: &str) -> Result<Vec<String>> {
 }
 pub fn allowed(app: &App, relative: &str) -> bool {
     if !fsutil::valid_relative(relative) { return false; }
-    let files = catalog_strings(app, "files").unwrap_or_default();
-    let trees = catalog_strings(app, "trees").unwrap_or_default();
-    if files.iter().any(|f| f == relative) || trees.iter().any(|t| relative.starts_with(&(t.clone() + "/"))) { return true; }
-    if (relative.starts_with(".config/fish/functions/bankai-") || relative.starts_with(".config/fish/completions/bankai-")) && relative.ends_with(".fish") {
-        return relative.split('/').count() == 4;
-    }
-    if let Some(name) = relative.strip_prefix(".local/share/color-schemes/") { return name.starts_with("Bleach") && name.ends_with(".colors") && !name.contains('/'); }
-    if let Some(name) = relative.strip_prefix(".local/share/applications/") { return name.starts_with("bleach-preset-") && name.ends_with(".desktop") && !name.contains('/'); }
-    false
+    let files = app.snapshot_paths.get("files").and_then(Value::array).map(|rows| rows.iter().filter_map(|v| v.text().ok()).collect::<Vec<_>>()).unwrap_or_default();
+    let trees = app.snapshot_paths.get("trees").and_then(Value::array).map(|rows| rows.iter().filter_map(|v| v.text().ok()).collect::<Vec<_>>()).unwrap_or_default();
+    if files.contains(&relative) || trees.iter().any(|t| relative.starts_with(&(t.to_string() + "/"))) { return true; }
+    app.snapshot_paths.get("patterns").and_then(Value::array).is_ok_and(|patterns| patterns.iter().any(|pattern| {
+        let directory = pattern.get("directory").and_then(Value::text).unwrap_or("");
+        let prefix = pattern.get("prefix").and_then(Value::text).unwrap_or("");
+        let suffix = pattern.get("suffix").and_then(Value::text).unwrap_or("");
+        relative.strip_prefix(&(directory.to_string() + "/")).is_some_and(|name| {
+            !name.contains('/') && name.starts_with(prefix) && name.ends_with(suffix)
+        })
+    }))
 }
 
 fn paths(app: &App) -> Result<BTreeSet<PathBuf>> {

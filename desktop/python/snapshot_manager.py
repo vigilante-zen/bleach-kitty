@@ -43,11 +43,46 @@ def reject_symlinks(path):
             raise ValueError(f'Snapshot storage path must not contain symlinks: {boundary}')
 
 
+def load_snapshot_path_policy():
+    source = Path(__file__).resolve()
+    candidates = [source.with_name('snapshot_paths.json'),
+                  source.parents[1] / 'shared/snapshot_paths.json']
+    path = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if path is None or path.is_symlink():
+        raise ValueError('Shared snapshot path policy is missing or symlinked.')
+    raw = read_bounded(path, MAX_MANIFEST_BYTES, 'Snapshot path policy exceeds the 16 MiB size limit.')
+    policy = json.loads(raw.decode('utf-8'))
+    if (not isinstance(policy, dict) or type(policy.get('version')) is not int or policy['version'] != 1
+            or not isinstance(policy.get('files'), list) or not isinstance(policy.get('trees'), list)
+            or not isinstance(policy.get('patterns'), list)
+            or any(not isinstance(item, str) for key in ('files', 'trees') for item in policy[key])
+            or any(not isinstance(item, dict) or any(not isinstance(item.get(key), str)
+                   for key in ('directory', 'prefix', 'suffix')) for item in policy['patterns'])):
+        raise ValueError('Shared snapshot path policy is invalid.')
+    return policy
+
+
+def snapshot_path_allowed(relative, policy):
+    if not isinstance(relative, str) or not relative:
+        return False
+    path = Path(relative)
+    if path.is_absolute() or str(path) != relative or any(part in ('', '.', '..') for part in relative.split('/')):
+        return False
+    if relative in policy['files'] or any(relative.startswith(tree + '/') for tree in policy['trees']):
+        return True
+    parent, separator, name = relative.rpartition('/')
+    if not separator:
+        return False
+    return any(parent == pattern['directory'] and name.startswith(pattern['prefix'])
+               and name.endswith(pattern['suffix']) for pattern in policy['patterns'])
+
+
 class SnapshotStore:
     def __init__(self, root=None, state=None):
         home = Path.home()
         self.root = Path(root) if root is not None else home / 'Backups/Bleach-Desktop'
         self.state = Path(state) if state is not None else home / '.local/state/bleach-desktop'
+        self.path_policy = load_snapshot_path_policy()
 
     @contextmanager
     def locked(self, wait=True):
@@ -130,11 +165,7 @@ class SnapshotStore:
                 seen = set()
                 for entry in entries:
                     relative = entry.get('path') if isinstance(entry, dict) else None
-                    relative_path = Path(relative) if isinstance(relative, str) else None
-                    if (relative_path is None or not relative or relative_path.is_absolute()
-                            or str(relative_path) != relative
-                            or any(part in ('', '.', '..') for part in relative.split('/'))
-                            or relative in seen):
+                    if not snapshot_path_allowed(relative, self.path_policy) or relative in seen:
                         raise ValueError('Snapshot paths are invalid.')
                     seen.add(relative)
                     expected.add('files/' + relative)
@@ -142,11 +173,7 @@ class SnapshotStore:
                 if not isinstance(absent, list):
                     raise ValueError('Snapshot absent-file metadata is invalid.')
                 for relative in absent:
-                    relative_path = Path(relative) if isinstance(relative, str) else None
-                    if (relative_path is None or not relative or relative_path.is_absolute()
-                            or str(relative_path) != relative
-                            or any(part in ('', '.', '..') for part in relative.split('/'))
-                            or relative in seen):
+                    if not snapshot_path_allowed(relative, self.path_policy) or relative in seen:
                         raise ValueError('Snapshot absent-file paths are invalid.')
                     seen.add(relative)
                 row['files'] = len(entries)

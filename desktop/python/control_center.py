@@ -283,7 +283,7 @@ class ControlCenter(QMainWindow):
         self.tray_debounce = QTimer(self)
         self.tray_debounce.setSingleShot(True)
         self.tray_debounce.setInterval(150)
-        self.tray_debounce.timeout.connect(self.refresh_tray)
+        self.tray_debounce.timeout.connect(self.refresh_external_state)
         self.tray_watch.directoryChanged.connect(lambda path: self.tray_debounce.start())
         self.tray_watch.fileChanged.connect(lambda path: self.tray_debounce.start())
         self.refresh_tray()
@@ -313,6 +313,10 @@ class ControlCenter(QMainWindow):
         for key, action in self.preset_actions.items():
             action.setChecked(key == name)
             action.setEnabled(self.process is None)
+
+    def refresh_external_state(self):
+        self.refresh_tray()
+        self.refresh_custom_presets()
 
     def tray_activated(self, reason):
         if reason in (QSystemTrayIcon.ActivationReason.Trigger, QSystemTrayIcon.ActivationReason.DoubleClick):
@@ -601,6 +605,7 @@ class ControlCenter(QMainWindow):
                       'Preset saved. Open a new terminal for the matching greeting.')
 
     def refresh_custom_presets(self):
+        selected = self.custom_combo.currentData()
         try: self.custom_rows = appearance_settings.custom_presets(HOME)
         except (OSError, ValueError, TypeError) as error:
             self.custom_rows = []
@@ -608,6 +613,8 @@ class ControlCenter(QMainWindow):
         self.custom_combo.blockSignals(True)
         self.custom_combo.clear()
         for row in self.custom_rows: self.custom_combo.addItem(row['name'], row['id'])
+        selected_index = self.custom_combo.findData(selected)
+        if selected_index >= 0: self.custom_combo.setCurrentIndex(selected_index)
         self.custom_combo.blockSignals(False)
         available = bool(self.custom_rows)
         self.custom_apply_button.setEnabled(available)

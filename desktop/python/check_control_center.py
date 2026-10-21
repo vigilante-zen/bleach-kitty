@@ -28,8 +28,8 @@ class ControlCenterChecks(unittest.TestCase):
         self.home = Path(self.temporary.name)
         self.original = {key: getattr(center, key) for key in ['HOME', 'DATA', 'SNAPSHOTS', 'WALLPAPERS']}
         center.HOME = self.home
-        center.DATA = self.home / 'data'
-        center.DATA.mkdir()
+        center.DATA = self.home / '.local/share/bleach-desktop'
+        center.DATA.mkdir(parents=True)
         (center.DATA / 'current').write_text('ichigo\n')
         center.SNAPSHOTS = self.home / 'snapshots'
         center.WALLPAPERS = REPO / 'desktop/shared/wallpapers'
@@ -90,6 +90,33 @@ class ControlCenterChecks(unittest.TestCase):
             self.assertEqual(self.window.custom_combo.count(), 0)
         finally:
             center.QInputDialog.getText = original
+
+    def test_custom_presets_refresh_after_external_edits_without_losing_selection(self):
+        self.window.setup_tray(show=False)
+        options = center.appearance_settings.defaults()
+        first = center.appearance_settings.save_custom_preset(self.home, 'Night Ichigo', 'ichigo', options)
+        deadline = time.monotonic() + 3
+        while self.window.custom_combo.count() != 1 and time.monotonic() < deadline:
+            app.processEvents()
+            time.sleep(.01)
+        self.assertEqual(self.window.custom_combo.itemData(0), first['id'])
+        self.window.custom_combo.setCurrentIndex(0)
+
+        second = center.appearance_settings.save_custom_preset(self.home, 'Manga Rukia', 'rukia',
+            dict(options, edition='manga'))
+        deadline = time.monotonic() + 3
+        while self.window.custom_combo.count() != 2 and time.monotonic() < deadline:
+            app.processEvents()
+            time.sleep(.01)
+        self.assertEqual(self.window.custom_combo.count(), 2)
+        self.assertEqual(self.window.custom_combo.currentData(), first['id'])
+
+        center.appearance_settings.delete_custom_preset(self.home, first['id'])
+        deadline = time.monotonic() + 3
+        while self.window.custom_combo.count() != 1 and time.monotonic() < deadline:
+            app.processEvents()
+            time.sleep(.01)
+        self.assertEqual(self.window.custom_combo.currentData(), second['id'])
 
     def test_ultrawide_wallpapers_match_monitor_aspect(self):
         for name in ['urahara', 'byakuya', 'yamamoto', 'ulquiorra']:

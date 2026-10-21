@@ -77,7 +77,7 @@ The active Codex project goal tracks this continuation across sessions. Start by
 
 ## Resume here
 
-The latest snapshot-refresh implementation commit is `04d8bda` (`Test coalesced snapshot refreshes`) on `main`, tracking `origin/main`; local commits remain ahead of `origin/main`. The worktree has no uncommitted tracked changes at this checkpoint. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
+The current feature work is committed on `main`, which has local commits ahead of `origin/main`; use `git log -5 --oneline` for the exact handoff point. The worktree has no uncommitted tracked changes at this checkpoint. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
 
 The latest Rust UI change adds a live, singular/plural-aware matching-character count to the terminal picker. Its accessible description now includes the current count, including zero results, so assistive technology can query it on Qt versions without live announcement support. The smoke test verifies both accessible descriptions. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized Rust build, the offscreen GUI smoke test and `git diff --check`.
 

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Show the exact characters eligible for terminal Random, use unbiased random selection for login shuffle, and refresh saved custom presets after external edits. Keep the Rust window usable when saved presets are malformed by showing an error and allowing reload after repair; reject symlinked current-preset state.
+- Show the exact characters eligible for terminal Random, use unbiased random selection for login shuffle, and refresh saved custom presets and the Backups page after external changes. Keep the Rust window usable when saved presets are malformed by showing an error and allowing reload after repair; reject symlinked current-preset state.
 - Run Clippy with warnings denied in Rust CI and document the lint command in the Rust install and development guides.
 - Improve the Rust terminal character picker with a searchable thumbnail grid, faction/form filters, recent and favorite selections, keyboard navigation, clearer empty states and an always-available random choice.
 - Add Aizen, Grimmjow, Yoruichi, Gin and Orihime as desktop presets, with matching Color and Manga wallpapers and login scenes.

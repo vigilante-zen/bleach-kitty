@@ -263,6 +263,8 @@ public:
       refreshStatus();
       if (customPresetChoice)
         refreshCustomPresets();
+      if (pages->currentIndex() == 1)
+        refreshSnapshots();
     });
     connect(&watcher, &QFileSystemWatcher::fileChanged, this,
             [this] { debounce.start(); });
@@ -270,8 +272,13 @@ public:
             [this] { debounce.start(); });
     if (QDir(data).exists())
       watcher.addPath(data);
+    watchBackupDirectories();
     poll.setInterval(30000);
-    connect(&poll, &QTimer::timeout, this, [this] { refreshStatus(); });
+    connect(&poll, &QTimer::timeout, this, [this] {
+      refreshStatus();
+      if (pages->currentIndex() == 1)
+        refreshSnapshots();
+    });
     poll.start();
     refreshStatus();
     selectPreset(savedDesktop);
@@ -988,7 +995,14 @@ public:
       notice->setText(QString::fromUtf8(e.what()));
     }
   }
+  void watchBackupDirectories() {
+    for (const auto &path : {home + "/Backups/Bleach-Desktop",
+                             home + "/.local/state/bleach-desktop"})
+      if (QDir(path).exists() && !watcher.directories().contains(path))
+        watcher.addPath(path);
+  }
   void refreshSnapshots() {
+    watchBackupDirectories();
     auto previous = snapshots->currentData().toString();
     QSignalBlocker blocker(snapshots);
     snapshots->clear();
@@ -1684,6 +1698,41 @@ static int smoke(Window &window, const QString &directory) {
   window.grab().save(directory + "/rust-terminal-art.png");
   window.navigation->setCurrentRow(1);
   qApp->processEvents();
+  const auto snapshotDirectory = window.home + "/Backups/Bleach-Desktop";
+  if (!window.watcher.directories().contains(snapshotDirectory))
+    throw std::runtime_error("Backups directory is not watched for external snapshots");
+  const int snapshotCount = window.snapshots->count();
+  const auto wallpaperLink = window.home + "/Pictures/Bleach-TYBW/Wallpapers";
+  const auto wallpaperTarget = QFileInfo(wallpaperLink).symLinkTarget();
+  if (wallpaperTarget.isEmpty() || !QFile::remove(wallpaperLink))
+    throw std::runtime_error("Could not isolate the snapshot smoke command from artwork links");
+  QProcess externalBackup;
+  externalBackup.start(QCoreApplication::applicationFilePath(), {"backup"});
+  if (!externalBackup.waitForStarted(1000)) {
+    QFile::link(wallpaperTarget, wallpaperLink);
+    throw std::runtime_error("Could not start external snapshot smoke command");
+  }
+  while (externalBackup.state() != QProcess::NotRunning) {
+    qApp->processEvents();
+    externalBackup.waitForFinished(10);
+  }
+  const bool wallpaperRestored = QFile::link(wallpaperTarget, wallpaperLink);
+  if (!wallpaperRestored)
+    throw std::runtime_error("Could not restore the isolated artwork link after snapshot smoke");
+  if (externalBackup.exitStatus() != QProcess::NormalExit || externalBackup.exitCode() != 0)
+    throw std::runtime_error(
+        QString("External snapshot smoke command failed (code=%1, stderr=%2)")
+            .arg(externalBackup.exitCode())
+            .arg(QString::fromLocal8Bit(externalBackup.readAllStandardError()))
+            .toStdString());
+  QElapsedTimer snapshotReload;
+  snapshotReload.start();
+  while (window.snapshots->count() <= snapshotCount && snapshotReload.elapsed() < 2000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (window.snapshots->count() <= snapshotCount)
+    throw std::runtime_error("Backups page did not refresh after an external snapshot");
   window.grab().save(directory + "/rust-backups.png");
   window.trayMenu->ensurePolished();
   window.trayMenu->adjustSize();
@@ -1716,7 +1765,8 @@ static int smoke(Window &window, const QString &directory) {
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset and character pickers, "
                          "configured Random pool summary, custom-preset recovery and "
-                         "external refresh, reset confirmation, worker process and screenshots.\n";
+                         "external refresh, external snapshot refresh, reset confirmation, "
+                         "worker process and screenshots.\n";
   return 0;
 }
 static bool copySmokeFile(const QString &source, const QString &destination) {
@@ -1754,7 +1804,7 @@ static bool prepareSmokeHome(const QString &source, const QString &destination) 
   if (!corruptPresets.open(QIODevice::WriteOnly | QIODevice::Truncate) ||
       corruptPresets.write(corruptData) != corruptData.size())
     return false;
-  return true;
+  return QDir().mkpath(destination + "/Backups/Bleach-Desktop");
 }
 extern "C" int bankai_gui(int argc, char **argv) {
   QElapsedTimer startup;

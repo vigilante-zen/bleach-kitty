@@ -55,6 +55,10 @@ static QString sizeText(double bytes) {
   }
   return QString::number(bytes, 'f', 1) + " " + units[i];
 }
+static QSize minimumWindowSize(const QSize &available) {
+  return QSize(qMax(1, qMin(850, available.width() - 32)),
+               qMax(1, qMin(590, available.height() - 32)));
+}
 static QLabel *label(const QString &text, const QString &name = {}) {
   auto *w = new QLabel(text);
   w->setWordWrap(true);
@@ -188,10 +192,14 @@ public:
     qApp->setStyleSheet(bootstrap.value("style").toString());
     setWindowTitle("Bankai Rust · Soul Society Control Center");
     setWindowIcon(svgIcon(bootstrap.value("mask_svg").toString().toUtf8()));
-    setMinimumSize(850, 590);
-    auto screen = QGuiApplication::primaryScreen()->availableGeometry();
-    resize(qMin(1140, int(screen.width() * .93)),
-           qMin(820, int(screen.height() * .93)));
+    const auto *screen = QGuiApplication::primaryScreen();
+    const QSize available = screen ? screen->availableGeometry().size()
+                                   : QSize(1140, 820);
+    const QSize minimum = minimumWindowSize(available);
+    setMinimumSize(minimum);
+    resize(QSize(qMin(1140, int(available.width() * .93)),
+                 qMin(820, int(available.height() * .93)))
+               .expandedTo(minimum));
     auto *body = new QWidget;
     setCentralWidget(body);
     auto *layout = new QHBoxLayout(body);
@@ -199,7 +207,8 @@ public:
     layout->setSpacing(0);
     auto *sidebar = new QFrame;
     sidebar->setObjectName("sidebar");
-    sidebar->setFixedWidth(210);
+    sidebar->setMinimumWidth(150);
+    sidebar->setMaximumWidth(210);
     auto *side = new QVBoxLayout(sidebar);
     side->setContentsMargins(23, 30, 23, 23);
     side->addWidget(label("SOUL SOCIETY", "eyebrow"));
@@ -570,7 +579,11 @@ public:
     layout->addWidget(label("After restoring, log out and back in. The system "
                             "login screen uses its separate setup guide.",
                             "notice"));
-    return page;
+    auto *scroll = new QScrollArea;
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setWidget(page);
+    return scroll;
   }
   QWidget *toolsPage() {
     auto *page = new QWidget;
@@ -1676,6 +1689,11 @@ static void smokeMalformedAppearanceRecovery(Window &window, const QJsonObject &
     throw std::runtime_error(failure.toStdString());
 }
 static int smoke(Window &window, const QString &directory) {
+  if (minimumWindowSize(QSize(800, 600)) != QSize(768, 568) ||
+      minimumWindowSize(QSize(1920, 1080)) != QSize(850, 590))
+    throw std::runtime_error("Window minimum size does not adapt to display geometry");
+  if (!qobject_cast<QScrollArea *>(window.pages->widget(1)))
+    throw std::runtime_error("Backup controls are not scrollable on short displays");
   if (!window.notice->text().startsWith("Saved presets could not be loaded:"))
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
   if (!window.watcher.files().contains(window.data + "/custom-presets.json"))

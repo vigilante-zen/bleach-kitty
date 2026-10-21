@@ -17,6 +17,8 @@ The latest continuation adds `desktop/shared/snapshot_paths.json` as the common 
 
 The Rust UI now gives screen readers named appearance and terminal-artwork previews, character-specific preview descriptions, and accessible names/descriptions for terminal search, faction filters and Random. The native smoke test verifies that preview descriptions update with the selected character. Validation passed 40 Rust tests, Clippy with warnings denied, the optimized build, the offscreen native smoke test, and 22 compiled-binary integration checks. The live Qt screen-reader experience still needs verification on a desktop session.
 
+Small-screen layout now derives the main window minimum from available display geometry, lets the navigation sidebar shrink to 150 logical pixels, and wraps Backup & restore in a scroll area. The smoke test checks minimum-size calculations at 800×600 and 1920×1080, plus the backup scroll container. The 40 Rust tests, Clippy, optimized build and offscreen native smoke test pass.
+
 Single-instance startup in Python and Rust now rejects symlinked state-directory ancestors and existing control lock/socket symlinks before creating or using IPC paths. Rust bootstrap validates the state path before the Qt launcher creates it. The offscreen Python UI suite passes 21 checks (one socket test skipped because sockets are blocked), and all 40 Rust tests, Clippy, and the optimized build pass.
 
 ## Latest completed work

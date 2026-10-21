@@ -141,12 +141,17 @@ fn failed_custom_preset_apply_restores_previous_appearance_settings() {
 }
 #[test]fn custom_preset_saves_applies_and_deletes_current_choices(){
     let f=Fixture::new();
+    let previous=appearance::load(&f.app).unwrap();
+    appearance::save(&f.app,&obj!{"appearance"=>previous.clone()}).unwrap();
     write(&f.app.wallpapers.join("rukia-manga.png"),"fake manga wallpaper");
     let saved=custom_presets::save(&f.app,&obj!{"name"=>"Night Rukia","preset"=>"rukia","accent"=>"#aabbcc","login"=>"ichigo","edition"=>"manga"}).unwrap();
     let id=saved.get("id").unwrap().text().unwrap();
     assert_eq!(custom_presets::list(&f.app).unwrap().len(),1);
     let applied=custom_presets::apply(&f.app,&obj!{"id"=>id}).unwrap();
     assert!(applied.get("pending").unwrap().boolean().unwrap());
+    let backup_name=applied.get("previous").unwrap().text().unwrap();
+    let backed_up=fsutil::read_json(&f.app.snapshots.join(backup_name).join("files/.local/share/bleach-desktop/appearance.json")).unwrap();
+    assert_eq!(backed_up,previous);
     let options=appearance::load(&f.app).unwrap();
     assert_eq!(options.get("edition").unwrap().text().unwrap(),"manga");
     assert_eq!(options.get("accent").unwrap().text().unwrap(),"#aabbcc");

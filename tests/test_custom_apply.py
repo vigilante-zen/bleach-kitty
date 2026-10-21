@@ -1,9 +1,13 @@
 """Custom preset failures must not leave shared appearance settings half-applied."""
 import importlib.machinery
 import importlib.util
+import json
 from pathlib import Path
+import shutil
 import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 loader = importlib.machinery.SourceFileLoader('bankai_desktop_cli', str(ROOT / 'desktop/python/bin/bankai-desktop'))
@@ -67,5 +71,50 @@ class CustomApplyChecks(unittest.TestCase):
                 self.assertFalse((desktop.DATA / 'current').exists())
             finally:
                 for key, value in old.items(): setattr(desktop, key, value)
+
+    def test_custom_apply_snapshot_keeps_previous_appearance_options(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            old_globals = {key: getattr(desktop, key) for key in ('HOME', 'DATA', 'STATE')}
+            desktop.HOME = home
+            desktop.DATA = home / '.local/share/bleach-desktop'
+            desktop.STATE = home / '.local/state/bleach-desktop'
+            try:
+                previous = desktop.appearance_settings.defaults()
+                previous.update(edition='manga', accent='#123456', login='ichigo')
+                desktop.appearance_settings.save(home, previous)
+                row = desktop.appearance_settings.save_custom_preset(home, 'Rukia color', 'rukia', {
+                    **previous, 'edition': 'color', 'accent': '#abcdef', 'login': 'rukia',
+                })
+                preset = next(p for p in desktop.appearance_settings.catalog() if p['id'] == 'rukia')
+                wallpapers = home / 'Pictures/Bleach-TYBW/Wallpapers'
+                wallpapers.mkdir(parents=True)
+                shutil.copy(ROOT / 'desktop/shared/wallpapers' / preset['image'], wallpapers / preset['image'])
+                schemes = home / '.local/share/color-schemes'
+                schemes.mkdir(parents=True)
+                shutil.copy(ROOT / 'desktop/shared/color-schemes' / 'BleachRukia.colors', schemes / 'BleachRukia.colors')
+                config = home / '.config'
+                (config / 'kitty').mkdir(parents=True)
+                (config / 'kitty/kitty.conf').write_text('font_size 12\n')
+                (config / 'kdeglobals').write_text('[General]\n')
+                (config / 'plasma-org.kde.plasma.desktop-appletsrc').write_text('[Containments][1]\nplugin=org.kde.plasma.folder\n')
+
+                snapshot = home / 'safety-snapshot'
+                def fake_run(args):
+                    if args[0].endswith('bankai-desktop-backup'):
+                        saved = snapshot / 'files/.local/share/bleach-desktop/appearance.json'
+                        saved.parent.mkdir(parents=True)
+                        shutil.copy(desktop.DATA / 'appearance.json', saved)
+                        return SimpleNamespace(returncode=0, stdout='backup complete')
+                    return SimpleNamespace(returncode=1, stdout='')
+
+                with patch.object(desktop, 'run', side_effect=fake_run):
+                    desktop.apply_custom(row['id'])
+                backup_options = json.loads((snapshot / 'files/.local/share/bleach-desktop/appearance.json').read_text())
+                self.assertEqual(backup_options, previous)
+                self.assertEqual(desktop.appearance_settings.load(home)['accent'], '#abcdef')
+                self.assertEqual((desktop.DATA / 'current').read_text(), 'rukia\n')
+            finally:
+                for key, value in old_globals.items(): setattr(desktop, key, value)
 
 if __name__ == '__main__': unittest.main()

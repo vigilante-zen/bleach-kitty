@@ -123,13 +123,16 @@ for (var i = 0; i < ps.length; ++i) {
 }
 '''
 
-def apply(name, pending_only=False, expected_appearance=None):
+def apply(name, pending_only=False, expected_appearance=None, replacement_appearance=None):
     label, portrait, base_accent = PRESETS[name]
     options = appearance_settings.load(HOME)
     if expected_appearance is not None and options != expected_appearance:
         raise ValueError('Appearance settings changed while applying the saved preset. Retry the action.')
+    if replacement_appearance is not None:
+        replacement_appearance = appearance_settings.validate(replacement_appearance)
+    selected_options = replacement_appearance if replacement_appearance is not None else options
     preset = next(p for p in appearance_settings.catalog() if p['id'] == name)
-    image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / (preset['manga'] if options['edition'] == 'manga' else preset['image'])
+    image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / (preset['manga'] if selected_options['edition'] == 'manga' else preset['image'])
     if not image.is_file(): raise ValueError(f'Wallpaper is missing: {image}')
     if not pending_only:
         # The backup command uses the same lock, so take our lock after it exits.
@@ -142,8 +145,9 @@ def apply(name, pending_only=False, expected_appearance=None):
         options = appearance_settings.load(HOME)
         if expected_appearance is not None and options != expected_appearance:
             raise ValueError('Appearance settings changed while applying the saved preset. Retry the action.')
-        accent = options['accent'] or base_accent
-        image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / (preset['manga'] if options['edition'] == 'manga' else preset['image'])
+        selected_options = replacement_appearance if replacement_appearance is not None else options
+        accent = selected_options['accent'] or base_accent
+        image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / (preset['manga'] if selected_options['edition'] == 'manga' else preset['image'])
         if not image.is_file(): raise ValueError(f'Wallpaper is missing: {image}')
         scheme = 'Bleach' + label
         globals_ = HOME / '.config/kdeglobals'
@@ -189,6 +193,8 @@ def apply(name, pending_only=False, expected_appearance=None):
         if desktop_ids: edits[relative] = text.encode()
         edits['.local/share/bleach-desktop/current'] = (name + '\n').encode()
         edits['.local/state/bleach-desktop/pending'] = (name + '\n').encode()
+        if replacement_appearance is not None:
+            edits['.local/share/bleach-desktop/appearance.json'] = (json.dumps(replacement_appearance, indent=2) + '\n').encode()
         write_transaction(HOME, edits)
 
         desktop_js = 'var ds = desktops(); for (var i=0;i<ds.length;++i) { ds[i].wallpaperPlugin="org.kde.image"; ds[i].currentConfigGroup=["Wallpaper","org.kde.image","General"]; ds[i].writeConfig("Image",' + json.dumps(image.as_uri()) + '); }\n'
@@ -215,15 +221,8 @@ def apply_custom(identifier):
     row = next((p for p in appearance_settings.custom_presets(HOME) if p['id'] == identifier), None)
     if not row: raise ValueError('Saved preset not found')
     previous = appearance_settings.load(HOME)
-    options = dict(previous, edition=row['edition'], accent=row['accent'], login=row['login'])
-    appearance_settings.save(HOME, options, expected=previous)
-    try:
-        apply(row['preset'], expected_appearance=options)
-    except (OSError, ValueError) as error:
-        try: appearance_settings.save(HOME, previous, expected=options)
-        except (OSError, ValueError) as restore_error:
-            raise ValueError(f'{error}; failed to restore previous appearance settings: {restore_error}') from error
-        raise
+    options = appearance_settings.validate(dict(previous, edition=row['edition'], accent=row['accent'], login=row['login']))
+    apply(row['preset'], expected_appearance=previous, replacement_appearance=options)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

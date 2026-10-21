@@ -85,13 +85,21 @@ pub fn apply(app: &App, name: &str) -> Result<Value> {
 }
 
 pub fn apply_with_expected_appearance(app: &App, name: &str, expected: Option<&Value>) -> Result<Value> {
+    apply_with_appearance_changes(app, name, expected, None)
+}
+
+pub fn apply_with_appearance_changes(app: &App, name: &str, expected: Option<&Value>, replacement: Option<&Value>) -> Result<Value> {
     let preset = app.preset(name)?;
     let _lock = Lock::acquire(&app.state)?;
-    let appearance = crate::appearance::load(app)?;
+    let current_appearance = crate::appearance::load(app)?;
     if let Some(expected) = expected
-        && appearance != crate::appearance::validate(app, expected)? {
+        && current_appearance != crate::appearance::validate(app, expected)? {
         return Err("Appearance settings changed while applying the saved preset. Retry the action.".into());
     }
+    let appearance = match replacement {
+        Some(value) => crate::appearance::validate(app, value)?,
+        None => current_appearance,
+    };
     let image = app.wallpapers.join(preset.get(if appearance.get("edition")?.text()? == "manga" { "manga" } else { "image" })?.text()?);
     let scheme = format!("Bleach{}", preset.get("title")?.text()?);
     let scheme_file = app.home.join(".local/share/color-schemes").join(format!("{scheme}.colors"));
@@ -151,6 +159,9 @@ pub fn apply_with_expected_appearance(app: &App, name: &str, expected: Option<&V
     }
     edits.insert(".local/share/bleach-desktop/current".into(), format!("{name}\n"));
     edits.insert(".local/state/bleach-desktop/pending".into(), format!("{name}\n"));
+    if replacement.is_some() {
+        edits.insert(".local/share/bleach-desktop/appearance.json".into(), format!("{}\n", appearance.dump()));
+    }
     for relative in edits.keys() { fsutil::reject_links(&app.home.join(relative), &app.home)?; }
     let backup = snapshots::create(app)?;
     fsutil::reject_links(&app.data, &app.home)?;

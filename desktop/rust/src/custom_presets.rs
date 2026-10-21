@@ -43,17 +43,5 @@ pub fn apply(app:&App,request:&Value)->Result<Value>{
     let id=request.get("id")?.text()?; let row=list(app)?.into_iter().find(|r|r.get("id").and_then(Value::text).ok()==Some(id)).ok_or("Saved preset not found")?;
     let old=crate::appearance::load(app)?;
     let options=obj!{"edition"=>row.get("edition")?.clone(),"accent"=>row.get("accent")?.clone(),"login"=>row.get("login")?.clone(),"shuffle_login"=>old.get("shuffle_login")?.clone(),"pool"=>old.get("pool")?.clone()};
-    crate::appearance::save(app,&obj!{"appearance"=>options.clone(),"expected"=>old.clone()})?;
-    match crate::presets::apply_with_expected_appearance(app,row.get("preset")?.text()?,Some(&options)) {
-        Ok(result)=>Ok(result),
-        Err(error)=>{
-            if let Ok(current)=crate::appearance::load(app) && current!=options {
-                return Err(format!("{error}; newer appearance settings were preserved."));
-            }
-            match crate::appearance::save(app,&obj!{"appearance"=>old,"expected"=>options}) {
-                Ok(_)=>Err(error),
-                Err(restore_error)=>Err(format!("{error}; failed to restore previous appearance settings: {restore_error}"))
-            }
-        }
-    }
+    crate::presets::apply_with_appearance_changes(app,row.get("preset")?.text()?,Some(&old),Some(&options))
 }

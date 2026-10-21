@@ -23,6 +23,14 @@ def format_size(size):
         size /= 1024
 
 
+def read_manifest(path):
+    with path.open('rb') as stream:
+        raw = stream.read(MAX_MANIFEST_BYTES + 1)
+    if len(raw) > MAX_MANIFEST_BYTES:
+        raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
+    return raw
+
+
 class SnapshotStore:
     def __init__(self, root=None, state=None):
         home = Path.home()
@@ -92,9 +100,7 @@ class SnapshotStore:
             row = {'name': path.name, 'bytes': 0, 'files': 0, 'protected': path.name in protected or path.name == BASELINE,
                    'baseline': path.name == BASELINE, 'eligible': False, 'reason': ''}
             try:
-                raw = manifest.read_bytes()
-                if len(raw) > MAX_MANIFEST_BYTES:
-                    raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
+                raw = read_manifest(manifest)
                 data = json.loads(raw)
                 entries = data.get('files') if isinstance(data, dict) else None
                 if (type(data.get('version')) is not int or data['version'] != 1

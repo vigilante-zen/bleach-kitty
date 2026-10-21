@@ -28,6 +28,14 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def read_manifest(path):
+    with path.open('rb') as stream:
+        raw = stream.read(MAX_MANIFEST_BYTES + 1)
+    if len(raw) > MAX_MANIFEST_BYTES:
+        raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
+    return raw
+
+
 def allowed(relative):
     p = Path(relative)
     if p.is_absolute() or '..' in p.parts or str(p) != relative:
@@ -102,9 +110,7 @@ def verify_manifest(snapshot, home):
     reject_links(snapshot, snapshot.parent)
     manifest = snapshot / 'manifest.json'
     reject_links(manifest, snapshot)
-    raw = manifest.read_bytes()
-    if len(raw) > MAX_MANIFEST_BYTES:
-        raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
+    raw = read_manifest(manifest)
     data = json.loads(raw)
     if not isinstance(data, dict) or type(data.get('version')) is not int or data['version'] != 1 or not isinstance(data.get('files'), list) or not data['files']:
         raise ValueError('Invalid snapshot manifest.')

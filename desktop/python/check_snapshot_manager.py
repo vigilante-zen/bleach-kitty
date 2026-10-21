@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from snapshot_manager import BASELINE, SnapshotStore
+from snapshot_manager import BASELINE, MAX_MANIFEST_BYTES, SnapshotStore
 
 
 class SnapshotManagementChecks(unittest.TestCase):
@@ -99,6 +99,34 @@ class SnapshotManagementChecks(unittest.TestCase):
         row = next(item for item in self.store.scan() if item['name'] == self.names[0])
         self.assertFalse(row['eligible'])
         self.assertIn('16 MiB size limit', row['reason'])
+
+    def test_manifest_read_is_bounded_to_limit_plus_one(self):
+        class Reader:
+            requested = None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def read(self, size):
+                self.requested = size
+                return b'x' * size
+
+        reader = Reader()
+        manifest = self.store.root / self.names[0] / 'manifest.json'
+        original_open = Path.open
+
+        def open_manifest(path, *args, **kwargs):
+            if path == manifest:
+                return reader
+            return original_open(path, *args, **kwargs)
+
+        with patch('pathlib.Path.open', new=open_manifest):
+            row = next(item for item in self.store.scan() if item['name'] == self.names[0])
+        self.assertFalse(row['eligible'])
+        self.assertEqual(reader.requested, MAX_MANIFEST_BYTES + 1)
 
     def test_scanner_rejects_boolean_versions_duplicate_and_noncanonical_paths(self):
         path = self.store.root / self.names[0] / 'manifest.json'

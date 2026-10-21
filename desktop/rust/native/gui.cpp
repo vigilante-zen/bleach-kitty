@@ -948,6 +948,12 @@ public:
         "muted");
     poolSummary->setObjectName("random-pool-summary");
     layout->addWidget(poolSummary);
+    auto *resultCount = label("0 characters", "muted");
+    resultCount->setObjectName("portrait-results-count");
+    resultCount->setAccessibleName("Matching terminal characters");
+    resultCount->setAccessibleDescription(
+        "Number of character cards shown by the current search and faction filter.");
+    layout->addWidget(resultCount);
     auto *scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
@@ -966,7 +972,8 @@ public:
     layout->addWidget(close);
     int gridAvailableWidth = dialog.width();
     auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites,
-                    &recentlyUsed, &displayNames, &dialog, &gridAvailableWidth]() {
+                    &recentlyUsed, &displayNames, &dialog, &gridAvailableWidth,
+                    resultCount]() {
       QString focusedId;
       for (int index = 0; index < grid->count(); ++index)
         if (auto *card = grid->itemAt(index)->widget(); card && card->hasFocus())
@@ -1083,6 +1090,9 @@ public:
       else
         empty->setText("No characters in this group. Try another filter.");
       empty->setVisible(noCards);
+      resultCount->setText(QString("%1 character%2")
+                               .arg(grid->count())
+                               .arg(grid->count() == 1 ? "" : "s"));
       gridPage->adjustSize();
       if (restoreFocus)
         QTimer::singleShot(0, restoreFocus,
@@ -1733,6 +1743,7 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     auto *search = dialog->findChild<QLineEdit *>("portrait-search");
     auto *filter = dialog->findChild<QComboBox *>("portrait-filter");
     auto *cardScroll = dialog->findChild<QScrollArea *>();
+    auto *resultCount = dialog->findChild<QLabel *>("portrait-results-count");
     const auto *screen = dialog->screen();
     const QSize available = screen ? screen->availableGeometry().size() : QSize(800, 700);
     if (!search || !filter || filter->findData("quincy") < 0 ||
@@ -1741,6 +1752,7 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
         dialog->width() > available.width() - 32 ||
         dialog->height() > available.height() - 32 ||
         !dialog->findChild<QShortcut *>("portrait-search-shortcut") ||
+        !resultCount || accessibleText(resultCount, QAccessible::Name).isEmpty() ||
         !dialog->findChild<QLabel *>("random-pool-summary") ||
         !dialog->findChild<QPushButton *>("random-pool-preview")) {
       failure = "Character picker is missing search or faction filters";
@@ -1793,6 +1805,8 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     }
     if (visible != 1)
       failure = "Character picker search did not narrow the selected faction";
+    if (!resultCount || resultCount->text() != "1 character")
+      failure = "Character picker result count did not track search filters";
     if (!matchingCard || accessibleText(matchingCard, QAccessible::Name) != "Uryu" ||
         !accessibleText(matchingCard, QAccessible::Description).contains("arrow keys"))
       failure = "Character card does not explain its selection action to screen readers";
@@ -1803,6 +1817,8 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     auto *empty = dialog->findChild<QLabel *>("portrait-empty-state");
     if (!empty || !empty->isVisible() || !empty->text().contains("Try another term"))
       failure = "Character picker has no useful empty-search state";
+    if (!resultCount || resultCount->text() != "0 characters")
+      failure = "Character picker result count did not report empty search results";
     if (!dialog->findChild<QPushButton *>("portrait-random"))
       failure = "Character picker is missing the random option";
     search->setText("uryu");

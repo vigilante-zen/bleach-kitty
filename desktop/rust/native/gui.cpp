@@ -2241,6 +2241,55 @@ static void smokeMalformedAppearanceRecovery(Window &window, const QJsonObject &
     throw std::runtime_error(failure.toStdString());
 }
 static int smoke(Window &window, const QString &directory) {
+  constexpr int asyncResponsePayloadSize = 4 * 1024 * 1024;
+  const QByteArray asyncResponse =
+      QByteArray("{\"ok\":true,\"result\":{\"payload\":\"") +
+      QByteArray(asyncResponsePayloadSize, 'x') + QByteArray("\"}}");
+  QJsonParseError asyncResponseError;
+  QJsonDocument::fromJson(asyncResponse, &asyncResponseError);
+  if (asyncResponseError.error != QJsonParseError::NoError)
+    throw std::runtime_error(asyncResponseError.errorString().toStdString());
+  bool asyncResponseParsed = false;
+  bool asyncResponseCompleted = false;
+  bool eventLoopRemainedResponsive = false;
+  int parsedPayloadSize = 0;
+  QTimer::singleShot(0, &window, [&eventLoopRemainedResponsive] {
+    eventLoopRemainedResponsive = true;
+  });
+  window.parseWorkerResponse(
+      asyncResponse,
+      [&asyncResponseParsed, &asyncResponseCompleted, &parsedPayloadSize,
+       asyncResponsePayloadSize](const QJsonObject &reply) {
+        asyncResponseCompleted = true;
+        asyncResponseParsed = reply.value("ok").toBool() &&
+                              reply.value("result")
+                                  .toObject()
+                                  .value("payload")
+                                  .toString()
+                                  .size() == asyncResponsePayloadSize;
+        parsedPayloadSize = reply.value("result")
+                                .toObject()
+                                .value("payload")
+                                .toString()
+                                .size();
+      });
+  if (asyncResponseParsed)
+    throw std::runtime_error("Worker JSON response parsing ran synchronously");
+  QElapsedTimer asyncResponseTimeout;
+  asyncResponseTimeout.start();
+  while (!asyncResponseCompleted && asyncResponseTimeout.elapsed() < 10000) {
+    qApp->processEvents();
+    QThread::msleep(1);
+  }
+  if (!asyncResponseCompleted || !asyncResponseParsed ||
+      !eventLoopRemainedResponsive || parsedPayloadSize != asyncResponsePayloadSize)
+    throw std::runtime_error(
+        QString("Large worker JSON response check failed (completed=%1, parsed=%2, timer=%3, size=%4).")
+            .arg(asyncResponseCompleted)
+            .arg(asyncResponseParsed)
+            .arg(eventLoopRemainedResponsive)
+            .arg(parsedPayloadSize)
+            .toStdString());
   if (fitDialogSize(QSize(620, 500), QSize(640, 480)) != QSize(608, 448) ||
       fitDialogSize(QSize(380, 460), QSize(800, 600)) != QSize(380, 460))
     throw std::runtime_error("Dialog sizing does not respect available display geometry");

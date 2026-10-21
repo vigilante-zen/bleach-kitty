@@ -103,6 +103,31 @@ static QString accessibleText(QWidget *widget, QAccessible::Text field) {
   const auto *interface = QAccessible::queryAccessibleInterface(widget);
   return interface ? interface->text(field) : QString();
 }
+static QStringList recentPortraitIds(const QString &home) {
+  constexpr qint64 maxHistoryBytes = 64 * 1024;
+  const QString path = home + "/.local/state/bleach/art-history.json";
+  const QFileInfo info(path);
+  if (info.isSymLink() || !info.isFile() || info.size() < 0 ||
+      info.size() > maxHistoryBytes)
+    return {};
+  QFile file(path);
+  if (!file.open(QIODevice::ReadOnly))
+    return {};
+  const QByteArray bytes = file.read(maxHistoryBytes + 1);
+  if (file.error() != QFileDevice::NoError || bytes.size() > maxHistoryBytes)
+    return {};
+  QJsonParseError parseError;
+  const QJsonDocument document = QJsonDocument::fromJson(bytes, &parseError);
+  if (parseError.error != QJsonParseError::NoError || !document.isArray())
+    return {};
+  QStringList ids;
+  for (const auto &entry : document.array()) {
+    const auto id = entry.toObject().value("name").toString();
+    if (!id.isEmpty() && !ids.contains(id))
+      ids << id;
+  }
+  return ids;
+}
 static QIcon svgIcon(QByteArray source, const QString &accent = {}) {
   if (!accent.isEmpty())
     source.replace("#d72f43", accent.toUtf8());
@@ -1104,15 +1129,7 @@ public:
     filters->addItem("Recently used", "recent");
     filters->addItem("Favorites", "favorites");
     const auto favorites = rosterCommand({"list"});
-    QStringList recentlyUsed;
-    QFile recentFile(home + "/.local/state/bleach/art-history.json");
-    if (recentFile.open(QIODevice::ReadOnly)) {
-      const auto history = QJsonDocument::fromJson(recentFile.readAll()).array();
-      for (const auto &entry : history) {
-        const auto id = entry.toObject().value("name").toString();
-        if (!id.isEmpty() && !recentlyUsed.contains(id)) recentlyUsed << id;
-      }
-    }
+    const QStringList recentlyUsed = recentPortraitIds(home);
     QMap<QString, QString> displayNames;
     for (const auto &record : rosterCommand({"catalog"})) {
       const auto fields = record.split('\t');
@@ -2245,6 +2262,18 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     poolPreview->click();
     if (!poolPreviewFailure.isEmpty()) failure = poolPreviewFailure;
     dialog->grab().save(directory + "/rust-character-picker.png");
+    filter->setCurrentIndex(filter->findData("recent"));
+    qApp->processEvents();
+    auto *recentEmpty = dialog->findChild<QLabel *>("portrait-empty-state");
+    const auto recentCards = dialog->findChildren<QPushButton *>("portrait-card");
+    const bool recentCardVisible = std::any_of(
+        recentCards.cbegin(), recentCards.cend(),
+        [](const auto *card) { return card->isVisible(); });
+    if (recentCardVisible || !recentEmpty || !recentEmpty->isVisible() ||
+        !recentEmpty->text().contains("No recent characters yet"))
+      failure = "Oversized terminal history was not ignored safely";
+    filter->setCurrentIndex(filter->findData("all"));
+    qApp->processEvents();
     filter->setCurrentIndex(filter->findData("quincy"));
     qApp->processEvents();
     search->setText("uryu");
@@ -3301,6 +3330,19 @@ static bool prepareSmokeHome(const QString &source, const QString &destination) 
     if (QFileInfo(from).exists() && !copySmokeFile(from, destination + path))
       return false;
   }
+  const QString recentHistory =
+      destination + "/.local/state/bleach/art-history.json";
+  if (!QDir().mkpath(QFileInfo(recentHistory).absolutePath()))
+    return false;
+  QByteArray oversizedHistory = "[";
+  while (oversizedHistory.size() <= 64 * 1024)
+    oversizedHistory += "{\"name\":\"uryu\"},";
+  oversizedHistory.chop(1);
+  oversizedHistory += "]";
+  QFile recentFile(recentHistory);
+  if (!recentFile.open(QIODevice::WriteOnly | QIODevice::Truncate) ||
+      recentFile.write(oversizedHistory) != oversizedHistory.size())
+    return false;
   const QString customPresets = destination + "/.local/share/bleach-desktop/custom-presets.json";
   if (!QDir().mkpath(QFileInfo(customPresets).absolutePath()))
     return false;

@@ -46,12 +46,13 @@ pub fn repair(app: &App) -> Result<Value> {
     let path=app.data.join("appearance.json"); fsutil::reject_links(&path,&app.home)?;
     let _lock=fsutil::Lock::acquire(&app.state)?;
     if load(app).is_ok() { return Err("Appearance settings are readable again. Reopen Appearance options.".into()); }
+    let replacement=defaults(app)?;
     let backup=if path.exists() {
         let backup=path.with_file_name(format!("appearance.json.corrupt-{:x}",fsutil::nonce()));
         fs::rename(&path,&backup).text()?;
         Some(backup)
     } else { None };
-    if let Err(error)=fsutil::atomic_write(&path,format!("{}\n",defaults(app)?.dump()).as_bytes(),None) {
+    if let Err(error)=fsutil::atomic_write(&path,format!("{}\n",replacement.dump()).as_bytes(),None) {
         if let Some(ref backup)=backup && let Err(restore_error)=fs::rename(backup,&path) {
             return Err(format!("{error}; could not restore the unreadable settings file: {restore_error}"));
         }

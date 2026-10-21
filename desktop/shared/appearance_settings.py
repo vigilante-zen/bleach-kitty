@@ -79,12 +79,13 @@ def repair(home):
         try: load(home)
         except (OSError, ValueError, TypeError): pass
         else: raise ValueError('Appearance settings are readable again. Reopen Appearance options.')
+        replacement = defaults()
         backup = None
         if path.exists():
             backup = path.with_name(path.name + '.corrupt-' + uuid.uuid4().hex)
             os.replace(path, backup)
         try:
-            write_preferences(path, defaults())
+            write_preferences(path, replacement)
         except OSError as error:
             if backup is not None:
                 try: os.replace(backup, path)

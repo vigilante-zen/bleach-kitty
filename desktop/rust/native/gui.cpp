@@ -221,10 +221,22 @@ protected:
     painter.fillRect(rect(), gradient);
     const QFont baseFont = qApp->font();
     if (!previewMessage.isEmpty()) {
-      painter.setPen(QColor("#bcc9da"));
-      painter.setFont(baseFont);
-      painter.drawText(QRect(24, height() / 2, width() - 48, 36),
-                       Qt::AlignLeft | Qt::AlignVCenter, previewMessage);
+      QFont statusFont = baseFont;
+      statusFont.setPointSizeF(baseFont.pointSizeF() * 0.75);
+      const QFontMetrics metrics(statusFont);
+      const int availableWidth = qMax(0, width() - 48);
+      const int pillWidth = qMin(availableWidth,
+                                 metrics.horizontalAdvance(previewMessage) + 20);
+      const QRect pill(24, 12, pillWidth, metrics.height() + 10);
+      painter.setPen(Qt::NoPen);
+      painter.setBrush(QColor(9, 12, 18, 220));
+      painter.drawRoundedRect(pill, 6, 6);
+      painter.setFont(statusFont);
+      painter.setPen(QColor("#d2dbea"));
+      painter.drawText(pill.adjusted(10, 0, -10, 0),
+                       Qt::AlignLeft | Qt::AlignVCenter,
+                       metrics.elidedText(previewMessage, Qt::ElideRight,
+                                          qMax(0, pill.width() - 20)));
     }
     const qreal fontScale = qMax(0.8, baseFont.pointSizeF() / 10.0);
     QFont eyebrowFont = baseFont;

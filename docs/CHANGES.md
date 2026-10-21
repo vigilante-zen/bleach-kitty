@@ -8,6 +8,7 @@
 - Bound the Rust terminal picker's recent-art history read to 64 KiB and ignore symlinked, malformed, or oversized history files.
 - Load terminal-picker groups, favorites, portrait names, and shuffle state through one roster-helper call instead of up to eleven synchronous process launches.
 - Bound roster favorites and shuffle-deck reads, and reject symlinked, non-regular, malformed, or oversized saved state.
+- Move wallpaper preview loading and failure text into a compact top badge so it never covers the character title or subtitle.
 - Update the desktop comparison benchmark to run both source editions, verify matching preset catalogs, record host/runtime versions, and let reports be written outside the repository.
 - Parse worker RPC JSON responses on a background thread so large snapshot scans and task replies do not block the Rust UI event loop.
 - Batch Qt snapshot-filter updates during refresh so large saved-snapshot lists do not trigger a filter pass and repaint for every row.

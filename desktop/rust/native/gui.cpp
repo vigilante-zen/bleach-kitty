@@ -1554,6 +1554,8 @@ public:
                 showSnapshotPreview(result);
               if (good && request.value("op").toString() == "plan")
                 showCleanupPlan(result);
+              if (good && request.value("op").toString() == "reset-appearance")
+                selectPreset("tybw");
               if (tray && tray->isVisible() && !isVisible())
                 tray->showMessage("Bankai Rust", notice->text(),
                                   good ? QSystemTrayIcon::Information
@@ -1694,14 +1696,9 @@ public:
       connect(confirm, &QMessageBox::finished, &dialog, [this, &dialog](int result) {
         if (result != QMessageBox::Yes)
           return;
-        try {
-          rpc({{"op", "reset-appearance"}});
-          selectPreset("tybw");
-          notice->setText("Appearance settings and desktop reset to Bankai defaults.");
-          dialog.accept();
-        } catch (const std::exception &e) {
-          QMessageBox::information(&dialog, "Reset appearance", QString::fromUtf8(e.what()));
-        }
+        dialog.accept();
+        startTask({{"op", "reset-appearance"}},
+                  "Resetting appearance and desktop to Bankai defaults…");
       });
       confirm->open();
     });
@@ -2612,6 +2609,56 @@ static int smoke(Window &window, const QString &directory) {
   if (rpc({{"op", "appearance"}}) != appearanceBefore ||
       rpc({{"op", "status"}}).toObject().value("current") != initial)
     throw std::runtime_error("Offscreen UI smoke testing changed saved appearance state");
+  const QString smokeWallpaperDirectory =
+      window.home + "/Pictures/Bleach-TYBW/Wallpapers";
+  const QString artworkSource = QFileInfo(smokeWallpaperDirectory).symLinkTarget();
+  if (artworkSource.isEmpty() || !QFile::remove(smokeWallpaperDirectory) ||
+      !QDir().mkpath(smokeWallpaperDirectory) ||
+      !QFile::copy(artworkSource + "/bleach-tybw.png",
+                   smokeWallpaperDirectory + "/bleach-tybw.png"))
+    throw std::runtime_error("Could not prepare a safe TYBW wallpaper for reset smoke test");
+  QString resetWorkerFailure;
+  QTimer::singleShot(100, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
+    auto *reset = dialog ? dialog->findChild<QPushButton *>("reset-appearance")
+                         : nullptr;
+    if (!reset) {
+      resetWorkerFailure = "Could not open appearance reset for worker smoke test";
+      if (dialog)
+        dialog->reject();
+      return;
+    }
+    reset->click();
+    QTimer::singleShot(50, &window, [&] {
+      auto *confirm = window.findChild<QMessageBox *>("reset-confirmation");
+      if (confirm && confirm->button(QMessageBox::Yes))
+        confirm->button(QMessageBox::Yes)->click();
+      else
+        resetWorkerFailure = "Reset worker confirmation could not be accepted";
+    });
+  });
+  window.appearanceOptions();
+  if (!resetWorkerFailure.isEmpty())
+    throw std::runtime_error(resetWorkerFailure.toStdString());
+  QElapsedTimer resetWorkerTimeout;
+  resetWorkerTimeout.start();
+  while (window.process && resetWorkerTimeout.elapsed() < 10000) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (window.process)
+    throw std::runtime_error("Confirmed appearance reset worker did not finish");
+  QDir(smokeWallpaperDirectory).removeRecursively();
+  if (!QFile::link(artworkSource, smokeWallpaperDirectory))
+    throw std::runtime_error("Could not restore the isolated wallpaper link after reset smoke test");
+  if (window.selected != "tybw" ||
+      !window.notice->text().contains("Appearance settings and desktop reset"))
+    throw std::runtime_error(
+        QString("Confirmed appearance reset did not complete through the background worker (running=%1, selected=%2, notice=%3)")
+            .arg(window.process != nullptr)
+            .arg(window.selected)
+            .arg(window.notice->text())
+            .toStdString());
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset, character and snapshot lists, "
@@ -2640,7 +2687,23 @@ static bool prepareSmokeHome(const QString &source, const QString &destination) 
   if (!copySmokeFile(source + "/.local/bin/bankai-roster",
                      destination + "/.local/bin/bankai-roster") ||
       !copySmokeFile(source + "/.config/fastfetch/portraits/uryu.png",
-                     destination + "/.config/fastfetch/portraits/uryu.png"))
+                     destination + "/.config/fastfetch/portraits/uryu.png") ||
+      !copySmokeFile(source + "/.local/share/color-schemes/BleachTYBW.colors",
+                     destination + "/.local/share/color-schemes/BleachTYBW.colors"))
+    return false;
+  const QString kittyConfig = destination + "/.config/kitty/kitty.conf";
+  if (!QDir().mkpath(QFileInfo(kittyConfig).absolutePath()))
+    return false;
+  QFile kitty(kittyConfig);
+  if (!kitty.open(QIODevice::WriteOnly) || kitty.write("# Smoke test\n") < 0)
+    return false;
+  const QString desktopConfig =
+      destination + "/.config/plasma-org.kde.plasma.desktop-appletsrc";
+  if (!QDir().mkpath(QFileInfo(desktopConfig).absolutePath()))
+    return false;
+  QFile applets(desktopConfig);
+  if (!applets.open(QIODevice::WriteOnly) ||
+      applets.write("[Containments][1]\nplugin=org.kde.plasma.folder\n") < 0)
     return false;
   QImage testPortrait(24, 24, QImage::Format_ARGB32);
   testPortrait.fill(QColor("#38bdf8"));

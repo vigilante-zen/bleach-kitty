@@ -55,8 +55,17 @@ class AppearanceChecks(unittest.TestCase):
             self.assertEqual(appearance.load(home),appearance.defaults())
             backup=Path(result['backup'])
             self.assertEqual(backup.read_text(),'not valid json\n')
+            current=dict(appearance.defaults(),edition='manga',accent='#123456',login='rukia')
+            appearance.save(home,current)
             with self.assertRaisesRegex(ValueError,'readable again'):
                 appearance.repair(home)
+            self.assertEqual(appearance.load(home),current)
+            path.unlink(); external=home/'external-appearance.json'; external.write_text('keep me')
+            path.symlink_to(external)
+            with self.assertRaisesRegex(ValueError,'Linked appearance preferences'):
+                appearance.repair(home)
+            self.assertEqual(external.read_text(),'keep me')
+            self.assertTrue(path.is_symlink())
 
     def test_custom_presets_round_trip_and_delete(self):
         with tempfile.TemporaryDirectory() as folder:

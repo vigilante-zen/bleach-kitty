@@ -1258,44 +1258,50 @@ public:
       if (QDir(path).exists() && !watcher.directories().contains(path))
         watcher.addPath(path);
   }
+  void snapshotScanFailed(const QString &message) {
+    snapshotScanSucceeded = false;
+    storage->setText(message);
+    cleanupButton->setEnabled(false);
+    snapshotChanged();
+  }
   void refreshSnapshots() {
     watchBackupDirectories();
     auto previous = snapshots->currentData().toString();
+    QJsonArray values;
+    try {
+      values = rpc({{"op", "snapshots"}}).toArray();
+    } catch (const std::exception &e) {
+      snapshotScanFailed(QString::fromUtf8(e.what()));
+      return;
+    }
     QSignalBlocker blocker(snapshots);
     snapshotModel->clear();
     rows.clear();
-    try {
-      auto values = rpc({{"op", "snapshots"}}).toArray();
-      snapshotScanSucceeded = true;
-      double total = 0;
-      int protectedCount = 0;
-      for (auto value : values) {
-        auto row = value.toObject();
-        auto name = row.value("name").toString();
-        rows[name] = row;
-        total += row.value("bytes").toDouble();
-        protectedCount += row.value("protected").toBool();
-        auto title = name + " · " +
-                     (row.value("eligible").toBool()
-                          ? sizeText(row.value("bytes").toDouble())
-                          : "needs review");
-        if (row.value("protected").toBool())
-          title +=
-              row.value("baseline").toBool() ? " · Baseline" : " · ★ Protected";
-        auto *item = new QStandardItem(title);
-        item->setData(name, Qt::UserRole);
-        snapshotModel->appendRow(item);
-      }
-      storage->setText(QString("%1 snapshots · %2 stored · %3 protected")
-                           .arg(values.size())
-                           .arg(sizeText(total))
-                           .arg(protectedCount));
-      cleanupButton->setEnabled(!process);
-    } catch (const std::exception &e) {
-      snapshotScanSucceeded = false;
-      storage->setText(QString::fromUtf8(e.what()));
-      cleanupButton->setEnabled(false);
+    snapshotScanSucceeded = true;
+    double total = 0;
+    int protectedCount = 0;
+    for (auto value : values) {
+      auto row = value.toObject();
+      auto name = row.value("name").toString();
+      rows[name] = row;
+      total += row.value("bytes").toDouble();
+      protectedCount += row.value("protected").toBool();
+      auto title = name + " · " +
+                   (row.value("eligible").toBool()
+                        ? sizeText(row.value("bytes").toDouble())
+                        : "needs review");
+      if (row.value("protected").toBool())
+        title +=
+            row.value("baseline").toBool() ? " · Baseline" : " · ★ Protected";
+      auto *item = new QStandardItem(title);
+      item->setData(name, Qt::UserRole);
+      snapshotModel->appendRow(item);
     }
+    storage->setText(QString("%1 snapshots · %2 stored · %3 protected")
+                         .arg(values.size())
+                         .arg(sizeText(total))
+                         .arg(protectedCount));
+    cleanupButton->setEnabled(!process);
     int index = snapshots->findData(previous);
     if (index >= 0)
       snapshots->setCurrentIndex(index);
@@ -1305,7 +1311,7 @@ public:
   }
   void snapshotChanged() {
     auto row = rows.value(snapshots->currentData().toString());
-    bool available = !row.isEmpty() && !process;
+    bool available = snapshotScanSucceeded && !row.isEmpty() && !process;
     verifyButton->setEnabled(available);
     inspectButton->setEnabled(available);
     restoreButton->setEnabled(available);
@@ -1313,15 +1319,19 @@ public:
     protectButton->setText(row.value("protected").toBool()
                                ? "Remove protection"
                                : "Protect snapshot");
-    snapshotDetails->setText(
-        row.isEmpty()
-            ? (snapshotModel->rowCount() > 0
-                   ? "No matching snapshots. Clear the search to show all saved copies."
-                   : (snapshotScanSucceeded
-                          ? "No snapshots yet. Create one to save your setup."
-                          : "Could not load saved snapshots. Use Refresh to try again."))
-            : QString("%1 saved files · Integrity is checked before restore.")
-                  .arg(row.value("files").toInt()));
+    if (!snapshotScanSucceeded)
+      snapshotDetails->setText(
+          "Snapshot refresh failed. The displayed list may be out of date; "
+          "use Refresh to try again. Actions are disabled until a scan succeeds.");
+    else if (row.isEmpty())
+      snapshotDetails->setText(
+          snapshotModel->rowCount() > 0
+              ? "No matching snapshots. Clear the search to show all saved copies."
+              : "No snapshots yet. Create one to save your setup.");
+    else
+      snapshotDetails->setText(
+          QString("%1 saved files · Integrity is checked before restore.")
+              .arg(row.value("files").toInt()));
   }
   void restoreSelected() {
     auto name = snapshots->currentData().toString();
@@ -2106,16 +2116,28 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
   if (window.snapshots->count() != 0)
     throw std::runtime_error("Smoke home unexpectedly contains saved snapshots");
-  window.snapshotScanSucceeded = false;
-  window.storage->setText("Snapshot scan failed");
-  window.snapshotChanged();
-  if (!window.snapshotDetails->text().contains("Could not load saved snapshots") ||
-      !window.snapshotDetails->text().contains("Refresh"))
-    throw std::runtime_error("Snapshot scan failure is presented as an empty backup list");
+  window.snapshotSearch->clear();
+  const QString staleSnapshot = "smoke-stale-snapshot";
+  auto *staleSnapshotItem = new QStandardItem(staleSnapshot + " · 1 KiB");
+  staleSnapshotItem->setData(staleSnapshot, Qt::UserRole);
+  window.snapshotModel->appendRow(staleSnapshotItem);
+  window.rows.insert(staleSnapshot,
+                     QJsonObject{{"name", staleSnapshot}, {"files", 2},
+                                 {"eligible", true}, {"protected", false},
+                                 {"baseline", false}});
+  window.snapshots->setCurrentIndex(window.snapshots->findData(staleSnapshot));
+  window.snapshotScanFailed("Snapshot scan failed");
+  if (window.snapshots->count() != 1 ||
+      window.snapshots->currentData().toString() != staleSnapshot ||
+      !window.snapshotDetails->text().contains("may be out of date") ||
+      window.verifyButton->isEnabled() || window.restoreButton->isEnabled() ||
+      window.protectButton->isEnabled() || window.cleanupButton->isEnabled())
+    throw std::runtime_error(
+        "Snapshot scan failure did not preserve the stale selection safely");
   window.refreshSnapshots();
-  if (!window.snapshotScanSucceeded ||
+  if (!window.snapshotScanSucceeded || window.snapshots->count() != 0 ||
       !window.snapshotDetails->text().contains("No snapshots yet"))
-    throw std::runtime_error("Refreshing an empty snapshot list did not recover its empty state");
+    throw std::runtime_error("Successful empty snapshot refresh did not replace stale results");
   if (!window.watcher.files().contains(window.data + "/custom-presets.json"))
     throw std::runtime_error("Corrupt custom-preset file is not watched for recovery");
   QSaveFile repairedPresets(window.data + "/custom-presets.json");

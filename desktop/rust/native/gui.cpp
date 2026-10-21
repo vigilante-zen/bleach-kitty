@@ -1710,6 +1710,12 @@ static void smokeMalformedAppearanceRecovery(Window &window, const QJsonObject &
     throw std::runtime_error(failure.toStdString());
 }
 static int smoke(Window &window, const QString &directory) {
+  const auto style = window.bootstrap.value("style").toString();
+  for (const auto &selector : {"QPushButton:focus", "QToolButton:focus",
+                               "QComboBox:focus", "QLineEdit:focus",
+                               "QListWidget:focus", "QCheckBox:focus"})
+    if (!style.contains(selector))
+      throw std::runtime_error("Keyboard focus styling is missing for a control type");
   if (minimumWindowSize(QSize(800, 600)) != QSize(768, 568) ||
       minimumWindowSize(QSize(1920, 1080)) != QSize(850, 590))
     throw std::runtime_error("Window minimum size does not adapt to display geometry");

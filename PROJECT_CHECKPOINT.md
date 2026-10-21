@@ -21,6 +21,8 @@ Small-screen layout now derives the main window minimum from available display g
 
 Appearance-options shuffle controls now describe the character filter, list, live selected count and select/clear shown actions to screen readers. Backup selection, details, storage status, protection, restore review and cleanup preview also have explicit accessible context. The native smoke test checks these properties. The 40 Rust tests, Clippy, optimized build and offscreen smoke test pass.
 
+Keyboard focus now has a high-contrast pink border on buttons, character cards, combo boxes, search fields, spin boxes, lists, checkboxes and activity text. The smoke test checks that these control families have focus styling, and its keyboard-search test confirms focus reaches the search field. The 40 Rust tests, Clippy, optimized build and offscreen smoke test pass.
+
 Single-instance startup in Python and Rust now rejects symlinked state-directory ancestors and existing control lock/socket symlinks before creating or using IPC paths. Rust bootstrap validates the state path before the Qt launcher creates it. The offscreen Python UI suite passes 21 checks (one socket test skipped because sockets are blocked), and all 40 Rust tests, Clippy, and the optimized build pass.
 
 ## Latest completed work

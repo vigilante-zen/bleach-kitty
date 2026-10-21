@@ -14,11 +14,11 @@ PYTHON_CASE = r'''
 import time
 started = time.perf_counter()
 import json
+import os
 from pathlib import Path
 import sys
 from PySide6.QtWidgets import QApplication
-root = Path.home()/'.local/share/bleach-desktop'
-sys.path.insert(0, str(root))
+sys.path.insert(0, os.environ['BANKAI_PYTHON_SOURCE'])
 import control_center as center
 app = QApplication([])
 app.setStyle('Fusion')
@@ -40,10 +40,13 @@ window.close()
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--runs', type=int, default=7)
+    parser.add_argument('--output', type=Path, default=PROJECT / 'artifacts/benchmark.json',
+                        help='write raw measurements here (default: desktop/rust/artifacts/benchmark.json)')
     args = parser.parse_args()
     if args.runs < 1:
         parser.error('Choose at least one run')
-    environment = dict(os.environ, QT_QPA_PLATFORM='offscreen')
+    environment = dict(os.environ, QT_QPA_PLATFORM='offscreen',
+                       BANKAI_PYTHON_SOURCE=str(PROJECT.parent / 'python'))
     cases = {'rust': [str(PROJECT / 'target/release/bankai-rust'), '--benchmark'],
              'python': [sys.executable, '-c', PYTHON_CASE]}
     measurements = {'rust': [], 'python': []}
@@ -56,17 +59,25 @@ def main():
                                     check=True, timeout=30)
             value = json.loads(result.stdout)
             value['process_wall_ms'] = (time.perf_counter()-start)*1000
+            value['preset_count'] = int(value['preset_count'])
             if iteration:
                 measurements[edition].append(value)
     summary = {}
+    rust_presets = {value['preset_count'] for value in measurements['rust']}
+    python_presets = {value['preset_count'] for value in measurements['python']}
+    if len(rust_presets) != 1 or rust_presets != python_presets:
+        raise RuntimeError(
+            f'Cannot compare editions with different preset catalogs: Rust={rust_presets}, Python={python_presets}')
     for edition, values in measurements.items():
         summary[edition] = {key: round(statistics.median(v[key] for v in values), 2)
                             for key in ['startup_ms', 'process_wall_ms', 'VmRSS_kib', 'VmHWM_kib']}
-    report = {'runs_per_edition': args.runs, 'summary': summary, 'runs': measurements,
-              'method': 'Offscreen Qt Fusion; all eight thumbnails, initial wallpaper, backup metadata and a rendered window. Warm-up pair discarded; interleaved process launches.',
+    preset_count = next(iter(rust_presets))
+    report = {'runs_per_edition': args.runs, 'preset_count': preset_count,
+              'summary': summary, 'runs': measurements,
+              'method': f'Offscreen Qt Fusion; both source editions load all {preset_count} presets and the initial wallpaper, show the window and process its first paint. The Python case imports desktop/python from this checkout. Warm-up pair discarded; interleaved process launches.',
               'limits': 'Native code also downsizes thumbnails earlier. Gains reflect implementation and language/runtime changes. This does not measure live Wayland startup, idle CPU, actual tray hosting, or proportional physical memory.'}
-    output = PROJECT / 'artifacts/benchmark.json'
-    output.parent.mkdir(exist_ok=True)
+    output = args.output.expanduser().resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(report['summary'], indent=2))
     print('Full results:', output)

@@ -53,21 +53,22 @@ The Rust executable and its startup preference are not part of the legacy deskto
 
 ## Measured comparison
 
-Seven interleaved runs per edition, after one discarded warm-up pair, using Qt Fusion with the offscreen platform. Both construct all pages, load eight thumbnails and the initial wallpaper, inspect the same real snapshot directory, show the initial window, and process its first paint.
+Seven interleaved runs per edition, after one discarded warm-up pair, using Qt Fusion with the offscreen platform. Both source editions construct all pages, load the current 18-preset catalog and initial wallpaper, show the window, and process its first paint. The harness checks catalog counts match before reporting results.
 
 | Median measurement | Rust + Qt | Python + PySide6 |
 | --- | ---: | ---: |
-| Reported startup to ready window | 281 ms | 551 ms |
-| Parent-measured process wall time | 301 ms | 579 ms |
-| Resident memory at ready window | 57.7 MiB | 135.9 MiB |
-| Peak resident memory by that point | 57.7 MiB | 135.9 MiB |
+| Reported startup to ready window | 494 ms | 1,663 ms |
+| Parent-measured process wall time | 512 ms | 1,694 ms |
+| Resident memory at ready window | 66.5 MiB | 105.3 MiB |
+| Peak resident memory by that point | 66.5 MiB | 106.5 MiB |
 
-The native executable is about 884 KiB and dynamically links the installed Qt libraries. Its smaller footprint also comes from decoding/downscaling thumbnail previews earlier. These results measure the whole rewrite, not Rust versus Python in isolation. RSS includes shared library mappings; it is not proportional physical memory. Live Wayland startup, tray hosting, and steady-state idle CPU were not measured.
+The current release executable is about 1.24 MiB and dynamically links the installed Qt libraries. Its smaller footprint also comes from decoding/downscaling thumbnail previews earlier. These results measure the whole rewrite, not Rust versus Python in isolation. RSS includes shared library mappings; it is not proportional physical memory. Live Wayland startup, tray hosting, and steady-state idle CPU were not measured.
 
-Raw runs and method details are in `artifacts/benchmark.json`. Reproduce with:
+The benchmark imports the Python source from this checkout rather than an installed copy. Raw runs default to `desktop/rust/artifacts/benchmark.json`; choose another output path to preserve an existing report or keep results outside the repository. Reproduce with:
 
 ```sh
 python3 scripts/benchmark.py --runs 7
+python3 scripts/benchmark.py --runs 7 --output /tmp/bankai-benchmark.json
 ```
 
 ## Build
@@ -114,7 +115,7 @@ QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 
 Disable the Rust login-startup checkbox if enabled and quit Bankai Rust. Remove `~/.local/bin/bankai-rust`, `~/.local/share/applications/bleach-bankai-rust.desktop`, `~/.config/fish/completions/bankai-rust.fish`, `~/.local/share/icons/hicolor/scalable/apps/bleach-bankai-rust.svg`, and `~/.local/share/bankai-rust`. The project can be retained for future builds. The existing Python command, artwork and shared desktop settings remain available.
 
-The benchmark measurements above are historical results from the original eight-preset build. The expanded eighteen-preset build and appearance options have not been re-benchmarked.
+These measurements are from the current eighteen-preset source. They compare full implementations, not Rust and Python in isolation.
 
 ## Lightweight interface polish
 
@@ -122,4 +123,4 @@ The main preview decodes to at most 1024 × 640 pixels and reuses its scaled ima
 
 Backup scanning starts when Backups & restore is opened, then watches for external snapshot and protection changes while the page is visible, with a 30-second refresh fallback. Status checks retain unsaved portrait choices and skip decoding portrait previews when saved preferences and the desktop character are unchanged.
 
-A local three-run offscreen check on the twelve-character build measured median Rust startup at 353 ms versus 420 ms before this pass, with resident memory around 66 MiB versus 67 MiB. These are development-machine measurements, not live Wayland or steady-state CPU measurements. Startup now defers backup scanning, so it performs less work before showing the window than the historical benchmark above.
+These are development-machine measurements, not live Wayland or steady-state CPU measurements. Backup scanning is lazy and is not part of this startup measurement.

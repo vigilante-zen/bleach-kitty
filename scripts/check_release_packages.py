@@ -1,12 +1,50 @@
 #!/usr/bin/env python3
-"""Verify checksums, edition separation and extracted installers in release packages."""
+"""Verify checksums, edition separation, extracted installers and snapshot restore."""
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import tarfile
 import tempfile
+
+
+def check_snapshot_restore(root, edition, temporary):
+    python_command = [str(root / 'desktop/python/bin/bankai-desktop-backup')]
+    binary = root / 'desktop/rust/bin/bankai-rust'
+    if edition == 'python':
+        command = python_command
+    elif binary.is_file():
+        command = [str(binary)]
+    else:
+        return
+
+    home = temporary / (edition + '-restore-home')
+    kitty = home / '.config/kitty/kitty.conf'
+    kitty.parent.mkdir(parents=True)
+    kitty.write_text('font_size 12\n')
+    env = dict(os.environ, HOME=str(home))
+    if edition == 'rust':
+        env['BANKAI_HOME'] = str(home)
+    create = command if edition == 'python' else command + ['backup']
+    subprocess.run(create, cwd=root, env=env, check=True, capture_output=True, text=True)
+    snapshot_root = home / 'Backups/Bleach-Desktop'
+    snapshots = sorted(path for path in snapshot_root.iterdir() if path.is_dir() and (path / 'manifest.json').is_file())
+    if len(snapshots) != 1:
+        raise ValueError(f'{edition} packaged backup did not create exactly one snapshot')
+
+    name = snapshots[0].name
+    kitty.write_text('font_size 24\n')
+    absent = home / '.config/fish/config.fish'
+    absent.parent.mkdir(parents=True)
+    absent.write_text('# added after snapshot\n')
+    restore = command + ['restore', name]
+    subprocess.run(restore, cwd=root, env=env, check=True, capture_output=True, text=True)
+    if kitty.read_text() != 'font_size 12\n' or absent.exists():
+        raise ValueError(f'{edition} packaged snapshot restore did not restore files and absences')
+    if len([path for path in snapshot_root.iterdir() if path.is_dir() and (path / 'manifest.json').is_file()]) != 2:
+        raise ValueError(f'{edition} packaged restore did not preserve a pre-restore snapshot')
 
 
 def check(archive):
@@ -37,6 +75,7 @@ def check(archive):
                         '--dry-run', '--home', str(home)], cwd=root, check=True)
         if home.exists():
             raise ValueError('Dry run wrote to the staging home')
+        check_snapshot_restore(root, edition, Path(temp))
         login = root / 'login/install.py'
         required = ['login/README.md', 'login/ARTWORK.json', 'login/sync.py', 'login/greeter_preview.py', 'login/legacy-theme.json', 'login/theme/Main.qml', 'login/theme/metadata.desktop',
                     'login/theme/theme.conf', 'login/theme/assets/ichigo.png']

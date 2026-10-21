@@ -19,7 +19,7 @@ Both editions read the same saved preset, character artwork, KDE settings, Kitty
 
 ## Terminal artwork controls
 
-Under **Terminal & tools**, choose **Random characters** or an installed portrait, then **Color**, **Manga**, or **Mixed color and manga**, and click **Save terminal artwork**. Changes apply to new terminal tabs. Random rotation uses the groups and favorites configured in the terminal. Color artwork is used when manga is unavailable. Existing shell-only overrides continue to take precedence in that shell; use `bankai-pick --session reset` to follow saved preferences.
+Under **Terminal & tools**, open **Choose terminal character…** to browse a searchable thumbnail grid. Filter by faction, forms, new arrivals or favorites, or choose **Random · shuffle current pool** at the top. Then select **Color**, **Manga**, or **Mixed color and manga**, and click **Save terminal artwork**. Changes apply to new terminal tabs. Random rotation uses the groups and favorites configured in the terminal. Color artwork is used when manga is unavailable. Existing shell-only overrides continue to take precedence in that shell; use `bankai-pick --session reset` to follow saved preferences.
 
 Enable **Match desktop character** and save to follow the currently saved desktop preset and future preset changes. Disable it and save a portrait or random rotation to keep terminal artwork independent. Art style remains independent in both modes. The TYBW desktop preset uses random rotation.
 

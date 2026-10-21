@@ -99,14 +99,16 @@ def draw_deck(path, pool):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['next', 'list', 'status', 'add', 'remove', 'set', 'use', 'all', 'group', 'groups', 'shuffle', 'catalog', 'clear', 'toggle'])
+    parser.add_argument('action', choices=['next', 'list', 'status', 'add', 'remove', 'set', 'use', 'all', 'group', 'groups', 'members', 'shuffle', 'catalog', 'clear', 'toggle'])
     parser.add_argument('names', nargs='*')
     args = parser.parse_args()
-    if args.names and args.action not in ['add', 'remove', 'set', 'group', 'shuffle', 'toggle']:
+    if args.names and args.action not in ['add', 'remove', 'set', 'group', 'members', 'shuffle', 'toggle']:
         parser.error('This action does not accept portrait names.')
     if args.action == 'group' and (len(args.names) > 1 or
             (args.names and args.names[0] not in ['all', *GROUPS])):
         parser.error('Choose a group: all, ' + ', '.join(GROUPS))
+    if args.action == 'members' and (len(args.names) != 1 or args.names[0] not in GROUPS):
+        parser.error('Choose a group: ' + ', '.join(GROUPS))
     if args.action == 'shuffle' and (len(args.names) > 1 or
             (args.names and args.names[0] not in ['portrait', 'character'])):
         parser.error('Choose a shuffle style: portrait or character.')
@@ -120,6 +122,9 @@ def main():
         records = [(name, DISPLAY_NAMES.get(name, name.replace('-', ' ').title())) for name in available]
         for name, label in sorted(records, key=lambda item: item[1].casefold()):
             print(name + '\t' + label)
+        return
+    if args.action == 'members':
+        print('\n'.join(name for name in available if name in GROUPS[args.names[0]]))
         return
     state = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'bleach'
     state.mkdir(parents=True, exist_ok=True)

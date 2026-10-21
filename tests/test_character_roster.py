@@ -49,6 +49,12 @@ class CharacterRosterChecks(unittest.TestCase):
         for name in NEW:
             self.assertIn(name + '\t' + self.roster.DISPLAY_NAMES[name], catalog)
 
+    def test_group_members_are_available_for_character_filters(self):
+        members = set(self.command('members', 'soul-reapers').splitlines())
+        self.assertIn('ichigo-tybw', members)
+        self.assertIn('yachiru', members)
+        self.assertNotIn('askin', members)
+
     def test_new_pairs_are_valid_distinct_square_pngs_with_recorded_hashes(self):
         records = json.loads((ROOT / 'docs/prompts/additions-20261020/PROMPTS.json').read_text())
         self.assertEqual({record['id'] for record in records['characters']}, NEW)

@@ -143,6 +143,7 @@ public:
   QComboBox *snapshots, *portraitChoice, *portraitArt;
   QSpinBox *keep;
   QCheckBox *autostart, *matchDesktop;
+  QPushButton *portraitChooser;
   QLabel *portraitPreview, *mangaPreview, *portraitCaption;
   QString savedDesktop;
   QPushButton *verifyButton, *restoreButton, *protectButton, *cleanupButton,
@@ -439,10 +440,13 @@ public:
     layout->addWidget(label(
         "Your existing portraits, favorites, greetings and monitor.", "muted"));
     layout->addWidget(label("TERMINAL ARTWORK", "eyebrow"));
-    portraitChoice = new QComboBox;
-    portraitChoice->setAccessibleName("Terminal character");
-    portraitChoice->addItem("Random characters", "random");
-    layout->addWidget(portraitChoice);
+    portraitChoice = new QComboBox(page);
+    portraitChoice->setAccessibleName("Terminal character selection");
+    portraitChoice->addItem("Random · shuffle current pool", "random");
+    portraitChoice->hide();
+    portraitChooser = button("Choose terminal character…", [this] { choosePortrait(); });
+    portraitChooser->setAccessibleName("Choose terminal character");
+    layout->addWidget(portraitChooser);
     matchDesktop = new QCheckBox("Match desktop character");
     layout->addWidget(matchDesktop);
     portraitArt = new QComboBox;
@@ -463,7 +467,6 @@ public:
     layout->addLayout(previewRow);
     portraitCaption = label("", "muted");
     layout->addWidget(portraitCaption);
-    connect(portraitChoice, &QComboBox::currentIndexChanged, this, [this] { updatePortraitPreview(); });
     connect(portraitArt, &QComboBox::currentIndexChanged, this, [this] { updatePortraitPreview(); });
     connect(matchDesktop, &QCheckBox::toggled, this, [this] { updatePortraitPreview(); });
     layout->addWidget(button("Save terminal artwork", [this] {
@@ -509,14 +512,150 @@ public:
     scroll->setWidget(page);
     return scroll;
   }
+  QStringList rosterCommand(const QStringList &arguments) const {
+    QProcess command;
+    command.start(home + "/.local/bin/bankai-roster", arguments);
+    if (!command.waitForStarted(1500) || !command.waitForFinished(3000) ||
+        command.exitStatus() != QProcess::NormalExit || command.exitCode() != 0)
+      return {};
+    QStringList result;
+    for (const auto &line : QString::fromUtf8(command.readAllStandardOutput()).split('\n'))
+      if (!line.trimmed().isEmpty()) result << line.trimmed();
+    return result;
+  }
+  void choosePortrait() {
+    if (matchDesktop->isChecked() || process) return;
+    QDialog dialog(this);
+    dialog.setObjectName("terminal-character-picker");
+    dialog.setWindowTitle("Choose terminal character");
+    dialog.resize(760, 620);
+    auto *layout = new QVBoxLayout(&dialog);
+    auto *search = new QLineEdit;
+    search->setObjectName("portrait-search");
+    search->setPlaceholderText("Search characters and forms…");
+    search->setClearButtonEnabled(true);
+    layout->addWidget(search);
+    auto *filters = new QComboBox;
+    filters->setObjectName("portrait-filter");
+    filters->addItem("All characters", "all");
+    QMap<QString, QStringList> members;
+    const auto groups = rosterCommand({"groups"});
+    const QMap<QString, QString> labels = {
+        {"soul-reapers", "Soul Reapers"}, {"quincy", "Quincy"},
+        {"arrancars", "Arrancars"}, {"human-world", "Human world"},
+        {"ichigo", "Ichigo forms"}, {"tybw-forms", "TYBW forms"},
+        {"new-arrivals", "New arrivals"}};
+    const QStringList groupOrder = {"soul-reapers", "quincy", "arrancars",
+        "human-world", "tybw-forms", "ichigo", "new-arrivals"};
+    for (const auto &group : groupOrder) {
+      if (!groups.contains(group)) continue;
+      filters->addItem(labels.value(group, group), group);
+      members.insert(group, rosterCommand({"members", group}));
+    }
+    filters->addItem("Favorites", "favorites");
+    const auto favorites = rosterCommand({"list"});
+    QMap<QString, QString> displayNames;
+    for (const auto &record : rosterCommand({"catalog"})) {
+      const auto fields = record.split('\t');
+      if (fields.size() == 2) displayNames.insert(fields[0], fields[1]);
+    }
+    layout->addWidget(filters);
+    auto *random = new QPushButton("Random · shuffle current pool");
+    random->setObjectName("primary");
+    connect(random, &QPushButton::clicked, &dialog, [this, &dialog] {
+      portraitChoice->setCurrentIndex(portraitChoice->findData("random"));
+      updatePortraitPreview();
+      dialog.accept();
+    });
+    random->setObjectName("portrait-random");
+    layout->addWidget(random);
+    auto *scroll = new QScrollArea;
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    auto *gridPage = new QWidget;
+    auto *grid = new QGridLayout(gridPage);
+    grid->setContentsMargins(4, 4, 4, 4);
+    grid->setSpacing(10);
+    scroll->setWidget(gridPage);
+    layout->addWidget(scroll, 1);
+    auto *empty = label("No matching characters.", "muted");
+    empty->hide();
+    layout->addWidget(empty);
+    auto *close = new QDialogButtonBox(QDialogButtonBox::Close);
+    connect(close, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(close);
+    auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites, &displayNames, &dialog]() {
+      while (auto *item = grid->takeAt(0)) {
+        if (auto *widget = item->widget()) { widget->hide(); widget->deleteLater(); }
+        delete item;
+      }
+      const auto filter = filters->currentData().toString();
+      const auto query = search->text().trimmed();
+      QStringList ids;
+      for (int index = 1; index < portraitChoice->count(); ++index) {
+        const auto id = portraitChoice->itemData(index).toString();
+        if (filter == "all" || (filter == "favorites" && favorites.contains(id)) ||
+            members.value(filter).contains(id)) ids << id;
+      }
+      std::sort(ids.begin(), ids.end(), [&displayNames](const QString &left, const QString &right) {
+        return displayNames.value(left, left).compare(displayNames.value(right, right), Qt::CaseInsensitive) < 0;
+      });
+      int row = 0, column = 0;
+      for (const auto &id : ids) {
+        auto title = displayNames.value(id, id);
+        if (title == id) {
+          title.replace('-', ' ');
+          if (!title.isEmpty()) title[0] = title[0].toUpper();
+        }
+        if (!query.isEmpty() && !id.contains(query, Qt::CaseInsensitive) &&
+            !title.contains(query, Qt::CaseInsensitive)) continue;
+        auto *card = new QPushButton;
+        card->setObjectName("portrait-card");
+        card->setAccessibleName(title);
+        card->setFixedSize(154, 142);
+        card->setStyleSheet("padding: 4px;");
+        auto *cardLayout = new QVBoxLayout(card);
+        cardLayout->setContentsMargins(3, 3, 3, 3);
+        cardLayout->setSpacing(3);
+        auto *thumbnail = new QLabel;
+        thumbnail->setAlignment(Qt::AlignCenter);
+        thumbnail->setFixedHeight(82);
+        auto *caption = new QLabel(title);
+        caption->setAlignment(Qt::AlignCenter);
+        caption->setWordWrap(true);
+        cardLayout->addWidget(thumbnail);
+        cardLayout->addWidget(caption, 1);
+        const auto color = home + "/.config/fastfetch/portraits/" + id + ".png";
+        const auto manga = home + "/.config/fastfetch/manga/" + id + ".png";
+        const auto image = portraitArt->currentData().toString() == "manga" && QFile::exists(manga) ? manga : color;
+        QPixmap pixmap(image);
+        if (!pixmap.isNull()) thumbnail->setPixmap(pixmap.scaled(126, 82, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        connect(card, &QPushButton::clicked, &dialog, [this, &dialog, id] {
+          portraitChoice->setCurrentIndex(portraitChoice->findData(id));
+          updatePortraitPreview();
+          dialog.accept();
+        });
+        grid->addWidget(card, row, column++);
+        if (column == 4) { column = 0; ++row; }
+      }
+      empty->setVisible(grid->count() == 0);
+      gridPage->adjustSize();
+    };
+    connect(search, &QLineEdit::textChanged, &dialog, rebuild);
+    connect(filters, &QComboBox::currentIndexChanged, &dialog, rebuild);
+    rebuild();
+    dialog.exec();
+  }
   void updatePortraitPreview() {
     portraitChoice->setEnabled(!process && !matchDesktop->isChecked());
+    portraitChooser->setEnabled(!process && !matchDesktop->isChecked());
     auto choice = portraitChoice->currentData().toString();
     if (matchDesktop->isChecked())
       choice = preset(savedDesktop).value("portrait").toString();
     bool sample = choice == "random";
     if (sample)
       choice = portraitChoice->count() > 1 ? portraitChoice->itemData(1).toString() : QString();
+    const auto previewChoice = choice;
     auto root = home + "/.config/fastfetch/";
     auto color = root + "portraits/" + choice + ".png";
     auto manga = root + "manga/" + choice + ".png";
@@ -532,13 +671,15 @@ public:
     show(portraitPreview, art == "manga" && available ? manga : color);
     mangaPreview->setVisible(art == "mixed" && available);
     if (mangaPreview->isVisible()) show(mangaPreview, manga);
-    auto title = choice;
+    auto title = previewChoice;
     title.replace('-', ' ');
     portraitCaption->setText((sample ? "Rotation example: " : "Preview: ") + title +
         (art == "mixed" && available ? " · Color / Manga" :
          art == "manga" && available ? " · Manga" : " · Color") +
         (art != "color" && !available ? " (manga unavailable)" : "") +
         ". Previewing does not change your saved settings.");
+    portraitChooser->setText("Terminal character: " +
+        (sample ? QString("Random · shuffle current pool") : title));
   }
   void refreshStatus() {
     try {
@@ -549,7 +690,7 @@ public:
       if (artworkChanged) {
         QSignalBlocker choiceBlock(portraitChoice), artBlock(portraitArt), followBlock(matchDesktop);
         portraitChoice->clear();
-        portraitChoice->addItem("Random characters", "random");
+        portraitChoice->addItem("Random · shuffle current pool", "random");
         for (auto value : artwork.value("portraits").toArray()) {
           auto id = value.toString();
           auto title = id;
@@ -714,6 +855,7 @@ public:
       return;
     notice->setText(progress);
     portraitChoice->setEnabled(false);
+    portraitChooser->setEnabled(false);
     portraitArt->setEnabled(false);
     matchDesktop->setEnabled(false);
     output.clear();
@@ -774,6 +916,7 @@ public:
       return;
     process = nullptr;
     portraitChoice->setEnabled(true);
+    portraitChooser->setEnabled(true);
     portraitArt->setEnabled(true);
     matchDesktop->setEnabled(true);
     slowTimer.stop();
@@ -973,6 +1116,35 @@ static QJsonObject benchmark(Window &window, qint64 elapsed) {
   result.insert("preset_count", window.presets.size());
   return result;
 }
+static void smokePortraitPicker(Window &window, const QString &directory) {
+  QString failure;
+  QTimer::singleShot(150, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("terminal-character-picker");
+    if (!dialog) { failure = "Character picker did not open"; return; }
+    auto *search = dialog->findChild<QLineEdit *>("portrait-search");
+    auto *filter = dialog->findChild<QComboBox *>("portrait-filter");
+    if (!search || !filter || filter->findData("quincy") < 0) {
+      failure = "Character picker is missing search or faction filters";
+      dialog->reject();
+      return;
+    }
+    dialog->grab().save(directory + "/rust-character-picker.png");
+    filter->setCurrentIndex(filter->findData("quincy"));
+    qApp->processEvents();
+    search->setText("uryu");
+    qApp->processEvents();
+    int visible = 0;
+    for (auto *card : dialog->findChildren<QPushButton *>("portrait-card"))
+      if (card->isVisible()) ++visible;
+    if (visible != 1)
+      failure = "Character picker search did not narrow the selected faction";
+    if (!dialog->findChild<QPushButton *>("portrait-random"))
+      failure = "Character picker is missing the random option";
+    dialog->reject();
+  });
+  window.choosePortrait();
+  if (!failure.isEmpty()) throw std::runtime_error(failure.toStdString());
+}
 static int smoke(Window &window, const QString &directory) {
   auto initial = rpc({{"op", "status"}}).toObject().value("current");
   for (auto value : window.presets) {
@@ -1029,6 +1201,10 @@ static int smoke(Window &window, const QString &directory) {
   window.navigation->setCurrentRow(0);
   qApp->processEvents();
   window.grab().save(directory + "/rust-small.png");
+  window.navigation->setCurrentRow(2);
+  window.matchDesktop->setChecked(false);
+  window.updatePortraitPreview();
+  smokePortraitPicker(window, directory);
   auto plan = rpc({{"op", "plan"}, {"keep", 5}}).toObject();
   for (auto value : plan.value("candidates").toArray())
     if (value.toObject().value("protected").toBool())
@@ -1044,7 +1220,8 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Native worker did not finish");
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
-                         "protection, worker process and screenshots.\n";
+                         "protection, searchable character picker, worker "
+                         "process and screenshots.\n";
   return 0;
 }
 extern "C" int bankai_gui(int argc, char **argv) {

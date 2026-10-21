@@ -40,7 +40,7 @@ function bankai-pick --description "Choose a Bleach greeting portrait or random 
             set scope 'This shell only'
             set -p records 'reset'(printf '\t')'Use saved defaults'
         end
-        set -l selected (begin; printf 'random\tShuffle current pool\n'; printf '%s\n' $records; end | fzf --delimiter='\t' --with-nth=2.. --prompt='BANKAI portrait > ' --header="$scope · Enter selects · Esc cancels" --layout=reverse --bind='ctrl-/:toggle-preview' $picker_options)
+        set -l selected (begin; printf 'random\tRandom · shuffle current pool\n'; printf '%s\n' $records; end | fzf --delimiter='\t' --with-nth=2.. --prompt='BANKAI portrait > ' --header="$scope · Enter selects · Esc cancels" --layout=reverse --bind='ctrl-/:toggle-preview' $picker_options)
         or return 0
         set -l fields (string split -m 1 \t -- "$selected")
         set choice "$fields[1]"

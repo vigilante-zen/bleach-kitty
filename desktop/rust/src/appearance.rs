@@ -62,7 +62,40 @@ pub fn shuffle_login(app: &App) -> Result<Value> {
     let mut pool=all.iter().filter(|v|v.text().ok()!=Some(current.as_str())).collect::<Vec<_>>();
     if pool.is_empty(){pool=all.iter().collect();}
     use std::io::Read;
-    let mut bytes=[0u8;8]; fs::File::open("/dev/urandom").text()?.read_exact(&mut bytes).text()?;
-    let selected=pool[(u64::from_ne_bytes(bytes) % pool.len() as u64) as usize].text()?;
+    let mut random=fs::File::open("/dev/urandom").text()?;
+    let selected=loop {
+        let mut bytes=[0u8;8]; random.read_exact(&mut bytes).text()?;
+        if let Some(index)=random_index(u64::from_ne_bytes(bytes),pool.len()) {
+            break pool[index].text()?;
+        }
+    };
     crate::presets::apply(app,selected)
+}
+
+fn random_index(value: u64, length: usize) -> Option<usize> {
+    let length=u64::try_from(length).ok()?;
+    if length==0 { return None; }
+    let threshold=length.wrapping_neg()%length;
+    (value>=threshold).then_some((value%length) as usize)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::random_index;
+
+    #[test]
+    fn random_index_rejects_the_incomplete_range() {
+        assert_eq!(random_index(0,3),None);
+        assert_eq!(random_index(1,3),Some(1));
+        assert_eq!(random_index(2,3),Some(2));
+        assert_eq!(random_index(3,3),Some(0));
+        assert_eq!(random_index(u64::MAX,3),Some(0));
+    }
+
+    #[test]
+    fn random_index_handles_empty_and_single_entry_pools() {
+        assert_eq!(random_index(0,0),None);
+        assert_eq!(random_index(0,1),Some(0));
+        assert_eq!(random_index(u64::MAX,1),Some(0));
+    }
 }

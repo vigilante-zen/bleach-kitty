@@ -77,7 +77,7 @@ The active Codex project goal tracks this continuation across sessions. Start by
 
 ## Resume here
 
-The latest code commit is `0ef276f` (`Distinguish snapshot scan failures from empty state`) on `main`, tracking `origin/main`; at that code commit the branch was 89 commits ahead of its upstream. There are no uncommitted tracked changes after the accompanying checkpoint note is committed. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
+The latest code commit is `30094e3` (`Preserve snapshot list after scan failure`) on `main`, tracking `origin/main`; at that code commit the branch was 91 commits ahead of its upstream. There are no uncommitted tracked changes after the accompanying checkpoint note is committed. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
 
 The latest Rust UI change adds a live, singular/plural-aware matching-character count to the terminal picker. Its accessible description now includes the current count, including zero results, so assistive technology can query it on Qt versions without live announcement support. The smoke test verifies both accessible descriptions. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized Rust build, the offscreen GUI smoke test and `git diff --check`.
 
@@ -89,6 +89,6 @@ An additional cross-edition validation sweep after `5e16d3f` passed all 57 repos
 
 The Python offscreen control-center suite also passed 21 checks; its local-socket forwarding check was skipped because the sandbox rejects `QLocalServer::listen`. It ran after the prior cross-edition sweep and did not change tracked files.
 
-The Rust Backups page now distinguishes snapshot scan errors from a successful scan that found no snapshots. On failure, snapshot details direct the user to Refresh; the native smoke test simulates the failed-scan state and confirms a successful empty refresh restores the true empty-state message. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized build, native smoke checks and `git diff --check`.
+The Rust Backups page now distinguishes snapshot scan errors from a successful scan that found no snapshots. On failure, it keeps the last snapshot list and selection for context, disables Verify/Preview/Restore/Protect/Cleanup until a successful scan, and directs the user to Refresh. The native smoke test simulates a failed scan with a stale selected snapshot, verifies the selection remains visible and actions are disabled, then confirms a successful empty refresh replaces the stale item. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized build, native smoke checks and `git diff --check`.
 
 To resume, open this repository, read this checkpoint, then check `git status --short --branch` and inspect the implementation related to the next requested change. Keep `artifacts/` untouched. GitHub may still need syncing: push `main` only when network access is available and after checking the remote state.

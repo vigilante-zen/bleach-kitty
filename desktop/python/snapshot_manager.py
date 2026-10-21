@@ -14,6 +14,7 @@ import tempfile
 BASELINE = '20261019-202424-204727'
 NAME = re.compile(r'^\d{8}-\d{6}-\d{6}$')
 MAX_MANIFEST_BYTES = 16 * 1024 * 1024
+MAX_KEEP = 1000
 
 
 def format_size(size):
@@ -158,8 +159,8 @@ class SnapshotStore:
         return rows
 
     def plan(self, keep=5):
-        if type(keep) is not int or keep < 1:
-            raise ValueError('Keep at least one recent snapshot.')
+        if type(keep) is not int or not 1 <= keep <= MAX_KEEP:
+            raise ValueError(f'Keep between 1 and {MAX_KEEP} snapshots.')
         with self.locked():
             return self._plan(keep)
 
@@ -175,8 +176,8 @@ class SnapshotStore:
         if not isinstance(plan, dict) or plan.get('version') != 1 or not isinstance(plan.get('candidates'), list):
             raise ValueError('Invalid cleanup plan.')
         keep = plan.get('keep')
-        if type(keep) is not int or keep < 1:
-            raise ValueError('Keep at least one recent snapshot.')
+        if type(keep) is not int or not 1 <= keep <= MAX_KEEP:
+            raise ValueError(f'Keep between 1 and {MAX_KEEP} snapshots.')
         with self.locked():
             current = {row['name']: row for row in self._plan(keep)['candidates']}
             reviewed = plan['candidates']

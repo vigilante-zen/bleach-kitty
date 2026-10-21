@@ -190,6 +190,16 @@ class SnapshotManagementChecks(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.store.plan(0)
 
+    def test_cleanup_keep_limit_matches_rust(self):
+        self.assertEqual(self.store.plan(1000)['keep'], 1000)
+        with self.assertRaisesRegex(ValueError, 'between 1 and 1000'):
+            self.store.plan(1001)
+        plan = self.store.plan(1)
+        plan['keep'] = 1001
+        with self.assertRaisesRegex(ValueError, 'between 1 and 1000'):
+            self.store.cleanup(plan)
+        self.assertTrue(all((self.store.root / name).exists() for name in self.names))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

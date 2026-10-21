@@ -25,6 +25,8 @@ Python backup now checks its state directory and lock path for symlinks before o
 
 `SnapshotStore` now checks every ancestor of its snapshot root and state/lock paths for symlinks, so an indirect alias cannot bypass the snapshot boundary checks used by Rust. The snapshot-manager suite now has 15 passing checks, including a symlinked-parent regression, and the Python runtime check passes.
 
+Python cleanup planning and reviewed-plan validation now enforce Rust's maximum of 1,000 retained snapshots. All 16 snapshot-manager checks and the Python runtime check pass.
+
 The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 57 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
 Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.

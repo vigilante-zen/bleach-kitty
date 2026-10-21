@@ -493,11 +493,23 @@ class ControlCenter(QMainWindow):
         self.refresh_tray()
 
     def refresh_snapshots(self):
+        try:
+            rows = self.store.scan()
+        except (OSError, ValueError, TypeError) as error:
+            if isinstance(error, BlockingIOError):
+                self.storage_summary.setText('Another Bankai operation is updating snapshots. Refreshing shortly…')
+                self.cleanup_button.setEnabled(False)
+                QTimer.singleShot(1000, self.refresh_snapshots)
+                return
+            rows = None
+            self.snapshot_rows = {}
+            self.storage_summary.setText('Could not read snapshot storage: ' + str(error))
+            self.cleanup_button.setEnabled(False)
+
         selected = self.snapshots.currentData()
         self.snapshots.blockSignals(True)
         self.snapshots.clear()
-        try:
-            rows = self.store.scan()
+        if rows is not None:
             self.snapshot_rows = {row['name']: row for row in rows}
             self.storage_summary.setText(f'{len(rows)} snapshots · {format_size(sum(r["bytes"] for r in rows))} stored · '
                                          f'{sum(r["protected"] for r in rows)} protected')
@@ -513,14 +525,6 @@ class ControlCenter(QMainWindow):
                 if row['protected']:
                     title += ' · ' + ('Baseline' if row['baseline'] else '★ Protected')
                 self.snapshots.addItem(title, name)
-        except (OSError, ValueError, TypeError) as error:
-            self.snapshot_rows = {}
-            if isinstance(error, BlockingIOError):
-                self.storage_summary.setText('Another Bankai operation is updating snapshots. Refreshing shortly…')
-                QTimer.singleShot(1000, self.refresh_snapshots)
-            else:
-                self.storage_summary.setText('Could not read snapshot storage: ' + str(error))
-            self.cleanup_button.setEnabled(False)
         index = self.snapshots.findData(selected)
         if index >= 0:
             self.snapshots.setCurrentIndex(index)

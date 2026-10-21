@@ -206,11 +206,14 @@ class ControlCenterChecks(unittest.TestCase):
     def test_snapshot_refresh_reports_busy_lock_without_waiting(self):
         state = self.home / '.local/state/bleach-desktop'
         state.mkdir(parents=True, exist_ok=True)
+        selected = self.window.snapshots.currentData()
         with (state / 'snapshot-management.lock').open('a') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             try:
                 self.window.refresh_snapshots()
                 self.assertIn('updating snapshots', self.window.storage_summary.text())
+                self.assertEqual(self.window.snapshots.count(), 1)
+                self.assertEqual(self.window.snapshots.currentData(), selected)
             finally:
                 fcntl.flock(lock, fcntl.LOCK_UN)
 

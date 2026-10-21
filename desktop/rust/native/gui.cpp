@@ -259,7 +259,11 @@ public:
     });
     debounce.setSingleShot(true);
     debounce.setInterval(150);
-    connect(&debounce, &QTimer::timeout, this, [this] { refreshStatus(); });
+    connect(&debounce, &QTimer::timeout, this, [this] {
+      refreshStatus();
+      if (customPresetChoice)
+        refreshCustomPresets();
+    });
     connect(&watcher, &QFileSystemWatcher::fileChanged, this,
             [this] { debounce.start(); });
     connect(&watcher, &QFileSystemWatcher::directoryChanged, this,
@@ -336,23 +340,36 @@ public:
   }
   void refreshCustomPresets() {
     if (!customPresetChoice) return;
+    const auto previous = customPresetChoice->currentData().toString();
     try {
       customPresets = rpc({{"op", "custom-presets"}}).toArray();
       customPresetError.clear();
+      if (notice && notice->text().startsWith("Saved presets could not be loaded:"))
+        notice->setText("Saved presets reloaded.");
     } catch (const std::exception &e) {
       customPresetError = QString::fromUtf8(e.what());
       if (notice)
         notice->setText("Saved presets could not be loaded: " + customPresetError);
+      watchCustomPresetFile();
       return;
     }
+    watchCustomPresetFile();
     customPresetChoice->blockSignals(true);
     customPresetChoice->clear();
     for (auto value : customPresets) {
       auto row=value.toObject();
       customPresetChoice->addItem(row.value("name").toString(),row.value("id").toString());
     }
+    const int previousIndex = customPresetChoice->findData(previous);
+    if (previousIndex >= 0)
+      customPresetChoice->setCurrentIndex(previousIndex);
     customPresetChoice->blockSignals(false);
     customPresetChoice->setEnabled(!customPresets.isEmpty());
+  }
+  void watchCustomPresetFile() {
+    const auto path = data + "/custom-presets.json";
+    if (QFile::exists(path) && !watcher.files().contains(path))
+      watcher.addPath(path);
   }
   void saveCustomPreset() {
     bool accepted=false;
@@ -462,6 +479,7 @@ public:
     layout->addLayout(actions);
     auto *savedRow=new QHBoxLayout;
     customPresetChoice=new QComboBox;
+    customPresetChoice->setObjectName("custom-preset-choice");
     customPresetChoice->setMinimumWidth(190);
     connect(customPresetChoice,&QComboBox::currentIndexChanged,this,[this](int index){previewCustomPreset(index);});
     savedRow->addWidget(customPresetChoice,1);
@@ -1479,6 +1497,31 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
 static int smoke(Window &window, const QString &directory) {
   if (!window.notice->text().startsWith("Saved presets could not be loaded:"))
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
+  if (!window.watcher.files().contains(window.data + "/custom-presets.json"))
+    throw std::runtime_error("Corrupt custom-preset file is not watched for recovery");
+  QSaveFile repairedPresets(window.data + "/custom-presets.json");
+  const QByteArray repairedData =
+      R"([{"id":"custom-smoke","name":"Recovered preset","preset":"rukia","accent":"","login":"follow","edition":"color"}])";
+  if (!repairedPresets.open(QIODevice::WriteOnly) ||
+      repairedPresets.write(repairedData) != repairedData.size() ||
+      !repairedPresets.commit())
+    throw std::runtime_error("Could not prepare external custom-preset update");
+  QElapsedTimer customPresetReload;
+  customPresetReload.start();
+  while ((window.customPresetChoice->count() != 1 ||
+          window.notice->text().startsWith("Saved presets could not be loaded:")) &&
+         customPresetReload.elapsed() < 1500) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (window.customPresetChoice->count() != 1 ||
+      window.customPresetChoice->itemData(0).toString() != "custom-smoke" ||
+      window.notice->text() != "Saved presets reloaded.")
+    throw std::runtime_error(
+        QString("External custom-preset changes were not reloaded (count=%1, id=%2, notice=%3)")
+            .arg(window.customPresetChoice->count())
+            .arg(window.customPresetChoice->itemData(0).toString(), window.notice->text())
+            .toStdString());
   auto initial = rpc({{"op", "status"}}).toObject().value("current");
   for (auto value : window.presets) {
     auto p = value.toObject();
@@ -1672,8 +1715,8 @@ static int smoke(Window &window, const QString &directory) {
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset and character pickers, "
-                         "configured Random pool summary, corrupt custom-preset warning, "
-                         "reset confirmation, worker process and screenshots.\n";
+                         "configured Random pool summary, custom-preset recovery and "
+                         "external refresh, reset confirmation, worker process and screenshots.\n";
   return 0;
 }
 static bool copySmokeFile(const QString &source, const QString &destination) {

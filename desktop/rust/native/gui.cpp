@@ -2,6 +2,7 @@
 #include <QtSvg/QSvgRenderer>
 #include <QtWidgets>
 #include <cstring>
+#include <memory>
 #include <stdexcept>
 #include <tuple>
 extern "C" char *bankai_request(const char *);
@@ -608,6 +609,11 @@ public:
   }
   QStringList rosterCommand(const QStringList &arguments) const {
     QProcess command;
+    auto environment = QProcessEnvironment::systemEnvironment();
+    environment.insert("HOME", home);
+    if (qEnvironmentVariableIsSet("BANKAI_HOME") && environment.value("XDG_STATE_HOME").isEmpty())
+      environment.insert("XDG_STATE_HOME", home + "/.local/state");
+    command.setProcessEnvironment(environment);
     command.start(home + "/.local/bin/bankai-roster", arguments);
     if (!command.waitForStarted(1500) || !command.waitForFinished(3000) ||
         command.exitStatus() != QProcess::NormalExit || command.exitCode() != 0)
@@ -1456,8 +1462,32 @@ static int smoke(Window &window, const QString &directory) {
   window.grab().save(directory + "/rust-appearance.png");
   auto appearanceBefore = rpc({{"op", "appearance"}});
   QString poolFailure;
+  QString resetCancelFailure = "Reset confirmation UI was not exercised";
+  QTimer::singleShot(3000, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
+    if (!dialog)
+      dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+    if (dialog && dialog->isVisible()) {
+      resetCancelFailure = "Reset confirmation did not close in the offscreen test";
+      for (auto *pending : window.findChildren<QDialog *>())
+        if (pending->isVisible()) pending->reject();
+    }
+  });
   QTimer::singleShot(100, &window, [&] {
-    if (auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget())) {
+    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
+    if (!dialog) {
+      resetCancelFailure = "Appearance options dialog did not open";
+      if (auto *active = qobject_cast<QDialog *>(QApplication::activeModalWidget()))
+        active->reject();
+      return;
+    }
+    {
+      auto *reset = dialog->findChild<QPushButton *>("reset-appearance");
+      if (!reset) {
+        resetCancelFailure = "Appearance options are missing reset to defaults";
+        dialog->reject();
+        return;
+      }
       auto *poolSearch = dialog->findChild<QLineEdit *>("shuffle-pool-search");
       auto *pool = dialog->findChild<QListWidget *>("shuffle-pool-list");
       auto *poolCount = dialog->findChild<QLabel *>("shuffle-pool-count");
@@ -1509,12 +1539,25 @@ static int smoke(Window &window, const QString &directory) {
         poolSearch->clear();
         qApp->processEvents();
       }
-      dialog->grab().save(directory + "/rust-appearance-options.png"); dialog->reject();
+      dialog->grab().save(directory + "/rust-appearance-options.png");
+      reset->click();
+      QTimer::singleShot(50, &window, [dialog, &resetCancelFailure] {
+        auto *confirm = dialog->findChild<QMessageBox *>("reset-confirmation");
+        if (confirm && confirm->button(QMessageBox::Cancel)) {
+          confirm->button(QMessageBox::Cancel)->click();
+          resetCancelFailure = "cancelled";
+        } else {
+          resetCancelFailure = "Reset action did not expose a cancellable confirmation";
+        }
+        dialog->reject();
+      });
     }
   });
   window.appearanceOptions();
   if (!poolFailure.isEmpty())
     throw std::runtime_error(poolFailure.toStdString());
+  if (resetCancelFailure != "cancelled")
+    throw std::runtime_error(resetCancelFailure.toStdString());
   if (rpc({{"op", "appearance"}}) != appearanceBefore)
     throw std::runtime_error("Canceling appearance options changed preferences");
   auto originalArtwork = rpc({{"op", "portraits"}}).toObject();
@@ -1557,55 +1600,45 @@ static int smoke(Window &window, const QString &directory) {
   }
   if (window.process)
     throw std::runtime_error("Native worker did not finish");
-  QJsonArray resetPool; resetPool.append("rukia");
-  rpc({{"op", "save-appearance"}, {"appearance", QJsonObject{
-      {"edition", "manga"}, {"accent", "#123456"}, {"login", "rukia"},
-      {"shuffle_login", true}, {"pool", resetPool}}}});
-  QString resetFailure;
-  QTimer::singleShot(3000, &window, [&] {
-    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
-    if (dialog && dialog->isVisible()) {
-      resetFailure += "; Appearance reset confirmation did not finish";
-      if (auto *message = qobject_cast<QMessageBox *>(QApplication::activeModalWidget()))
-        resetFailure += ": " + message->text();
-      const auto dialogs = window.findChildren<QDialog *>();
-      for (auto *pending : dialogs)
-        if (pending->isVisible()) pending->reject();
-    }
-  });
-  QTimer::singleShot(100, &window, [&] {
-    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
-    auto *reset = dialog ? dialog->findChild<QPushButton *>("reset-appearance") : nullptr;
-    if (!reset) { resetFailure = "Appearance options are missing reset to defaults"; return; }
-    resetFailure = "Reset confirmation test started";
-    QTimer::singleShot(50, &window, [&] {
-      auto *confirm = window.findChild<QMessageBox *>("reset-confirmation");
-      if (confirm && confirm->button(QMessageBox::Yes)) {
-        resetFailure = "Reset confirmation accepted";
-        confirm->button(QMessageBox::Yes)->click();
-      } else
-        resetFailure = "Reset action did not ask for confirmation";
-    });
-    reset->click();
-  });
-  window.appearanceOptions();
-  if (resetFailure == "Reset confirmation accepted")
-    resetFailure.clear();
-  const auto resetOptions = rpc({{"op", "appearance"}}).toObject();
-  if (!resetFailure.isEmpty() || resetOptions.value("edition").toString() != "color" ||
-      !resetOptions.value("accent").toString().isEmpty() ||
-      resetOptions.value("login").toString() != "follow" ||
-      resetOptions.value("shuffle_login").toBool() ||
-      rpc({{"op", "status"}}).toObject().value("current").toString() != "tybw")
-    throw std::runtime_error((resetFailure.isEmpty()
-        ? "Appearance dialog did not reset preferences and the active preset"
-        : resetFailure).toStdString());
+  if (rpc({{"op", "appearance"}}) != appearanceBefore ||
+      rpc({{"op", "status"}}).toObject().value("current") != initial)
+    throw std::runtime_error("Offscreen UI smoke testing changed saved appearance state");
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
                          "protection, searchable preset and character pickers, "
-                         "configured Random pool summary, appearance reset, worker "
+                         "configured Random pool summary, reset confirmation, worker "
                          "process and screenshots.\n";
   return 0;
+}
+static bool copySmokeFile(const QString &source, const QString &destination) {
+  const QFileInfo info(source);
+  if (!info.exists() || info.isSymLink() || !info.isFile())
+    return false;
+  if (!QDir().mkpath(QFileInfo(destination).absolutePath()))
+    return false;
+  return QFile::copy(source, destination);
+}
+static bool prepareSmokeHome(const QString &source, const QString &destination) {
+  const QString wallpapers = source + "/Pictures/Bleach-TYBW/Wallpapers";
+  const QFileInfo wallpaperInfo(wallpapers);
+  const QString smokeWallpapers = destination + "/Pictures/Bleach-TYBW/Wallpapers";
+  if (!wallpaperInfo.isDir() || wallpaperInfo.isSymLink() ||
+      !QDir().mkpath(QFileInfo(smokeWallpapers).absolutePath()) ||
+      !QFile::link(wallpapers, smokeWallpapers))
+    return false;
+  if (!copySmokeFile(source + "/.local/bin/bankai-roster",
+                     destination + "/.local/bin/bankai-roster") ||
+      !copySmokeFile(source + "/.config/fastfetch/portraits/uryu.png",
+                     destination + "/.config/fastfetch/portraits/uryu.png"))
+    return false;
+  for (const auto &name : {"portrait-choice", "portrait-art-mode", "portrait-follow-desktop",
+                           "portrait-favorites.json", "shuffle-mode"}) {
+    const QString path = "/.config/fastfetch/" + QString(name);
+    const QString from = source + path;
+    if (QFileInfo(from).exists() && !copySmokeFile(from, destination + path))
+      return false;
+  }
+  return true;
 }
 extern "C" int bankai_gui(int argc, char **argv) {
   QElapsedTimer startup;
@@ -1618,14 +1651,24 @@ extern "C" int bankai_gui(int argc, char **argv) {
   bool smokeTest = args.contains("--smoke-test"),
        bench = args.contains("--benchmark");
   try {
+    std::unique_ptr<QTemporaryDir> smokeHome;
+    if (smokeTest) {
+      const QString originalHome = qEnvironmentVariable("BANKAI_HOME", QDir::homePath());
+      smokeHome = std::make_unique<QTemporaryDir>();
+      if (!smokeHome->isValid() || !prepareSmokeHome(originalHome, smokeHome->path()))
+        throw std::runtime_error("Could not prepare an isolated home for the smoke test");
+      qputenv("BANKAI_HOME", smokeHome->path().toUtf8());
+      qputenv("HOME", smokeHome->path().toUtf8());
+      qputenv("XDG_STATE_HOME", (smokeHome->path() + "/.local/state").toUtf8());
+    }
     auto bootstrap = rpc({{"op", "bootstrap"}}).toObject();
     QString state =
         bootstrap.value("home").toString() + "/.local/state/bleach-desktop";
-    QDir().mkpath(state);
     QString socketName = state + "/bankai-rust-control.sock";
     QLockFile lock(state + "/bankai-rust-control.lock");
     QLocalServer server;
     if (!smokeTest && !bench) {
+      QDir().mkpath(state);
       QLocalSocket client;
       client.connectToServer(socketName);
       if (client.waitForConnected(300)) {

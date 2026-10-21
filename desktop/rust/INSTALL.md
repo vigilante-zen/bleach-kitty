@@ -85,7 +85,7 @@ cargo build --release --locked
 QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 ```
 
-After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai --smoke-test`. Smoke checks read installed artwork and snapshots without applying presets. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` checks Rust/Python snapshot compatibility and verifies the Rust preset catalog matches the shared Python catalog. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai restore SNAPSHOT_NAME`.
+After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai --smoke-test`. Smoke checks create a temporary isolated home, preview the installed artwork, and never apply presets to your account. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` checks Rust/Python snapshot compatibility and verifies the Rust preset catalog matches the shared Python catalog. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai restore SNAPSHOT_NAME`.
 
 ## Appearance controls
 

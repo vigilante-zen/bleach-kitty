@@ -7,13 +7,13 @@ A separately installed, compiled edition of the Bankai desktop control center. A
 ## Try it
 
 ```fish
-bankai-rust
-bankai-rust tray
-bankai-rust backups
-bankai-rust status
+bankai
+bankai tray
+bankai backups
+bankai status
 ```
 
-You can also search **Bankai** in KDE's app launcher. The Python alternative remains available as `bankai`. The Rust app has its own instance channel and optional login-startup preference. It is not enabled at login by default. Avoid enabling both tray apps at login unless you want two icons.
+You can also search **Bankai** in KDE's app launcher. `bankai-rust` remains a direct compatibility command. The Python alternative is `bankai-python`. The Rust app has its own instance channel and optional login-startup preference. It is not enabled at login by default. Avoid enabling both tray apps at login unless you want two icons.
 
 Both editions read the same saved preset, character artwork, KDE settings, Kitty accents, portrait selection, snapshots and protected-snapshot list. Applying a preset or restoring a snapshot changes the shared desktop. Comparing their windows and previews is read-only; do not apply competing presets from both editions simultaneously.
 

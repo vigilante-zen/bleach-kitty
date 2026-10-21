@@ -30,7 +30,7 @@ This package contains the {edition.title()} desktop edition and its shared termi
 1. Install the prerequisites listed in [the edition guide](desktop/{edition}/INSTALL.md).
 2. Preview installation: `python3 desktop/{edition}/install.py --dry-run`
 3. Install: `python3 desktop/{edition}/install.py`
-4. Launch {'`bankai`' if edition == 'python' else '`bankai-rust`'}.
+4. Launch {'`bankai-python`' if edition == 'python' else '`bankai`'}.
 
 [Full setup, update and uninstall instructions](desktop/{edition}/INSTALL.md).
 [Compare editions on GitHub](https://github.com/vigilante-zen/bleach-kitty/blob/main/desktop/README.md).

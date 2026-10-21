@@ -46,6 +46,8 @@ jobs:
         run: cargo test --locked && cargo build --release --locked
       - name: Compiled binary integration checks
         run: python3 desktop/rust/scripts/check_binary.py
+      - name: Shared command routing and edition switching
+        run: python3 desktop/check_commands.py --rust-binary desktop/rust/target/release/bankai-rust
       - name: Install Rust edition in an isolated home
         run: python3 desktop/rust/install.py --home "$RUNNER_TEMP/bankai-home" --binary desktop/rust/target/release/bankai-rust
       - name: Offscreen native UI checks

@@ -45,13 +45,13 @@ For a staging installation, add `--home /absolute/test/home`. It does not launch
 
 ## 3. Launch
 
-Search **Bankai Rust** in KDE's app menu, or run:
+Search **Bankai** in KDE's app menu, or run:
 
 ```bash
-"$HOME/.local/bin/bankai-rust"
+"$HOME/.local/bin/bankai"
 ```
 
-Use `bankai-rust tray` for tray mode and `bankai-rust backups` for backup management. If the short command is not found, open a new Fish session or use the absolute path above. Run `bankai-doctor` inside Fish to check the terminal theme.
+Use `bankai tray` for tray mode and `bankai backups` for backup management. `bankai-rust` remains available as a direct compatibility command. If the short command is not found, open a new Fish session or use the absolute path above. Run `bankai-doctor` inside Fish to check the terminal theme.
 
 In **Terminal & tools**, preview a portrait and choose Color/Manga/Mixed, then click **Save terminal artwork**. Enable **Match desktop character** to follow desktop preset changes; leave it off for independent rotation. New tabs use the saved choice. `bankai-pick --session reset` in Fish clears a shell-only override.
 
@@ -85,7 +85,7 @@ cargo build --release --locked
 QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 ```
 
-After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai-rust --smoke-test`. Smoke checks read installed artwork and snapshots without applying presets. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` compares against the checked-in Python backup source when present, or its installed helper otherwise. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai-rust restore SNAPSHOT_NAME`.
+After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai --smoke-test`. Smoke checks read installed artwork and snapshots without applying presets. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` compares against the checked-in Python backup source when present, or its installed helper otherwise. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai restore SNAPSHOT_NAME`.
 
 ## Appearance controls
 

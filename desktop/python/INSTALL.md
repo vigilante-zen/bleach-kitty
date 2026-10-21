@@ -4,7 +4,7 @@
 
 ## Requirements
 
-Linux with KDE Plasma 6, Python 3 and PySide6 (Qt 6). Install PySide6 through your distribution or a Python environment; the `bankai` command uses `python3` from PATH. If using a virtual environment, activate it before installing and before using the `bankai` terminal command. The app-menu launcher records the Python interpreter running the installer, so it can use that environment directly.
+Linux with KDE Plasma 6, Python 3 and PySide6 (Qt 6). Install PySide6 through your distribution or a Python environment; `bankai-python` uses `python3` from PATH. If using a virtual environment, activate it before installing and before using `bankai-python`. The app-menu launcher records the Python interpreter running the installer, so it can use that environment directly.
 
 Both editions use the shared terminal theme, which requires Kitty, Fish, Fastfetch, btop, fzf and Python 3. Install those prerequisites with your distribution's package manager. The installer does not install system packages or change your default shell. If Fish is not your default, open Kitty and run `fish`.
 
@@ -43,10 +43,10 @@ For a staging installation, add `--home /absolute/test/home`. It does not launch
 Search **Bankai Python** in KDE's app menu, or run:
 
 ```bash
-"$HOME/.local/bin/bankai"
+"$HOME/.local/bin/bankai-python"
 ```
 
-Use `bankai tray` for tray mode and `bankai backups` for backup management. If the short command is not found, open a new Fish session or use the absolute path above. Run `bankai-doctor` inside Fish to check the terminal theme.
+Use `bankai-python tray` for tray mode and `bankai-python backups` for backup management. The shared `bankai` command opens Rust when installed, or Python otherwise. If the short command is not found, open a new Fish session or use the absolute path above. Run `bankai-doctor` inside Fish to check the terminal theme.
 
 Applying a Python desktop preset also selects its matching terminal portrait. Run `bankai-pick random` in Fish to resume rotation.
 
@@ -76,7 +76,7 @@ python3 desktop/python/check_snapshot_manager.py
 QT_QPA_PLATFORM=offscreen python3 desktop/python/check_control_center.py
 ```
 
-The UI checks expect the shared desktop artwork to be installed. Snapshot tests use temporary directories. Cross-process activation and live KDE behavior need a desktop session. For restore, select a local snapshot in the app or run `bankai restore SNAPSHOT_NAME`; the no-argument legacy restore retains the original developer baseline identifier.
+The UI checks expect the shared desktop artwork to be installed. Snapshot tests use temporary directories. Cross-process activation and live KDE behavior need a desktop session. For restore, select a local snapshot in the app or run `bankai-python restore SNAPSHOT_NAME`; the no-argument legacy restore retains the original developer baseline identifier.
 
 ## Appearance controls
 

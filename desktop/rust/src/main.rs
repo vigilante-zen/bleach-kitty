@@ -91,7 +91,7 @@ fn cli(args: &[String]) -> Result<i32> {
     let action = args.get(1).map(String::as_str).unwrap_or("open");
     if action == "--version" { println!("Bankai Rust {} · Rust core + native Qt",env!("CARGO_PKG_VERSION")); return Ok(0); }
     if matches!(action,"--help"|"-h") {
-        println!("Bankai Rust\n\n  bankai-rust [open|tray|backups]\n  bankai-rust <character>\n  bankai-rust status\n  bankai-rust backup\n  bankai-rust verify <snapshot>\n  bankai-rust restore [snapshot]\n  bankai-rust cleanup-plan [keep]\n  bankai-rust --version\n\nThe Python app remains available as bankai. BANKAI_HOME selects an isolated staging home and disables live KDE commands."); return Ok(0);
+        println!("Bankai\n\n  bankai [open|tray|backups]\n  bankai <character>\n  bankai status\n  bankai backup\n  bankai verify <snapshot>\n  bankai restore [snapshot]\n  bankai cleanup-plan [keep]\n  bankai --version\n\nThe Rust executable is also available as bankai-rust. The Python edition is bankai-python. BANKAI_HOME selects an isolated staging home and disables live KDE commands."); return Ok(0);
     }
     if action == "--rpc" {
         let mut bytes = vec![]; std::io::stdin().take(16*1024*1024+1).read_to_end(&mut bytes).text()?;
@@ -111,7 +111,7 @@ fn cli(args: &[String]) -> Result<i32> {
         "shuffle-login" => obj! { "op" => "shuffle-login" },
         "cleanup-plan" => obj! { "op" => "plan", "keep" => args.get(2).map(String::as_str).unwrap_or("5").parse::<u64>().text()? },
         _ if app.preset(action).is_ok() => obj! { "op" => "apply", "preset" => action },
-        _ => return Err("Unknown command. Run bankai-rust --help.".into()),
+        _ => return Err("Unknown command. Run bankai --help.".into()),
     };
     let result = app.dispatch(&request)?;
     if let Some(message) = result.opt("message") { println!("{}",message.text()?); }

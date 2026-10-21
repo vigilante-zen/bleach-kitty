@@ -8,6 +8,6 @@ Source for the original Bankai desktop control center. Requires Linux/KDE Plasma
 
 Install or update with `python3 desktop/python/install.py` from the repository root. The installer creates the app launcher, installs shared assets, backs up existing files and supports uninstalling. Follow the [complete installation guide](INSTALL.md) for requirements and commands.
 
-Run `bankai` for the window, `bankai tray` for the tray, or `bankai backups` for snapshots. No startup-at-login preference is bundled. `bankai-desktop-restore` retains the original installation's baseline identifier; on another machine, provide an explicit local snapshot name.
+Run `bankai-python` for the window, `bankai-python tray` for the tray, or `bankai-python backups` for snapshots. The shared `bankai` command prefers Rust when installed and falls back to Python. No startup-at-login preference is bundled. `bankai-desktop-restore` retains the original installation's baseline identifier; on another machine, provide an explicit local snapshot name.
 
 Validation: `python3 check_snapshot_manager.py` and `QT_QPA_PLATFORM=offscreen python3 check_control_center.py`. The backend `check.py` also needs the installed command scripts and color schemes. Live KDE integration needs a desktop session.

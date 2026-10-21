@@ -144,6 +144,7 @@
     ".local/bin/bankai-desktop",
     ".local/bin/bankai-desktop-restore",
     ".local/bin/bankai",
+    ".local/bin/bankai-python",
     ".local/share/applications/bleach-bankai.desktop",
     ".config/fish/completions/bankai.fish",
     ".config/autostart/bleach-bankai.desktop",

@@ -6,7 +6,7 @@ Rust is the default desktop edition. Python remains available as an alternative.
 | --- | --- | --- |
 | Install guide | **[Install Rust](rust/INSTALL.md)** | [Install Python](python/INSTALL.md) |
 | Source and details | [Rust overview](rust/README.md) | [Python overview](python/README.md) |
-| App command | `bankai-rust` | `bankai` |
+| App command | `bankai` (`bankai-rust` also works) | `bankai-python` |
 | App runtime | Compiled Rust core and Qt C++ view | Python and PySide6 |
 | Build required | Yes: Rust/Cargo, C++17 and Qt development libraries | No |
 | Terminal artwork controls | In-app selection and live color/manga preview | Fish settings menu |

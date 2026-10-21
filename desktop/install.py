@@ -79,6 +79,7 @@ def payload(edition, home, binary=None, dry=False):
     for item in sorted((ROOT / 'login/theme/assets').glob('scene-*.png')):
         add(item, 'Pictures/Bleach-TYBW/Wallpapers/' + item.stem.removeprefix('scene-') + '-manga.png')
     add(ROOT / 'desktop/README.md', '.local/share/bleach-desktop/README.md')
+    add(ROOT / 'desktop/shared/bin/bankai', '.local/bin/bankai', 0o755)
     add(ROOT / 'login/install.py', '.local/share/bleach-desktop/install-login.py')
     add(ROOT / 'login/greeter_preview.py', '.local/share/bleach-desktop/preview-login.py')
     for name in ['sync.py', 'legacy-theme.json']:
@@ -97,9 +98,10 @@ def payload(edition, home, binary=None, dry=False):
             add(source / name, '.local/share/bleach-desktop/' + name)
         for item in sorted((source / 'icons').glob('*.svg')):
             add(item, '.local/share/bleach-desktop/icons/' + item.name)
-        for name in ['bankai', 'bankai-desktop', 'bankai-desktop-backup', 'bankai-desktop-restore']:
+        for name in ['bankai-desktop', 'bankai-desktop-backup', 'bankai-desktop-restore']:
             add(source / 'bin' / name, '.local/bin/' + name, 0o755)
-        command, icon = 'bankai', 'bleach-bankai'
+        add(source / 'bin/bankai', '.local/bin/bankai-python', 0o755)
+        command, icon = 'bankai-python', 'bleach-bankai'
         icon_source = source / 'icons/bleach-tray.svg'
     else:
         packaged = source / 'bin/bankai-rust'
@@ -244,7 +246,10 @@ def main():
     if home == Path('/') or home.is_symlink():
         raise ValueError('Use a real, non-root home directory')
     state = home / '.local/state/bankai-desktop-install'
+    python_installed = False
     with locked(state, home, args.dry_run):
+        previous = load_receipt(state / 'receipt.json', home)
+        python_installed = any('python' in item['owners'] for item in previous['files'].values())
         files = payload(args.edition, home, args.binary, args.dry_run) if args.action == 'install' else {}
         # Validate the whole desktop transaction before starting the separate theme installer.
         if args.action == 'install':
@@ -258,9 +263,15 @@ def main():
                 else:
                     command = [sys.executable, str(ROOT / 'install.py'), 'update', '--home', str(home)]
                     subprocess.run(command + (['--dry-run'] if args.dry_run else []), check=True)
+            if args.edition == 'rust' and python_installed:
+                subprocess.run([sys.executable, str(ROOT / 'desktop/python/install.py'),
+                                '--home', str(home), '--skip-theme', '--dry-run'], check=True)
             if args.dry_run:
                 return
         change(args.edition, args.action, home, state, files, args.dry_run)
+    if args.action == 'install' and args.edition == 'rust' and python_installed:
+        subprocess.run([sys.executable, str(ROOT / 'desktop/python/install.py'),
+                        '--home', str(home), '--skip-theme'], check=True)
     if args.action == 'install' and not args.dry_run:
         print('Optional login theme: sudo python3 ~/.local/share/bleach-desktop/install-login.py install')
         app_name = 'Bankai' if args.edition == 'rust' else 'Bankai Python'

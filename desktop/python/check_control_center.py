@@ -151,8 +151,8 @@ class ControlCenterChecks(unittest.TestCase):
             icon = center.hollow_icon(accent)
             self.assertFalse(icon.isNull(), name)
             image = icon.pixmap(64, 64).toImage()
-            self.assertEqual(image.pixelColor(38, 14).name(), accent, name)
-            self.assertEqual(image.pixelColor(26, 14).name(), '#f4f1e8', name)
+            self.assertEqual(image.pixelColor(32, 54).name(), accent, name)
+            self.assertEqual(image.pixelColor(20, 20).name(), '#e8d6b2', name)
 
     def test_tray_follows_cli_changes_and_atomic_replacements(self):
         self.window.setup_tray(show=False)
@@ -176,7 +176,7 @@ class ControlCenterChecks(unittest.TestCase):
     def test_login_startup_can_be_enabled_and_disabled(self):
         path = self.home / '.config/autostart/bleach-bankai.desktop'
         self.window.set_autostart(True)
-        self.assertIn(' tray\n', path.read_text())
+        self.assertIn('.local/bin/bankai-python tray\n', path.read_text())
         self.window.set_autostart(False)
         self.assertFalse(path.exists())
 

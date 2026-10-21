@@ -95,7 +95,7 @@ class CompiledRustChecks(unittest.TestCase):
         target = self.home / '.config/kitty/kitty.conf'
         target.write_text('changed')
         environment = dict(os.environ, HOME=str(self.home))
-        process = subprocess.run(['python3', str(Path.home() / '.local/bin/bankai-desktop-backup'), 'restore', name],
+        process = subprocess.run(['python3', str(backup_source), 'restore', name],
                                  text=True, capture_output=True, env=environment, timeout=30)
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertEqual(target.read_text(), 'font_size 12\n')

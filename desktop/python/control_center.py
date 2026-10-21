@@ -572,7 +572,7 @@ class ControlCenter(QMainWindow):
             if enabled:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text('[Desktop Entry]\nType=Application\nName=Bankai tray menu\n'
-                                f'Exec={BIN / "bankai"} tray\nOnlyShowIn=KDE;\nNoDisplay=true\nX-KDE-autostart-phase=2\n')
+                                f'Exec={BIN / "bankai-python"} tray\nOnlyShowIn=KDE;\nNoDisplay=true\nX-KDE-autostart-phase=2\n')
             else:
                 path.unlink(missing_ok=True)
             self.message.setText('Bankai will start in the tray at login.' if enabled else 'Bankai login startup disabled.')

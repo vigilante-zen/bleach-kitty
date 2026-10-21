@@ -1,0 +1,11 @@
+#!/bin/sh
+# Prefer the default Rust app, then fall back to Python when Rust is absent.
+bankai_home=${HOME:-}
+if [ -n "$bankai_home" ] && [ -x "$bankai_home/.local/bin/bankai-rust" ]; then
+    exec "$bankai_home/.local/bin/bankai-rust" "$@"
+fi
+if [ -n "$bankai_home" ] && [ -x "$bankai_home/.local/bin/bankai-python" ]; then
+    exec "$bankai_home/.local/bin/bankai-python" "$@"
+fi
+printf '%s\n' 'Bankai is not installed. Install the Rust or Python desktop edition first.' >&2
+exit 127

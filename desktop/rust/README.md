@@ -57,14 +57,14 @@ Seven interleaved runs per edition, after one discarded warm-up pair, using Qt F
 
 | Median measurement | Rust + Qt | Python + PySide6 |
 | --- | ---: | ---: |
-| Reported startup to ready window | 494 ms | 1,663 ms |
-| Parent-measured process wall time | 512 ms | 1,694 ms |
-| Resident memory at ready window | 66.5 MiB | 105.3 MiB |
-| Peak resident memory by that point | 66.5 MiB | 106.5 MiB |
+| Reported startup to ready window | 482 ms | 1,651 ms |
+| Parent-measured process wall time | 502 ms | 1,680 ms |
+| Resident memory at ready window | 66.5 MiB | 105.4 MiB |
+| Peak resident memory by that point | 66.5 MiB | 106.7 MiB |
 
 The current release executable is about 1.24 MiB and dynamically links the installed Qt libraries. Its smaller footprint also comes from decoding/downscaling thumbnail previews earlier. These results measure the whole rewrite, not Rust versus Python in isolation. RSS includes shared library mappings; it is not proportional physical memory. Live Wayland startup, tray hosting, and steady-state idle CPU were not measured.
 
-The benchmark imports the Python source from this checkout rather than an installed copy. Raw runs default to `desktop/rust/artifacts/benchmark.json`; choose another output path to preserve an existing report or keep results outside the repository. Reproduce with:
+The benchmark imports the Python source from this checkout rather than an installed copy. Raw runs default to `desktop/rust/artifacts/benchmark.json` and include the platform, CPU, architecture, Python version, and Qt versions; choose another output path to preserve an existing report or keep results outside the repository. These runs used an AMD Ryzen 9 3950X, Python 3.14.8 and Qt 6.12.0. Reproduce with:
 
 ```sh
 python3 scripts/benchmark.py --runs 7

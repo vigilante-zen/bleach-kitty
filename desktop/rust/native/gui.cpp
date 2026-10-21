@@ -1945,7 +1945,9 @@ protected:
 };
 static QJsonObject benchmark(Window &window, qint64 elapsed) {
   QFile status("/proc/self/status");
-  QJsonObject result{{"startup_ms", double(elapsed)}, {"edition", "rust-qt"}};
+  QJsonObject result{{"startup_ms", double(elapsed)},
+                     {"edition", "rust-qt"},
+                     {"qt_version", qVersion()}};
   if (status.open(QIODevice::ReadOnly))
     for (auto line : status.readAll().split('\n'))
       for (auto key : {QByteArray("VmRSS:"), QByteArray("VmHWM:")})

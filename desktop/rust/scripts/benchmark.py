@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import platform
 from pathlib import Path
 import statistics
 import subprocess
@@ -17,6 +18,7 @@ import json
 import os
 from pathlib import Path
 import sys
+from PySide6.QtCore import qVersion
 from PySide6.QtWidgets import QApplication
 sys.path.insert(0, os.environ['BANKAI_PYTHON_SOURCE'])
 import control_center as center
@@ -27,6 +29,8 @@ window = center.ControlCenter()
 window.show()
 app.processEvents()
 result = {'edition': 'python-pyside6', 'startup_ms': (time.perf_counter()-started)*1000}
+result['qt_version'] = qVersion()
+result['python_version'] = sys.version.split()[0]
 for line in Path('/proc/self/status').read_text().splitlines():
     if line.startswith(('VmRSS:', 'VmHWM:')):
         key, value = line.split(':', 1)
@@ -68,11 +72,33 @@ def main():
     if len(rust_presets) != 1 or rust_presets != python_presets:
         raise RuntimeError(
             f'Cannot compare editions with different preset catalogs: Rust={rust_presets}, Python={python_presets}')
+    qt_versions = {
+        edition: {value['qt_version'] for value in values}
+        for edition, values in measurements.items()
+    }
+    if any(len(versions) != 1 for versions in qt_versions.values()):
+        raise RuntimeError(f'Qt versions changed during measurement: {qt_versions}')
     for edition, values in measurements.items():
         summary[edition] = {key: round(statistics.median(v[key] for v in values), 2)
                             for key in ['startup_ms', 'process_wall_ms', 'VmRSS_kib', 'VmHWM_kib']}
     preset_count = next(iter(rust_presets))
+    cpu_model = platform.processor()
+    cpu_info = Path('/proc/cpuinfo')
+    if cpu_info.is_file():
+        for line in cpu_info.read_text(errors='replace').splitlines():
+            key, separator, value = line.partition(':')
+            if separator and key.strip() in {'model name', 'Hardware', 'Processor'}:
+                cpu_model = value.strip()
+                break
     report = {'runs_per_edition': args.runs, 'preset_count': preset_count,
+              'environment': {
+                  'platform': platform.platform(),
+                  'architecture': platform.machine(),
+                  'cpu_model': cpu_model or 'unknown',
+                  'python_version': platform.python_version(),
+                  'qt_versions': {edition: next(iter(versions))
+                                  for edition, versions in qt_versions.items()},
+              },
               'summary': summary, 'runs': measurements,
               'method': f'Offscreen Qt Fusion; both source editions load all {preset_count} presets and the initial wallpaper, show the window and process its first paint. The Python case imports desktop/python from this checkout. Warm-up pair discarded; interleaved process launches.',
               'limits': 'Native code also downsizes thumbnails earlier. Gains reflect implementation and language/runtime changes. This does not measure live Wayland startup, idle CPU, actual tray hosting, or proportional physical memory.'}

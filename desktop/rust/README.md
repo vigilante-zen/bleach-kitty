@@ -42,7 +42,7 @@ Use Tab and Shift+Tab to move through controls. In the character picker, `/` foc
 - Hollow-mask tray icon colored for the saved character; updates after command-line changes.
 - Tray preset selection, terminal and monitor launchers, snapshot creation, and window reopening.
 - Background workers run the same Rust binary; action errors are shown and active operations prevent quitting.
-- Snapshot creation, verification, restore with a pre-restore backup, sizes, protection, and reviewed cleanup.
+- Snapshot creation, verification, restore with a pre-restore backup, sizes, protection, and reviewed cleanup. Search saved snapshots by name or status; empty searches explain how to restore the full list.
 - Original baseline protection, newest-copy retention, symlink/path rejection, and cleanup-plan revalidation.
 - Existing Python version-1 manifests and protection metadata remain compatible in both directions.
 - Independent Rust autostart toggle and single-instance window handoff.

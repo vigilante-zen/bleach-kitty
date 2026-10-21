@@ -25,6 +25,8 @@ Keyboard focus now has a high-contrast pink border on buttons, character cards, 
 
 The native UI smoke test now queries Qt's `QAccessibleInterface` for names and descriptions on appearance previews, terminal search/filter/Random controls, shuffle-pool controls, and snapshot actions. It also verifies character descriptions change after selection. This checks the accessibility values exposed by Qt, beyond checking widget properties; actual spoken output still requires a live KDE accessibility session.
 
+The Rust Backups & restore page now filters snapshots case-insensitively by their displayed name and status. Empty matches disable restore and explain how to clear the search, distinct from the true empty-backup state. The offscreen smoke test verifies case-insensitive matching, clearing, empty-result safety and external snapshot refresh. Validation passed all 40 Rust tests, Clippy, the optimized build and native UI smoke checks.
+
 Single-instance startup in Python and Rust now rejects symlinked state-directory ancestors and existing control lock/socket symlinks before creating or using IPC paths. Rust bootstrap validates the state path before the Qt launcher creates it. The offscreen Python UI suite passes 21 checks (one socket test skipped because sockets are blocked), and all 40 Rust tests, Clippy, and the optimized build pass.
 
 ## Latest completed work

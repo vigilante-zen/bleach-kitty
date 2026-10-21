@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add case-insensitive search to the Rust saved-snapshot list, with a helpful empty-results message and disabled restore actions when no snapshots match.
 - Add screen-reader names and live character descriptions to the Rust appearance and terminal artwork previews, and accessible names/descriptions to terminal search, filters, and Random. Extend the native UI smoke test to verify those descriptions.
 - Fit the Rust window's minimum size to the available display, let the sidebar contract on narrow screens, and make the backup controls scroll on short displays.
 - Add screen-reader context to the Rust login-shuffle editor and snapshot controls, including filtered-list actions, retention behavior, restore review, and cleanup preview.

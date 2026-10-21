@@ -164,7 +164,10 @@ public:
   Artwork *art;
   QLabel *saved, *previewNote, *storage, *snapshotDetails;
   QLabel *notice = nullptr;
+  QLineEdit *snapshotSearch = nullptr;
   QComboBox *snapshots, *portraitChoice, *portraitArt;
+  QStandardItemModel *snapshotModel = nullptr;
+  QSortFilterProxyModel *snapshotFilter = nullptr;
   QComboBox *customPresetChoice = nullptr;
   QSpinBox *keep;
   QCheckBox *autostart, *matchDesktop;
@@ -541,10 +544,27 @@ public:
     layout->addWidget(createSnapshot);
     layout->addSpacing(8);
     layout->addWidget(label("SAVED SNAPSHOTS", "eyebrow"));
+    snapshotSearch = new QLineEdit;
+    snapshotSearch->setObjectName("snapshot-search");
+    snapshotSearch->setPlaceholderText("Search saved snapshots…");
+    snapshotSearch->setAccessibleName("Search saved snapshots");
+    snapshotSearch->setClearButtonEnabled(true);
+    layout->addWidget(snapshotSearch);
     snapshots = new QComboBox;
     snapshots->setAccessibleName("Saved snapshots");
     snapshots->setAccessibleDescription(
-        "Choose a snapshot to inspect, verify, protect, or restore.");
+        "Choose a matching snapshot to inspect, verify, protect, or restore.");
+    snapshotModel = new QStandardItemModel(this);
+    snapshotFilter = new QSortFilterProxyModel(this);
+    snapshotFilter->setSourceModel(snapshotModel);
+    snapshotFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    snapshotFilter->setFilterRole(Qt::DisplayRole);
+    snapshots->setModel(snapshotFilter);
+    connect(snapshotSearch, &QLineEdit::textChanged, this,
+            [this](const QString &query) {
+              snapshotFilter->setFilterFixedString(query.trimmed());
+              snapshotChanged();
+            });
     layout->addWidget(snapshots);
     snapshotDetails = label("", "muted");
     snapshotDetails->setAccessibleName("Selected snapshot details");
@@ -1061,7 +1081,7 @@ public:
     watchBackupDirectories();
     auto previous = snapshots->currentData().toString();
     QSignalBlocker blocker(snapshots);
-    snapshots->clear();
+    snapshotModel->clear();
     rows.clear();
     try {
       auto values = rpc({{"op", "snapshots"}}).toArray();
@@ -1080,7 +1100,9 @@ public:
         if (row.value("protected").toBool())
           title +=
               row.value("baseline").toBool() ? " · Baseline" : " · ★ Protected";
-        snapshots->addItem(title, name);
+        auto *item = new QStandardItem(title);
+        item->setData(name, Qt::UserRole);
+        snapshotModel->appendRow(item);
       }
       storage->setText(QString("%1 snapshots · %2 stored · %3 protected")
                            .arg(values.size())
@@ -1094,6 +1116,8 @@ public:
     int index = snapshots->findData(previous);
     if (index >= 0)
       snapshots->setCurrentIndex(index);
+    else if (snapshots->count() > 0)
+      snapshots->setCurrentIndex(0);
     snapshotChanged();
   }
   void snapshotChanged() {
@@ -1107,7 +1131,9 @@ public:
                                : "Protect snapshot");
     snapshotDetails->setText(
         row.isEmpty()
-            ? "No snapshots yet. Create one to save your setup."
+            ? (snapshotModel->rowCount() > 0
+                   ? "No matching snapshots. Clear the search to show all saved copies."
+                   : "No snapshots yet. Create one to save your setup.")
             : QString("%1 saved files · Integrity is checked before restore.")
                   .arg(row.value("files").toInt()));
   }
@@ -1729,6 +1755,7 @@ static int smoke(Window &window, const QString &directory) {
   if (!qobject_cast<QScrollArea *>(window.pages->widget(1)))
     throw std::runtime_error("Backup controls are not scrollable on short displays");
   if (accessibleText(window.snapshots, QAccessible::Name).isEmpty() ||
+      accessibleText(window.snapshotSearch, QAccessible::Name).isEmpty() ||
       accessibleText(window.snapshotDetails, QAccessible::Name).isEmpty() ||
       accessibleText(window.storage, QAccessible::Name).isEmpty() ||
       accessibleText(window.restoreButton, QAccessible::Description).isEmpty() ||
@@ -1976,6 +2003,23 @@ static int smoke(Window &window, const QString &directory) {
   }
   if (window.snapshots->count() <= snapshotCount)
     throw std::runtime_error("Backups page did not refresh after an external snapshot");
+  const auto allSnapshots = window.snapshots->count();
+  const auto searchableSnapshot = window.snapshots->currentData().toString();
+  const auto searchableTitle = window.snapshots->currentText().toUpper();
+  window.snapshotSearch->setText(searchableTitle);
+  qApp->processEvents();
+  if (window.snapshots->count() != 1 ||
+      window.snapshots->currentData().toString() != searchableSnapshot)
+    throw std::runtime_error("Snapshot search did not isolate a matching snapshot");
+  window.snapshotSearch->setText("no-such-snapshot");
+  qApp->processEvents();
+  if (window.snapshots->count() != 0 || window.restoreButton->isEnabled() ||
+      !window.snapshotDetails->text().contains("Clear the search"))
+    throw std::runtime_error("Snapshot search did not handle empty results safely");
+  window.snapshotSearch->clear();
+  qApp->processEvents();
+  if (window.snapshots->count() != allSnapshots)
+    throw std::runtime_error("Clearing snapshot search did not restore the full list");
   window.grab().save(directory + "/rust-backups.png");
   window.trayMenu->ensurePolished();
   window.trayMenu->adjustSize();
@@ -2006,7 +2050,7 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Offscreen UI smoke testing changed saved appearance state");
   QTextStream(stdout) << "Native smoke checks passed: all preset previews, mask "
                          "colors, nonmutating selection, tray actions, cleanup "
-                         "protection, searchable preset and character pickers, "
+                         "protection, searchable preset, character and snapshot lists, "
                          "configured Random pool summary, custom-preset recovery and "
                          "external refresh, external snapshot refresh, reset confirmation, "
                          "stale appearance conflict and malformed-settings recovery, "

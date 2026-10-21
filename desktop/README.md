@@ -1,19 +1,19 @@
 # Choose your Bankai edition
 
-Install the edition you prefer. Both use the same terminal artwork and KDE desktop assets.
+Rust is the default desktop edition. Python remains available as an alternative. Both use the same terminal artwork and KDE desktop assets.
 
-| | Python + PySide6 | Rust + Qt Widgets |
+| | Rust + Qt Widgets · default | Python + PySide6 |
 | --- | --- | --- |
-| Install guide | **[Install Python](python/INSTALL.md)** | **[Install Rust](rust/INSTALL.md)** |
-| Source and details | [Python overview](python/README.md) | [Rust overview](rust/README.md) |
-| App command | `bankai` | `bankai-rust` |
-| App runtime | Python and PySide6 | Compiled Rust core and Qt C++ view |
-| Build required | No | Yes: Rust/Cargo, C++17 and Qt development libraries |
-| Terminal artwork controls | Fish settings menu | In-app selection and live color/manga preview |
-| Portrait follows desktop | Presets select their matching portrait | Optional; independent rotation is preserved by default |
-| Status | Original edition | Experimental edition |
+| Install guide | **[Install Rust](rust/INSTALL.md)** | [Install Python](python/INSTALL.md) |
+| Source and details | [Rust overview](rust/README.md) | [Python overview](python/README.md) |
+| App command | `bankai-rust` | `bankai` |
+| App runtime | Compiled Rust core and Qt C++ view | Python and PySide6 |
+| Build required | Yes: Rust/Cargo, C++17 and Qt development libraries | No |
+| Terminal artwork controls | In-app selection and live color/manga preview | Fish settings menu |
+| Portrait follows desktop | Optional; independent rotation is preserved by default | Presets select their matching portrait |
+| Status | Default edition | Alternative edition |
 
-The Rust edition has a smaller measured startup footprint on the development machine; [benchmark details and limitations](rust/README.md#measured-comparison) explain the comparison. Choose Python for the original implementation without a compilation step, or Rust for the compiled app and its portrait controls.
+Rust is the recommended desktop app, with live terminal-art previews and a smaller measured startup footprint on the development machine. [Benchmark details and limits](rust/README.md#measured-comparison) explain the comparison. Choose Python if you prefer the original implementation without a compilation step.
 
 Each install guide is self-contained. You do not need to install the other control-center edition. Both need the shared terminal theme, whose Python/Fish helpers also run when using the Rust edition.
 
@@ -38,9 +38,9 @@ Each install guide is self-contained. You do not need to install the other contr
 [Choose a release download](https://github.com/vigilante-zen/bleach-kitty/releases). Python and Rust are packaged separately, each with the shared terminal theme and artwork. Assets appear after the release workflow succeeds. Run just your chosen installer from the package or repository root:
 
 ```bash
-python3 desktop/python/install.py  # Python edition
-# OR
-python3 desktop/rust/install.py    # Rust edition; builds source if needed
+python3 desktop/install.py         # Rust default; builds source if needed
+# Or choose explicitly:
+python3 desktop/python/install.py  # Python alternative
 ```
 
 Both bundle the optional manga-scene SDDM login theme. Open **Login screen setup** in either app to preview it and copy activation or restore commands. One-time administrator setup lets the login scene follow the selected desktop background in either edition.

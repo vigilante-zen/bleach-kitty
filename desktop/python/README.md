@@ -1,4 +1,4 @@
-# Bankai Python + PySide6
+# Bankai Python + PySide6 · alternative edition
 
 **[Install the Python edition →](INSTALL.md)** · [Compare editions](../README.md) · [Install Rust instead](../rust/INSTALL.md)
 

@@ -130,7 +130,8 @@ def payload(edition, home, binary=None, dry=False):
     if edition == 'python':
         interpreter = sys.executable.replace('\\', '\\\\').replace('"', '\\"').replace('`', '\\`').replace('$', '\\$').replace('%', '%%')
         exec_line = f'"{interpreter}" ' + exec_line
-    entry = f'[Desktop Entry]\nType=Application\nName=Bankai {edition.title()}\nExec={exec_line}\nIcon={icon}\nTerminal=false\nCategories=Settings;DesktopSettings;\nStartupNotify=false\n'
+    app_name = 'Bankai' if edition == 'rust' else 'Bankai Python'
+    entry = f'[Desktop Entry]\nType=Application\nName={app_name}\nExec={exec_line}\nIcon={icon}\nTerminal=false\nCategories=Settings;DesktopSettings;\nStartupNotify=false\n'
     result['.local/share/applications/' + icon + '.desktop'] = (entry.encode(), 0o644)
     return result
 
@@ -225,13 +226,20 @@ def change(edition, action, home, state, files, dry):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('edition', choices=['python', 'rust'])
+    parser.add_argument('edition', nargs='?', default='rust',
+                        help='desktop edition to install (default: rust)')
     parser.add_argument('action', nargs='?', default='install', choices=['install', 'uninstall'])
     parser.add_argument('--home', type=Path, default=Path.home())
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--skip-theme', action='store_true', help='install only desktop files; theme must already be available')
     parser.add_argument('--binary', type=Path, help='use an already built Rust executable')
     args = parser.parse_args()
+    if args.edition in {'install', 'uninstall'}:
+        if args.action != 'install':
+            parser.error('Specify the edition before the action.')
+        args.action, args.edition = args.edition, 'rust'
+    elif args.edition not in {'python', 'rust'}:
+        parser.error('edition must be python or rust')
     home = args.home.expanduser().absolute()
     if home == Path('/') or home.is_symlink():
         raise ValueError('Use a real, non-root home directory')
@@ -255,7 +263,8 @@ def main():
         change(args.edition, args.action, home, state, files, args.dry_run)
     if args.action == 'install' and not args.dry_run:
         print('Optional login theme: sudo python3 ~/.local/share/bleach-desktop/install-login.py install')
-        print(f'Open Bankai {args.edition.title()} from your app menu. Login startup stays unchanged.')
+        app_name = 'Bankai' if args.edition == 'rust' else 'Bankai Python'
+        print(f'Open {app_name} from your app menu. Login startup stays unchanged.')
     if args.action == 'uninstall':
         print('Theme files, runtime preferences, snapshots and login-startup settings are retained. Disable login startup in the app before uninstalling.')
 

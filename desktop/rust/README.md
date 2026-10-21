@@ -1,4 +1,4 @@
-# Bankai Rust — experimental native edition
+# Bankai Rust — default desktop edition
 
 **[Install the Rust edition →](INSTALL.md)** · [Compare editions](../README.md) · [Install Python instead](../python/INSTALL.md)
 
@@ -13,7 +13,7 @@ bankai-rust backups
 bankai-rust status
 ```
 
-You can also search **Bankai Rust** in KDE's app launcher. The existing Python edition remains `bankai`. The Rust edition has its own instance channel and optional login-startup preference. It is not enabled at login by default. Avoid enabling both tray apps at login unless you want two icons.
+You can also search **Bankai** in KDE's app launcher. The Python alternative remains available as `bankai`. The Rust app has its own instance channel and optional login-startup preference. It is not enabled at login by default. Avoid enabling both tray apps at login unless you want two icons.
 
 Both editions read the same saved preset, character artwork, KDE settings, Kitty accents, portrait selection, snapshots and protected-snapshot list. Applying a preset or restoring a snapshot changes the shared desktop. Comparing their windows and previews is read-only; do not apply competing presets from both editions simultaneously.
 
@@ -43,7 +43,7 @@ The terminal-artwork update passed 19 Rust unit tests, 18 compiled-binary integr
 
 Existing Fish terminal-settings and monitoring commands are launched as external integrations. Diagnostics can launch the existing `bankai-doctor` helper. The system SDDM installer remains a separate Python tool: this app only shows its existing command. The portrait/greeting scripts and login installer were not rewritten.
 
-The Rust executable and its experimental startup preference are not part of the legacy desktop snapshot allowlist. Source code is in this project. Keep the Python edition available while evaluating the port.
+The Rust executable and its startup preference are not part of the legacy desktop snapshot allowlist. Source code is in this project. The Python edition remains available as an alternative.
 
 ## Measured comparison
 

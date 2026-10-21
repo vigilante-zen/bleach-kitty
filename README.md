@@ -10,16 +10,16 @@ A character-driven Bleach theme for Kitty, Fish, Fastfetch and btop. Includes **
 
 ## Choose your edition
 
-| Python edition | Rust edition |
+| Rust edition · default | Python edition · alternative |
 | --- | --- |
-| Original Python + PySide6 desktop app | Experimental compiled Rust + Qt desktop app |
-| No compilation step | Live portrait previews and optional desktop matching |
-| **[Install Python →](desktop/python/INSTALL.md)** | **[Install Rust →](desktop/rust/INSTALL.md)** |
-| [Python source and details](desktop/python/README.md) | [Rust source and details](desktop/rust/README.md) |
+| Compiled Rust core + Qt desktop app | Original Python + PySide6 desktop app |
+| Live portrait previews and desktop matching | No compilation step |
+| **[Install Rust →](desktop/rust/INSTALL.md)** | [Install Python →](desktop/python/INSTALL.md) |
+| [Rust source and details](desktop/rust/README.md) | [Python source and details](desktop/python/README.md) |
 
 [Download edition packages](https://github.com/vigilante-zen/bleach-kitty/releases) · [See app screenshots](desktop/README.md#screenshots)
 
-Pick one desktop edition. Each edition has its own installer with backups, launcher creation, updates and uninstall support. Each guide includes its requirements, installation and validation. [Compare editions or switch later](desktop/README.md).
+Rust is the default desktop edition. Run `python3 desktop/install.py` from the repository root to install it; the Python edition remains available through its separate installer. Each edition has backups, launcher creation, updates and uninstall support. [Compare editions or switch later](desktop/README.md).
 
 For the terminal theme on its own, follow [Terminal theme installation](#install) below.
 

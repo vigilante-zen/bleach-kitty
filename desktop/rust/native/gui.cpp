@@ -186,7 +186,7 @@ public:
     side->setContentsMargins(23, 30, 23, 23);
     side->addWidget(label("SOUL SOCIETY", "eyebrow"));
     side->addWidget(label("BANKAI", "brand"));
-    side->addWidget(label("Rust edition · 0.1", "muted"));
+    side->addWidget(label("Bankai · 0.1", "muted"));
     side->addSpacing(28);
     navigation = new QListWidget;
     navigation->addItems(

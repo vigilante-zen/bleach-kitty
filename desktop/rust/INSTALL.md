@@ -1,4 +1,4 @@
-# Install Bankai Rust
+# Install Bankai (Rust edition)
 
 [Choose another edition](../README.md) · [Rust overview](README.md) · [Install Python instead](../python/INSTALL.md)
 
@@ -28,12 +28,14 @@ cd bleach-kitty
 
 ## 2. Preview and install
 
-From the extracted package or repository root:
+From the repository root, the default desktop installer selects Rust:
 
 ```bash
-python3 desktop/rust/install.py --dry-run
-python3 desktop/rust/install.py
+python3 desktop/install.py --dry-run
+python3 desktop/install.py
 ```
+
+The edition-specific equivalent is `python3 desktop/rust/install.py`. The Python alternative remains available through `python3 desktop/python/install.py`.
 
 One command installs the selected app, shared wallpapers/color schemes, its icon and KDE app-menu entry. It also installs the shared terminal theme unless a receipt from the root theme installer already exists. An unmanaged theme setup can cause the root theme installer to refuse conflicting managed blocks; use `--skip-theme` only when you have already installed a working terminal theme yourself.
 

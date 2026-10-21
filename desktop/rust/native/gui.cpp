@@ -3,6 +3,7 @@
 #include <QtWidgets>
 #include <cstring>
 #include <stdexcept>
+#include <tuple>
 extern "C" char *bankai_request(const char *);
 extern "C" void bankai_free(char *);
 extern "C" bool bankai_hash_file(const char *path, unsigned char *output) {
@@ -532,9 +533,16 @@ public:
     auto *layout = new QVBoxLayout(&dialog);
     auto *search = new QLineEdit;
     search->setObjectName("portrait-search");
-    search->setPlaceholderText("Search characters and forms…");
+    search->setPlaceholderText("Search characters and forms…  ( / to focus )");
     search->setClearButtonEnabled(true);
     layout->addWidget(search);
+    auto *searchShortcut = new QShortcut(QKeySequence(Qt::Key_Slash), &dialog);
+    searchShortcut->setObjectName("portrait-search-shortcut");
+    searchShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(searchShortcut, &QShortcut::activated, search, [search] {
+      search->setFocus(Qt::ShortcutFocusReason);
+      search->selectAll();
+    });
     auto *filters = new QComboBox;
     filters->setObjectName("portrait-filter");
     filters->addItem("All characters", "all");
@@ -552,8 +560,18 @@ public:
       filters->addItem(labels.value(group, group), group);
       members.insert(group, rosterCommand({"members", group}));
     }
+    filters->addItem("Recently used", "recent");
     filters->addItem("Favorites", "favorites");
     const auto favorites = rosterCommand({"list"});
+    QStringList recentlyUsed;
+    QFile recentFile(home + "/.local/state/bleach/art-history.json");
+    if (recentFile.open(QIODevice::ReadOnly)) {
+      const auto history = QJsonDocument::fromJson(recentFile.readAll()).array();
+      for (const auto &entry : history) {
+        const auto id = entry.toObject().value("name").toString();
+        if (!id.isEmpty() && !recentlyUsed.contains(id)) recentlyUsed << id;
+      }
+    }
     QMap<QString, QString> displayNames;
     for (const auto &record : rosterCommand({"catalog"})) {
       const auto fields = record.split('\t');
@@ -579,12 +597,13 @@ public:
     scroll->setWidget(gridPage);
     layout->addWidget(scroll, 1);
     auto *empty = label("No matching characters.", "muted");
+    empty->setObjectName("portrait-empty-state");
     empty->hide();
     layout->addWidget(empty);
     auto *close = new QDialogButtonBox(QDialogButtonBox::Close);
     connect(close, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     layout->addWidget(close);
-    auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites, &displayNames, &dialog]() {
+    auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites, &recentlyUsed, &displayNames, &dialog]() {
       while (auto *item = grid->takeAt(0)) {
         if (auto *widget = item->widget()) { widget->hide(); widget->deleteLater(); }
         delete item;
@@ -592,14 +611,19 @@ public:
       const auto filter = filters->currentData().toString();
       const auto query = search->text().trimmed();
       QStringList ids;
-      for (int index = 1; index < portraitChoice->count(); ++index) {
-        const auto id = portraitChoice->itemData(index).toString();
-        if (filter == "all" || (filter == "favorites" && favorites.contains(id)) ||
-            members.value(filter).contains(id)) ids << id;
+      if (filter == "recent") {
+        for (const auto &id : recentlyUsed)
+          if (portraitChoice->findData(id) >= 0) ids << id;
+      } else {
+        for (int index = 1; index < portraitChoice->count(); ++index) {
+          const auto id = portraitChoice->itemData(index).toString();
+          if (filter == "all" || (filter == "favorites" && favorites.contains(id)) ||
+              members.value(filter).contains(id)) ids << id;
+        }
+        std::sort(ids.begin(), ids.end(), [&displayNames](const QString &left, const QString &right) {
+          return displayNames.value(left, left).compare(displayNames.value(right, right), Qt::CaseInsensitive) < 0;
+        });
       }
-      std::sort(ids.begin(), ids.end(), [&displayNames](const QString &left, const QString &right) {
-        return displayNames.value(left, left).compare(displayNames.value(right, right), Qt::CaseInsensitive) < 0;
-      });
       int row = 0, column = 0;
       for (const auto &id : ids) {
         auto title = displayNames.value(id, id);
@@ -612,6 +636,11 @@ public:
         auto *card = new QPushButton;
         card->setObjectName("portrait-card");
         card->setAccessibleName(title);
+        card->setFocusPolicy(Qt::StrongFocus);
+        card->setAutoDefault(false);
+        card->setDefault(false);
+        card->setProperty("gridRow", row);
+        card->setProperty("gridColumn", column);
         card->setFixedSize(154, 142);
         card->setStyleSheet("padding: 4px;");
         auto *cardLayout = new QVBoxLayout(card);
@@ -635,10 +664,47 @@ public:
           updatePortraitPreview();
           dialog.accept();
         });
+        const auto moveFocus = [grid, card](int rowDelta, int columnDelta) {
+          const int row = card->property("gridRow").toInt();
+          const int column = card->property("gridColumn").toInt();
+          const int rows = grid->rowCount(), columns = grid->columnCount();
+          int targetRow = row + rowDelta, targetColumn = column + columnDelta;
+          while (targetRow >= 0 && targetRow < rows && targetColumn >= 0 && targetColumn < columns) {
+            if (auto *item = grid->itemAtPosition(targetRow, targetColumn)) {
+              if (auto *target = qobject_cast<QWidget *>(item->widget())) {
+                target->setFocus(Qt::TabFocusReason);
+                return;
+              }
+            }
+            targetRow += rowDelta;
+            targetColumn += columnDelta;
+          }
+        };
+        for (const auto &[key, dr, dc] : {
+                 std::tuple{Qt::Key_Left, 0, -1}, std::tuple{Qt::Key_Right, 0, 1},
+                 std::tuple{Qt::Key_Up, -1, 0}, std::tuple{Qt::Key_Down, 1, 0}}) {
+          auto *shortcut = new QShortcut(QKeySequence(key), card);
+          shortcut->setContext(Qt::WidgetShortcut);
+          connect(shortcut, &QShortcut::activated, card, [moveFocus, dr, dc] { moveFocus(dr, dc); });
+        }
+        for (const auto key : {Qt::Key_Return, Qt::Key_Enter}) {
+          auto *shortcut = new QShortcut(QKeySequence(key), card);
+          shortcut->setContext(Qt::WidgetShortcut);
+          connect(shortcut, &QShortcut::activated, card, [card] { card->click(); });
+        }
         grid->addWidget(card, row, column++);
         if (column == 4) { column = 0; ++row; }
       }
-      empty->setVisible(grid->count() == 0);
+      const bool noCards = grid->count() == 0;
+      if (noCards && !query.isEmpty())
+        empty->setText("No characters match that search. Try another term.");
+      else if (noCards && filter == "favorites")
+        empty->setText("No favorites saved yet. Add favorites in Terminal settings or choose another filter.");
+      else if (noCards && filter == "recent")
+        empty->setText("No recent characters yet. Open a terminal greeting, then check back here.");
+      else
+        empty->setText("No characters in this group. Try another filter.");
+      empty->setVisible(noCards);
       gridPage->adjustSize();
     };
     connect(search, &QLineEdit::textChanged, &dialog, rebuild);
@@ -1123,7 +1189,9 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     if (!dialog) { failure = "Character picker did not open"; return; }
     auto *search = dialog->findChild<QLineEdit *>("portrait-search");
     auto *filter = dialog->findChild<QComboBox *>("portrait-filter");
-    if (!search || !filter || filter->findData("quincy") < 0) {
+    if (!search || !filter || filter->findData("quincy") < 0 ||
+        filter->findData("recent") < 0 || filter->findData("favorites") < 0 ||
+        !dialog->findChild<QShortcut *>("portrait-search-shortcut")) {
       failure = "Character picker is missing search or faction filters";
       dialog->reject();
       return;
@@ -1134,10 +1202,18 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     search->setText("uryu");
     qApp->processEvents();
     int visible = 0;
-    for (auto *card : dialog->findChildren<QPushButton *>("portrait-card"))
+    const auto cards = dialog->findChildren<QPushButton *>("portrait-card");
+    for (auto *card : cards)
       if (card->isVisible()) ++visible;
     if (visible != 1)
       failure = "Character picker search did not narrow the selected faction";
+    if (cards.isEmpty() || cards.first()->findChildren<QShortcut *>().size() < 6)
+      failure = "Character cards are missing keyboard navigation shortcuts";
+    search->setText("no-such-character");
+    qApp->processEvents();
+    auto *empty = dialog->findChild<QLabel *>("portrait-empty-state");
+    if (!empty || !empty->isVisible() || !empty->text().contains("Try another term"))
+      failure = "Character picker has no useful empty-search state";
     if (!dialog->findChild<QPushButton *>("portrait-random"))
       failure = "Character picker is missing the random option";
     dialog->reject();

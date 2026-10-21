@@ -3,6 +3,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import struct
 import tarfile
 import tempfile
 import unittest
@@ -20,9 +21,17 @@ class PackageChecks(unittest.TestCase):
             for name in ['install.py', 'MANIFEST.json', 'LICENSE', 'files/.config/theme', 'docs/ARTWORK.md',
                          'login/ARTWORK.json', 'login/install.py', 'login/sync.py', 'login/greeter_preview.py', 'login/legacy-theme.json', 'login/README.md', 'login/preview.py', 'login/preview.png', 'login/theme/Main.qml', 'login/theme/assets/ichigo.png',
                          'desktop/install.py', 'desktop/README.md', 'desktop/shared/wallpapers/art.png',
+                         'desktop/shared/color-schemes/BleachIchigo.colors', 'login/theme/assets/scene-ichigo.png',
                          'desktop/python/install.py', 'desktop/rust/install.py',
                          'desktop/rust/target/release/leaked', 'desktop/rust/bin/bankai-rust', 'desktop/python/__pycache__/leaked.pyc']:
                 path = root / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_text('test')
+            catalog = {'presets': [{'id': 'ichigo', 'title': 'Ichigo', 'subtitle': 'Ember',
+                                    'accent': '#ff9d52', 'image': 'art.png', 'portrait': 'ichigo',
+                                    'manga': 'ichigo-manga.png'}]}
+            (root / 'desktop/shared/presets.json').write_text(json.dumps(catalog))
+            png_header = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR' + struct.pack('>II', 1, 1)
+            (root / 'desktop/shared/wallpapers/art.png').write_bytes(png_header)
+            (root / 'login/theme/assets/scene-ichigo.png').write_bytes(png_header)
             binary = Path(temp) / 'binary'; binary.write_bytes(b'compiled')
             with patch.object(packages, 'ROOT', root):
                 for edition in ['python', 'rust']:
@@ -45,6 +54,21 @@ class PackageChecks(unittest.TestCase):
                             self.assertEqual(executable.mode & 0o777, 0o755)
                     expected = archive.with_suffix(archive.suffix + '.sha256').read_text().split()[0]
                     self.assertEqual(expected, hashlib.sha256(archive.read_bytes()).hexdigest())
+
+    def test_packaging_stops_when_preset_artwork_is_missing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / 'repo'; root.mkdir()
+            catalog = {'presets': [{'id': 'ichigo', 'title': 'Ichigo', 'subtitle': 'Ember',
+                                    'accent': '#ff9d52', 'image': 'ichigo.png', 'portrait': 'ichigo',
+                                    'manga': 'ichigo-manga.png'}]}
+            path = root / 'desktop/shared/presets.json'
+            path.parent.mkdir(parents=True)
+            path.write_text(json.dumps(catalog))
+            output = Path(temp) / 'dist'
+            with patch.object(packages, 'ROOT', root):
+                with self.assertRaisesRegex(ValueError, 'Preset asset consistency check failed'):
+                    packages.package('python', output)
+            self.assertFalse(output.exists())
 
     def test_binary_platform_name_is_validated(self):
         with tempfile.TemporaryDirectory() as temp:

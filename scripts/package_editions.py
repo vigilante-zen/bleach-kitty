@@ -2,12 +2,16 @@
 """Build edition-specific release archives from an explicit public-file allowlist."""
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
+_PRESET_CHECK_SPEC = importlib.util.spec_from_file_location('bankai_preset_check', ROOT / 'scripts/check_presets.py')
+_PRESET_CHECK = importlib.util.module_from_spec(_PRESET_CHECK_SPEC)
+_PRESET_CHECK_SPEC.loader.exec_module(_PRESET_CHECK)
 
 
 def package(edition, output, binary=None, platform=None):
@@ -17,6 +21,9 @@ def package(edition, output, binary=None, platform=None):
         raise ValueError('Rust binaries require a platform name such as linux-x86-64')
     if binary and (binary.is_symlink() or not binary.is_file()):
         raise ValueError('Rust binary must be an existing regular file')
+    preset_errors = _PRESET_CHECK.validate(ROOT)
+    if preset_errors:
+        raise ValueError('Preset asset consistency check failed:\n - ' + '\n - '.join(preset_errors))
     name = 'bankai-python' if edition == 'python' else 'bankai-rust-' + (platform if binary else 'source')
     output.mkdir(parents=True, exist_ok=True)
     archive = output / (name + '.tar.gz')

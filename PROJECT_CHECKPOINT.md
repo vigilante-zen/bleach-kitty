@@ -13,7 +13,7 @@ Snapshot restore in both Rust and Python now stages and verifies all target byte
 
 The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 52 Python tests, 32 Rust tests, 22 Rust/Python snapshot compatibility checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
-Release-package verification now runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check.
+Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.
 
 The next project change can follow the user's next request. Push `main` when GitHub DNS is available; a push from this environment previously failed because `github.com` could not be resolved.
 

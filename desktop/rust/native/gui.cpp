@@ -681,9 +681,13 @@ public:
       if (line.startsWith("Rotation: ")) rotation = line.mid(QString("Rotation: ").size());
       else if (line.startsWith("Shuffle: ")) shuffleMode = line.mid(QString("Shuffle: ").size());
     }
-    int poolCount = rotation == "favorites" ? favorites.size()
-        : rotation == "all portraits" ? displayNames.size()
-        : members.value(rotation).size();
+    QStringList rotationPool = rotation == "favorites" ? favorites
+        : rotation == "all portraits" ? displayNames.keys()
+        : members.value(rotation);
+    std::sort(rotationPool.begin(), rotationPool.end(), [&displayNames](const QString &left, const QString &right) {
+      return displayNames.value(left, left).compare(displayNames.value(right, right), Qt::CaseInsensitive) < 0;
+    });
+    const int poolCount = rotationPool.size();
     const auto poolName = labels.value(rotation, rotation);
     layout->addWidget(filters);
     auto *random = new QPushButton("Random · shuffle current pool");
@@ -694,7 +698,41 @@ public:
       dialog.accept();
     });
     random->setObjectName("portrait-random");
-    layout->addWidget(random);
+    random->setEnabled(!rotationPool.isEmpty());
+    auto *randomRow = new QHBoxLayout;
+    randomRow->addWidget(random, 1);
+    auto *poolPreview = new QPushButton("Preview eligible characters");
+    poolPreview->setObjectName("random-pool-preview");
+    poolPreview->setEnabled(!rotationPool.isEmpty());
+    connect(poolPreview, &QPushButton::clicked, &dialog,
+            [&dialog, rotationPool, poolName, shuffleMode, &displayNames] {
+      QDialog preview(&dialog);
+      preview.setObjectName("random-pool-dialog");
+      preview.setWindowTitle("Random rotation pool");
+      preview.resize(380, 460);
+      auto *previewLayout = new QVBoxLayout(&preview);
+      previewLayout->addWidget(label(
+          QString("%1 · %2 portrait%3 · %4 shuffle")
+              .arg(poolName).arg(rotationPool.size())
+              .arg(rotationPool.size() == 1 ? "" : "s").arg(shuffleMode), "muted"));
+      auto *items = new QListWidget;
+      items->setObjectName("random-pool-items");
+      for (const auto &id : rotationPool) {
+        auto title = displayNames.value(id, id);
+        if (title == id) {
+          title.replace('-', ' ');
+          if (!title.isEmpty()) title[0] = title[0].toUpper();
+        }
+        items->addItem(title);
+      }
+      previewLayout->addWidget(items, 1);
+      auto *close = new QDialogButtonBox(QDialogButtonBox::Close);
+      connect(close, &QDialogButtonBox::rejected, &preview, &QDialog::reject);
+      previewLayout->addWidget(close);
+      preview.exec();
+    });
+    randomRow->addWidget(poolPreview);
+    layout->addLayout(randomRow);
     auto *poolSummary = label(
         QString("Random uses %1 (%2 %3, %4 shuffle). Search and faction filters below only narrow direct choices.")
             .arg(poolName).arg(poolCount).arg(poolCount == 1 ? "portrait" : "portraits").arg(shuffleMode),
@@ -1369,7 +1407,7 @@ static QJsonObject benchmark(Window &window, qint64 elapsed) {
   return result;
 }
 static void smokePortraitPicker(Window &window, const QString &directory) {
-  QString failure;
+  QString failure, poolPreviewFailure;
   QTimer::singleShot(150, &window, [&] {
     auto *dialog = window.findChild<QDialog *>("terminal-character-picker");
     if (!dialog) { failure = "Character picker did not open"; return; }
@@ -1378,7 +1416,8 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     if (!search || !filter || filter->findData("quincy") < 0 ||
         filter->findData("recent") < 0 || filter->findData("favorites") < 0 ||
         !dialog->findChild<QShortcut *>("portrait-search-shortcut") ||
-        !dialog->findChild<QLabel *>("random-pool-summary")) {
+        !dialog->findChild<QLabel *>("random-pool-summary") ||
+        !dialog->findChild<QPushButton *>("random-pool-preview")) {
       failure = "Character picker is missing search or faction filters";
       dialog->reject();
       return;
@@ -1387,6 +1426,19 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     if (!poolSummary.contains("Random uses") || !poolSummary.contains("shuffle") ||
         !poolSummary.contains("direct choices"))
       failure = "Random picker does not explain its configured pool";
+    auto *poolPreview = dialog->findChild<QPushButton *>("random-pool-preview");
+    if (!poolPreview->isEnabled())
+      failure = "Random pool preview is disabled despite an installed portrait";
+    QTimer::singleShot(50, &window, [&] {
+      auto *preview = window.findChild<QDialog *>("random-pool-dialog");
+      auto *items = preview ? preview->findChild<QListWidget *>("random-pool-items") : nullptr;
+      if (!items || items->count() != 1 ||
+          !items->item(0)->text().contains("uryu", Qt::CaseInsensitive))
+        poolPreviewFailure = "Random pool preview does not show the configured eligible portrait";
+      if (preview) preview->reject();
+    });
+    poolPreview->click();
+    if (!poolPreviewFailure.isEmpty()) failure = poolPreviewFailure;
     dialog->grab().save(directory + "/rust-character-picker.png");
     filter->setCurrentIndex(filter->findData("quincy"));
     qApp->processEvents();
@@ -1631,8 +1683,7 @@ static bool prepareSmokeHome(const QString &source, const QString &destination) 
       !copySmokeFile(source + "/.config/fastfetch/portraits/uryu.png",
                      destination + "/.config/fastfetch/portraits/uryu.png"))
     return false;
-  for (const auto &name : {"portrait-choice", "portrait-art-mode", "portrait-follow-desktop",
-                           "portrait-favorites.json", "shuffle-mode"}) {
+  for (const auto &name : {"portrait-choice", "portrait-art-mode", "portrait-follow-desktop"}) {
     const QString path = "/.config/fastfetch/" + QString(name);
     const QString from = source + path;
     if (QFileInfo(from).exists() && !copySmokeFile(from, destination + path))

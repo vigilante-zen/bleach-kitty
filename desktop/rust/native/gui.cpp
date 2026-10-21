@@ -620,8 +620,8 @@ public:
     layout->addWidget(snapshots);
     snapshotDetails = label("", "muted");
     snapshotDetails->setAccessibleName("Selected snapshot details");
-    auto *snapshotInfo = new QHBoxLayout;
-    snapshotInfo->addWidget(snapshotDetails, 1);
+    auto *snapshotInfo = new QVBoxLayout;
+    snapshotInfo->addWidget(snapshotDetails);
     inspectButton = button("Preview restore…", [this] {
       startTask({{"op", "inspect-snapshot"},
                  {"name", snapshots->currentData().toString()}},
@@ -629,24 +629,27 @@ public:
     });
     inspectButton->setAccessibleDescription(
         "Verify the selected snapshot and preview the files it restores or removes.");
-    snapshotInfo->addWidget(inspectButton);
+    auto *inspectRow = new QHBoxLayout;
+    inspectRow->addStretch();
+    inspectRow->addWidget(inspectButton);
+    snapshotInfo->addLayout(inspectRow);
     layout->addLayout(snapshotInfo);
     storage = label("", "notice");
     storage->setAccessibleName("Snapshot storage status");
     layout->addWidget(storage);
     connect(snapshots, &QComboBox::currentIndexChanged, this,
             [this] { snapshotChanged(); });
-    auto *row = new QHBoxLayout;
+    auto *row = new QGridLayout;
     verifyButton = button("Verify", [this] {
       startTask(
           {{"op", "verify"}, {"name", snapshots->currentData().toString()}},
           "Verifying snapshot…");
     });
-    row->addWidget(verifyButton);
+    row->addWidget(verifyButton, 0, 0);
     restoreButton = button("Restore…", [this] { restoreSelected(); });
     restoreButton->setAccessibleDescription(
         "Review the restore plan before changing desktop files.");
-    row->addWidget(restoreButton);
+    row->addWidget(restoreButton, 0, 1);
     protectButton = button("Protect snapshot", [this] {
       auto name = snapshots->currentData().toString();
       startTask({{"op", "protect"},
@@ -656,26 +659,31 @@ public:
     });
     protectButton->setAccessibleDescription(
         "Keep the selected snapshot safe from automatic cleanup.");
-    row->addWidget(protectButton);
-    row->addWidget(button("Refresh", [this] { refreshSnapshots(); }));
+    row->addWidget(protectButton, 1, 0);
+    row->addWidget(button("Refresh", [this] { refreshSnapshots(); }), 1, 1);
     layout->addLayout(row);
     layout->addSpacing(8);
     layout->addWidget(label("CLEAN UP OLDER COPIES", "eyebrow"));
-    auto *cleanup = new QHBoxLayout;
-    cleanup->addWidget(label("Keep newest"));
+    auto *cleanup = new QVBoxLayout;
+    auto *retention = new QHBoxLayout;
+    retention->addWidget(label("Keep newest"));
     keep = new QSpinBox;
     keep->setRange(1, 100);
     keep->setValue(5);
     keep->setAccessibleName("Number of newest snapshots to keep");
     keep->setAccessibleDescription(
         "Protected snapshots are kept in addition to this number.");
-    cleanup->addWidget(keep);
-    cleanup->addWidget(label("plus all protected snapshots"));
-    cleanup->addStretch();
+    retention->addWidget(keep);
+    retention->addWidget(label("plus all protected snapshots"));
+    retention->addStretch();
+    cleanup->addLayout(retention);
+    auto *cleanupActions = new QHBoxLayout;
+    cleanupActions->addStretch();
     cleanupButton = button("Preview cleanup…", [this] { previewCleanup(); });
     cleanupButton->setAccessibleDescription(
         "Review the exact snapshots that cleanup would remove.");
-    cleanup->addWidget(cleanupButton);
+    cleanupActions->addWidget(cleanupButton);
+    cleanup->addLayout(cleanupActions);
     layout->addLayout(cleanup);
     layout->addStretch();
     layout->addWidget(label("After restoring, log out and back in. The system "
@@ -761,7 +769,7 @@ public:
     layout->addWidget(button("Login screen setup", [this] { loginSetup(); }));
     layout->addWidget(button("Setup & restore guide",
                              [this] { openFile(data + "/README.md"); }));
-    autostart = new QCheckBox("Start the Rust edition in the tray at login");
+    autostart = new QCheckBox("Start Bankai in the tray at login");
     autostart->setAccessibleDescription(
         "Starts the Bankai Rust tray app when this user logs in. "
         "The Python edition has a separate setting.");
@@ -1080,7 +1088,12 @@ public:
     portraitPreview->setAccessibleDescription(previewDescription);
     mangaPreview->setAccessibleDescription(previewDescription + " Manga version.");
     portraitChooser->setText("Terminal character: " +
-        (sample ? QString("Random · shuffle current pool") : title));
+        (sample ? QString("Random") : title));
+    portraitChooser->setAccessibleDescription(
+        sample ? "The current character choice is Random and uses the configured shuffle pool. "
+                 "Open to choose a character or preview eligible portraits."
+               : QString("The current terminal character is %1. Open to choose another character.")
+                     .arg(title));
   }
   void refreshStatus() {
     try {
@@ -1870,6 +1883,7 @@ static int smoke(Window &window, const QString &directory) {
       accessibleText(window.customPresetChoice, QAccessible::Description).isEmpty() ||
       accessibleText(window.matchDesktop, QAccessible::Description).isEmpty() ||
       accessibleText(window.portraitArt, QAccessible::Description).isEmpty() ||
+      accessibleText(window.portraitChooser, QAccessible::Description).isEmpty() ||
       accessibleText(window.autostart, QAccessible::Description).isEmpty() ||
       accessibleText(window.log, QAccessible::Name).isEmpty() ||
       accessibleText(window.logButton, QAccessible::Description).isEmpty() ||
@@ -2192,11 +2206,18 @@ static int smoke(Window &window, const QString &directory) {
   window.trayMenu->adjustSize();
   window.trayMenu->grab().save(directory + "/rust-tray.png");
   window.resize(900, 650);
+  for (int page = 0; page < window.pages->count(); ++page) {
+    window.navigation->setCurrentRow(page);
+    qApp->processEvents();
+    auto *scroll = qobject_cast<QScrollArea *>(window.pages->widget(page));
+    if (!scroll || scroll->horizontalScrollBar()->maximum() > 0)
+      throw std::runtime_error(
+          QString("Control page %1 overflows horizontally at small window sizes")
+              .arg(page)
+              .toStdString());
+  }
   window.navigation->setCurrentRow(0);
   qApp->processEvents();
-  auto *appearanceScroll = qobject_cast<QScrollArea *>(window.pages->widget(0));
-  if (!appearanceScroll || appearanceScroll->horizontalScrollBar()->maximum() > 0)
-    throw std::runtime_error("Appearance controls overflow horizontally at small window sizes");
   window.grab().save(directory + "/rust-small.png");
   window.navigation->setCurrentRow(2);
   window.matchDesktop->setChecked(false);

@@ -27,25 +27,30 @@ class CustomApplyChecks(unittest.TestCase):
             (home / '.local/share/bleach-desktop/current').write_text('old\n')
             (home / '.local/state/bleach-desktop').mkdir(parents=True)
             (home / '.local/state/bleach-desktop/pending').write_text('old pending\n')
+            (home / '.local/share/bleach-desktop/appearance.json').write_text('old appearance\n')
             edits = {
                 '.config/a-first': b'updated',
                 '.config/z-second': b'new file',
                 '.local/share/bleach-desktop/current': b'new preset\n',
                 '.local/state/bleach-desktop/pending': b'new preset\n',
+                '.local/share/bleach-desktop/appearance.json': b'new appearance\n',
+                '.config/zz-last': b'failure trigger',
             }
             calls = 0
-            def fail_fourth(path, contents, mode):
+            def fail_after_appearance_write(path, contents, mode):
                 nonlocal calls
                 calls += 1
-                if calls == 4: raise OSError('injected write failure')
+                if calls == 6: raise OSError('injected write failure')
                 desktop.atomic_write(path, contents, mode)
             with self.assertRaisesRegex(OSError, 'injected write failure'):
-                desktop.write_transaction(home, edits, fail_fourth)
+                desktop.write_transaction(home, edits, fail_after_appearance_write)
             self.assertEqual(first.read_text(), 'original')
             self.assertEqual(first.stat().st_mode & 0o777, 0o640)
             self.assertFalse((home / '.config/z-second').exists())
+            self.assertFalse((home / '.config/zz-last').exists())
             self.assertEqual((home / '.local/share/bleach-desktop/current').read_text(), 'old\n')
             self.assertEqual((home / '.local/state/bleach-desktop/pending').read_text(), 'old pending\n')
+            self.assertEqual((home / '.local/share/bleach-desktop/appearance.json').read_text(), 'old appearance\n')
             external = home / 'external'; external.write_text('untouched')
             linked = home / '.config/z-linked'; linked.symlink_to(external)
             with self.assertRaisesRegex(ValueError, 'Linked appearance preferences'):

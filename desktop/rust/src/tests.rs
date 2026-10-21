@@ -82,22 +82,24 @@ fn appearance_repair_preserves_corrupt_file_before_restoring_defaults() {
 #[test]
 fn preset_write_transaction_rolls_back_after_a_midway_failure() {
     let f=Fixture::new();let first=f.app.home.join(".config/a-first");write(&first,"original");
-    write(&f.app.data.join("current"),"old\n");write(&f.app.state.join("pending"),"old pending\n");
+    write(&f.app.data.join("current"),"old\n");write(&f.app.state.join("pending"),"old pending\n");write(&f.app.data.join("appearance.json"),"old appearance\n");
     let edits=std::collections::BTreeMap::from([
         (".config/a-first".to_string(),"updated".to_string()),
         (".config/z-second".to_string(),"new file".to_string()),
+        (".local/share/bleach-desktop/appearance.json".to_string(),"new appearance\n".to_string()),
         (".local/share/bleach-desktop/current".to_string(),"new preset\n".to_string()),
         (".local/state/bleach-desktop/pending".to_string(),"new preset\n".to_string()),
     ]);
     let mut writes=0;
     let error=presets::write_transaction_with(&f.app,&edits,|path,bytes|{
         writes+=1;
-        if writes==4 { Err("injected write failure".into()) }
+        if writes==5 { Err("injected write failure".into()) }
         else { fsutil::atomic_write(path,bytes,None) }
     }).unwrap_err();
     assert!(error.contains("injected write failure"));
     assert_eq!(fs::read_to_string(first).unwrap(),"original");
     assert!(!f.app.home.join(".config/z-second").exists());
+    assert_eq!(fs::read_to_string(f.app.data.join("appearance.json")).unwrap(),"old appearance\n");
     assert_eq!(fs::read_to_string(f.app.data.join("current")).unwrap(),"old\n");
     assert_eq!(fs::read_to_string(f.app.state.join("pending")).unwrap(),"old pending\n");
 }

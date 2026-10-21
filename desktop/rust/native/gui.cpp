@@ -1145,8 +1145,27 @@ public:
     form->addRow("Login scene", login);
     auto *shuffle = new QCheckBox("Choose a different background when Bankai starts at login");
     shuffle->setChecked(value.value("shuffle_login").toBool()); layout->addWidget(shuffle);
-    layout->addWidget(new QLabel("Shuffle pool (choose at least one):"));
-    auto *pool = new QListWidget; pool->setMaximumHeight(190); layout->addWidget(pool);
+    auto *poolHeading = new QHBoxLayout;
+    poolHeading->addWidget(new QLabel("Shuffle pool (choose at least one):"));
+    auto *poolCount = label("", "muted");
+    poolCount->setObjectName("shuffle-pool-count");
+    poolHeading->addStretch(); poolHeading->addWidget(poolCount);
+    layout->addLayout(poolHeading);
+    auto *poolSearch = new QLineEdit;
+    poolSearch->setObjectName("shuffle-pool-search");
+    poolSearch->setPlaceholderText("Filter shuffle characters…");
+    poolSearch->setClearButtonEnabled(true);
+    layout->addWidget(poolSearch);
+    auto *poolActions = new QHBoxLayout;
+    auto *selectShown = new QPushButton("Select shown");
+    selectShown->setObjectName("shuffle-pool-select-shown");
+    auto *clearShown = new QPushButton("Clear shown");
+    clearShown->setObjectName("shuffle-pool-clear-shown");
+    poolActions->addWidget(selectShown); poolActions->addWidget(clearShown); poolActions->addStretch();
+    layout->addLayout(poolActions);
+    auto *pool = new QListWidget; pool->setObjectName("shuffle-pool-list"); pool->setMaximumHeight(190); layout->addWidget(pool);
+    auto *poolEmpty = label("No shuffle characters match this filter.", "muted");
+    poolEmpty->setObjectName("shuffle-pool-empty-state"); poolEmpty->hide(); layout->addWidget(poolEmpty);
     for (auto row : presets) {
       auto p=row.toObject(); auto *item=new QListWidgetItem(p.value("title").toString(),pool);
       item->setData(Qt::UserRole,p.value("id")); item->setFlags(item->flags()|Qt::ItemIsUserCheckable);
@@ -1179,6 +1198,35 @@ public:
       confirm->open();
     });
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save|QDialogButtonBox::Cancel); layout->addWidget(buttons);
+    auto updatePoolCount = [pool, poolCount, buttons] {
+      int checked = 0;
+      for (int i = 0; i < pool->count(); ++i)
+        if (pool->item(i)->checkState() == Qt::Checked) ++checked;
+      poolCount->setText(checked == 0 ? "None selected" : QString("%1 selected").arg(checked));
+      buttons->button(QDialogButtonBox::Save)->setEnabled(checked > 0);
+    };
+    auto filterPool = [pool, poolSearch, poolEmpty] {
+      const auto query = poolSearch->text().trimmed();
+      int visible = 0;
+      for (int i = 0; i < pool->count(); ++i) {
+        auto *item = pool->item(i);
+        const auto searchable = item->text() + " " + item->data(Qt::UserRole).toString();
+        const bool matches = query.isEmpty() || searchable.contains(query, Qt::CaseInsensitive);
+        item->setHidden(!matches);
+        if (matches) ++visible;
+      }
+      poolEmpty->setVisible(visible == 0);
+    };
+    connect(poolSearch, &QLineEdit::textChanged, &dialog, filterPool);
+    connect(pool, &QListWidget::itemChanged, &dialog, [updatePoolCount] { updatePoolCount(); });
+    const auto setShown = [pool](Qt::CheckState state) {
+      for (int i = 0; i < pool->count(); ++i)
+        if (!pool->item(i)->isHidden()) pool->item(i)->setCheckState(state);
+    };
+    connect(selectShown, &QPushButton::clicked, &dialog, [setShown] { setShown(Qt::Checked); });
+    connect(clearShown, &QPushButton::clicked, &dialog, [setShown] { setShown(Qt::Unchecked); });
+    filterPool();
+    updatePoolCount();
     connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
     connect(buttons,&QDialogButtonBox::accepted,&dialog,[&] {
       QJsonArray selectedPool; for(int i=0;i<pool->count();++i) if(pool->item(i)->checkState()==Qt::Checked) selectedPool.append(pool->item(i)->data(Qt::UserRole).toString());
@@ -1407,12 +1455,66 @@ static int smoke(Window &window, const QString &directory) {
   qApp->processEvents();
   window.grab().save(directory + "/rust-appearance.png");
   auto appearanceBefore = rpc({{"op", "appearance"}});
+  QString poolFailure;
   QTimer::singleShot(100, &window, [&] {
     if (auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget())) {
+      auto *poolSearch = dialog->findChild<QLineEdit *>("shuffle-pool-search");
+      auto *pool = dialog->findChild<QListWidget *>("shuffle-pool-list");
+      auto *poolCount = dialog->findChild<QLabel *>("shuffle-pool-count");
+      auto *selectShown = dialog->findChild<QPushButton *>("shuffle-pool-select-shown");
+      auto *clearShown = dialog->findChild<QPushButton *>("shuffle-pool-clear-shown");
+      auto *poolEmpty = dialog->findChild<QLabel *>("shuffle-pool-empty-state");
+      auto *optionButtons = dialog->findChild<QDialogButtonBox *>();
+      if (!poolSearch || !pool || !poolCount || !selectShown || !clearShown || !poolEmpty || !optionButtons) {
+        poolFailure = "Appearance options are missing searchable shuffle-pool controls";
+      } else {
+        int originalSelection = 0;
+        for (int i = 0; i < pool->count(); ++i)
+          if (pool->item(i)->checkState() == Qt::Checked) ++originalSelection;
+        poolSearch->setText("quincy");
+        qApp->processEvents();
+        int visible = 0;
+        for (int i = 0; i < pool->count(); ++i)
+          if (!pool->item(i)->isHidden()) ++visible;
+        if (visible != 1)
+          poolFailure = "Shuffle-pool search did not narrow to Quincy";
+        bool quincyWasChecked = false;
+        for (int i = 0; i < pool->count(); ++i)
+          if (pool->item(i)->data(Qt::UserRole).toString() == "quincy")
+            quincyWasChecked = pool->item(i)->checkState() == Qt::Checked;
+        clearShown->click();
+        qApp->processEvents();
+        const int clearedCount = originalSelection - (quincyWasChecked ? 1 : 0);
+        const auto clearedLabel = clearedCount == 0 ? QString("None selected") : QString("%1 selected").arg(clearedCount);
+        if (poolCount->text() != clearedLabel)
+          poolFailure = "Clear shown changed selections outside the active filter";
+        selectShown->click();
+        qApp->processEvents();
+        if (poolCount->text() != QString("%1 selected").arg(originalSelection))
+          poolFailure = "Select shown did not restore the filtered selection";
+        poolSearch->clear();
+        clearShown->click();
+        qApp->processEvents();
+        if (poolCount->text() != "None selected" || optionButtons->button(QDialogButtonBox::Save)->isEnabled())
+          poolFailure = "Appearance options allow saving an empty shuffle pool";
+        selectShown->click();
+        qApp->processEvents();
+        if (poolCount->text() != QString("%1 selected").arg(originalSelection) ||
+            !optionButtons->button(QDialogButtonBox::Save)->isEnabled())
+          poolFailure = "Select shown did not restore the full shuffle pool";
+        poolSearch->setText("no-such-character");
+        qApp->processEvents();
+        if (!poolEmpty->isVisible())
+          poolFailure = "Shuffle-pool filter has no empty state";
+        poolSearch->clear();
+        qApp->processEvents();
+      }
       dialog->grab().save(directory + "/rust-appearance-options.png"); dialog->reject();
     }
   });
   window.appearanceOptions();
+  if (!poolFailure.isEmpty())
+    throw std::runtime_error(poolFailure.toStdString());
   if (rpc({{"op", "appearance"}}) != appearanceBefore)
     throw std::runtime_error("Canceling appearance options changed preferences");
   auto originalArtwork = rpc({{"op", "portraits"}}).toObject();

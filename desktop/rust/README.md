@@ -27,13 +27,13 @@ The live preview updates before saving. Mixed mode shows color and manga side by
 
 Desktop preset changes preserve independent terminal portrait and art preferences. The Python app still uses its original preset behavior. Settings use the same files as `bankai-pick` and `bankai-art`, and external changes appear in the app.
 
-The terminal-artwork update passed 19 Rust unit tests, 18 compiled-binary integration tests and the offscreen native smoke checks. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
+The current Rust appearance and terminal-artwork controls pass 22 Rust unit tests, 22 compiled-binary integration tests and the offscreen native smoke checks. The local installed executable includes these controls. Live KDE interaction still needs desktop testing.
 
 ## Ported behavior
 
 - All eighteen presets, wallpaper previews, explicit Apply, and automatic snapshots before changes.
 - Named custom combinations that capture the current wallpaper, accent, and login-scene choices.
-- Searchable desktop preset cards and a confirmed reset to the default appearance settings and TYBW preset.
+- Searchable desktop preset cards, searchable login shuffle pools with select/clear shown, and a confirmed reset to the default appearance settings and TYBW preset.
 - KDE desktop and lock-screen wallpaper, color schemes and terminal accents; independent terminal portrait and art preferences.
 - Hollow-mask tray icon colored for the saved character; updates after command-line changes.
 - Tray preset selection, terminal and monitor launchers, snapshot creation, and window reopening.

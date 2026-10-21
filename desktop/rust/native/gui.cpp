@@ -1213,7 +1213,15 @@ public:
       notice->setText("Could not open " + path);
   }
   void appearanceOptions() {
-    auto value = rpc({{"op", "appearance"}}).toObject();
+    QJsonObject value;
+    try {
+      value = rpc({{"op", "appearance"}}).toObject();
+    } catch (const std::exception &e) {
+      QMessageBox::information(this, "Appearance options",
+          "Saved appearance settings could not be loaded. The file was left untouched.\n\n" +
+              QString::fromUtf8(e.what()));
+      return;
+    }
     QDialog dialog(this); dialog.setObjectName("appearance-options-dialog"); dialog.setWindowTitle("Appearance options");
     auto *layout = new QVBoxLayout(&dialog); auto *form = new QFormLayout;
     layout->addLayout(form);
@@ -1568,6 +1576,36 @@ static void smokeStaleAppearanceSave(Window &window, const QJsonObject &original
   if (!failure.isEmpty())
     throw std::runtime_error(failure.toStdString());
 }
+static void smokeMalformedAppearanceRead(Window &window, const QJsonObject &original) {
+  QSaveFile malformed(window.data + "/appearance.json");
+  const QByteArray corruptData = "not valid json\n";
+  if (!malformed.open(QIODevice::WriteOnly) ||
+      malformed.write(corruptData) != corruptData.size() || !malformed.commit())
+    throw std::runtime_error("Could not prepare malformed appearance settings");
+  bool handled = false;
+  QString failure;
+  QTimer::singleShot(50, &window, [&] {
+    auto *message = qobject_cast<QMessageBox *>(QApplication::activeModalWidget());
+    if (!message || !message->text().contains("could not be loaded"))
+      failure = "Malformed Appearance settings were not reported clearly";
+    else
+      message->accept();
+    handled = true;
+  });
+  window.appearanceOptions();
+  if (!handled)
+    failure = "Malformed Appearance settings warning did not open";
+  QFile saved(window.data + "/appearance.json");
+  if (!saved.open(QIODevice::ReadOnly) || saved.readAll() != corruptData)
+    failure = "Opening Appearance options changed malformed settings";
+  try {
+    rpc({{"op", "save-appearance"}, {"appearance", original}});
+  } catch (const std::exception &e) {
+    failure = QString("Could not restore smoke appearance settings: %1").arg(e.what());
+  }
+  if (!failure.isEmpty())
+    throw std::runtime_error(failure.toStdString());
+}
 static int smoke(Window &window, const QString &directory) {
   if (!window.notice->text().startsWith("Saved presets could not be loaded:"))
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
@@ -1744,6 +1782,7 @@ static int smoke(Window &window, const QString &directory) {
   if (rpc({{"op", "appearance"}}) != appearanceBefore)
     throw std::runtime_error("Canceling appearance options changed preferences");
   smokeStaleAppearanceSave(window, appearanceBefore.toObject());
+  smokeMalformedAppearanceRead(window, appearanceBefore.toObject());
   auto originalArtwork = rpc({{"op", "portraits"}}).toObject();
   window.navigation->setCurrentRow(2);
   window.portraitArt->setCurrentIndex(2);
@@ -1827,7 +1866,8 @@ static int smoke(Window &window, const QString &directory) {
                          "protection, searchable preset and character pickers, "
                          "configured Random pool summary, custom-preset recovery and "
                          "external refresh, external snapshot refresh, reset confirmation, "
-                         "stale appearance conflict protection, worker process and screenshots.\n";
+                         "stale appearance conflict and malformed-settings messaging, "
+                         "worker process and screenshots.\n";
   return 0;
 }
 static bool copySmokeFile(const QString &source, const QString &destination) {

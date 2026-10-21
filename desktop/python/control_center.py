@@ -778,7 +778,11 @@ class ControlCenter(QMainWindow):
         self.open_file(gallery if gallery.exists() else WALLPAPERS)
 
     def appearance_options(self):
-        options = appearance()
+        try: options = appearance_settings.load(HOME)
+        except (OSError, ValueError, TypeError) as error:
+            QMessageBox.information(self, 'Appearance options',
+                'Saved appearance settings could not be loaded. The file was left untouched.\n\n' + str(error))
+            return
         dialog = QDialog(self); dialog.setWindowTitle('Appearance options')
         layout = QVBoxLayout(dialog); form = QFormLayout(); layout.addLayout(form)
         edition = QComboBox(); edition.addItem('Color', 'color'); edition.addItem('Manga', 'manga')

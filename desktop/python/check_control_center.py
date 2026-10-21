@@ -118,6 +118,21 @@ class ControlCenterChecks(unittest.TestCase):
             time.sleep(.01)
         self.assertEqual(self.window.custom_combo.currentData(), second['id'])
 
+    def test_corrupt_appearance_preferences_are_reported_without_opening_editor(self):
+        path = center.HOME / '.local/share/bleach-desktop/appearance.json'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('{ invalid json')
+        messages = []
+        original = center.QMessageBox.information
+        center.QMessageBox.information = staticmethod(lambda *args: messages.append(args[-1]))
+        try:
+            self.window.appearance_options()
+        finally:
+            center.QMessageBox.information = original
+        self.assertEqual(path.read_text(), '{ invalid json')
+        self.assertEqual(len(messages), 1)
+        self.assertIn('file was left untouched', messages[0])
+
     def test_ultrawide_wallpapers_match_monitor_aspect(self):
         for name in ['urahara', 'byakuya', 'yamamoto', 'ulquiorra']:
             size = QImageReader(str(center.WALLPAPERS / center.PRESETS[name][3])).size()

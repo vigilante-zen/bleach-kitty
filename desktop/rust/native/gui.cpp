@@ -952,7 +952,7 @@ public:
     resultCount->setObjectName("portrait-results-count");
     resultCount->setAccessibleName("Matching terminal characters");
     resultCount->setAccessibleDescription(
-        "Number of character cards shown by the current search and faction filter.");
+        "0 characters shown by the current search and faction filter.");
     layout->addWidget(resultCount);
     auto *announcementTimer = new QTimer(&dialog);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
@@ -1109,6 +1109,8 @@ public:
                                  .arg(grid->count() == 1 ? "" : "s");
       const bool resultCountChanged = resultCount->text() != countText;
       resultCount->setText(countText);
+      resultCount->setAccessibleDescription(
+          QString("%1 shown by the current search and faction filter.").arg(countText));
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
       if (resultCountChanged && dialog.isVisible())
         announcementTimer->start();
@@ -1830,6 +1832,10 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       failure = "Character picker search did not narrow the selected faction";
     if (!resultCount || resultCount->text() != "1 character")
       failure = "Character picker result count did not track search filters";
+    if (!resultCount ||
+        !accessibleText(resultCount, QAccessible::Description)
+             .contains("1 character shown by the current search and faction filter"))
+      failure = "Character picker accessibility description did not expose the matching count";
     if (!matchingCard || accessibleText(matchingCard, QAccessible::Name) != "Uryu" ||
         !accessibleText(matchingCard, QAccessible::Description).contains("arrow keys"))
       failure = "Character card does not explain its selection action to screen readers";
@@ -1842,6 +1848,10 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       failure = "Character picker has no useful empty-search state";
     if (!resultCount || resultCount->text() != "0 characters")
       failure = "Character picker result count did not report empty search results";
+    if (!resultCount ||
+        !accessibleText(resultCount, QAccessible::Description)
+             .contains("0 characters shown by the current search and faction filter"))
+      failure = "Character picker accessibility description did not expose empty results";
     if (!dialog->findChild<QPushButton *>("portrait-random"))
       failure = "Character picker is missing the random option";
     search->setText("uryu");

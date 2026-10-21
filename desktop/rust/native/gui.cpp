@@ -1266,6 +1266,9 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error("Portrait preview changed saved settings");
   if (!window.portraitCaption->text().contains("Previewing"))
     throw std::runtime_error("Portrait preview caption missing");
+  window.matchDesktop->setChecked(false);
+  window.portraitChoice->setCurrentIndex(window.portraitChoice->findData("random"));
+  window.updatePortraitPreview();
   window.grab().save(directory + "/rust-terminal-art.png");
   window.navigation->setCurrentRow(1);
   qApp->processEvents();

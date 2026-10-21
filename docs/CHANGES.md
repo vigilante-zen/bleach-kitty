@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improve the Rust terminal character picker with a searchable thumbnail grid, faction/form filters, recent and favorite selections, keyboard navigation, clearer empty states and an always-available random choice.
 - Expand to twelve desktop presets with TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach, plus matching full manga scenes.
 - Correct Ichigo's wallpaper to his Royal Palace True Shikai design and Yamamoto's TYBW arm/weapon design. Keep Ulquiorra as a legacy option.
 - Add TYBW Ichigo and Bankai Kenpachi color/manga terminal portraits, character accents and a TYBW forms group: 46 portraits / 92 editions, still 36 characters.

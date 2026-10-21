@@ -79,6 +79,7 @@ pub fn verify(app: &App, name: &str) -> Result<Value> {
     if !valid_name(name) { return Err("Invalid snapshot name".into()); }
     let root = app.snapshots.join(name); fsutil::reject_links(&root, &app.home)?;
     let path = root.join("manifest.json"); fsutil::reject_links(&path, &root)?;
+    if !fs::symlink_metadata(&path).text()?.file_type().is_file() { return Err("Snapshot manifest is not a regular file".into()); }
     let manifest = fsutil::read_json(&path)?;
     if manifest.get("version")?.number()? != 1 { return Err("Unsupported snapshot version".into()); }
     let files = manifest.get("files")?.array()?;
@@ -91,6 +92,7 @@ pub fn verify(app: &App, name: &str) -> Result<Value> {
         if mode > 0o777 { return Err("Invalid snapshot permissions".into()); }
         let source = root.join("files").join(relative); let dest = app.home.join(relative);
         fsutil::reject_links(&source, &root)?; fsutil::reject_links(&dest, &app.home)?;
+        if !fs::symlink_metadata(&source).text()?.file_type().is_file() { return Err(format!("Snapshot payload is not a regular file: {relative}")); }
         if dest.exists() && !dest.is_file() { return Err(format!("Destination is not a file: {relative}")); }
         if fsutil::hash(&source)? != entry.get("sha256")?.text()? { return Err(format!("Integrity check failed: {relative}")); }
     }
@@ -175,6 +177,7 @@ where F: FnMut(&std::path::Path, &[u8], u32) -> Result<()> {
 fn protections(app: &App) -> Result<BTreeSet<String>> {
     let path = app.state.join("protected-snapshots.json"); fsutil::reject_links(&path, &app.home)?;
     if !path.exists() { return Ok(BTreeSet::new()); }
+    if !path.is_file() { return Err("Protection metadata is not a regular file; cleanup is disabled".into()); }
     fsutil::read_json(&path)?.array()?.iter().map(|v| {
         let name = v.text()?; if !valid_name(name) { return Err("Invalid protection metadata; cleanup is disabled".into()); }
         Ok(name.to_string())

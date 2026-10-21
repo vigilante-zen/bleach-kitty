@@ -1,5 +1,13 @@
 use super::*;
+use std::ffi::CString;
 use std::{os::unix::fs::{PermissionsExt,symlink},path::Path};
+
+fn make_fifo(path:&Path){
+    use std::os::unix::ffi::OsStrExt;
+    unsafe extern "C" {fn mkfifo(path:*const std::os::raw::c_char,mode:u32)->i32;}
+    let path=CString::new(path.as_os_str().as_bytes()).unwrap();
+    assert_eq!(unsafe{mkfifo(path.as_ptr(),0o600)},0);
+}
 
 struct Fixture { app:App }
 impl Fixture {
@@ -160,6 +168,16 @@ fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
     fs::write(&path,vec![b' ';fsutil::MAX_JSON_BYTES+1]).unwrap();
     assert!(snapshots::verify(&f.app,&name).unwrap_err().contains("size limit"));
 }
+#[test]fn fifo_snapshot_manifest_is_rejected_without_reading(){
+    let f=Fixture::new();let name=snapshot(&f);let path=f.app.snapshots.join(&name).join("manifest.json");fs::remove_file(&path).unwrap();make_fifo(&path);
+    assert!(snapshots::verify(&f.app,&name).unwrap_err().contains("regular file"));
+}
+#[test]fn fifo_snapshot_payload_is_rejected_without_hashing(){
+    let f=Fixture::new();let name=snapshot(&f);let manifest=fsutil::read_json(&f.app.snapshots.join(&name).join("manifest.json")).unwrap();
+    let relative=manifest.get("files").unwrap().array().unwrap()[0].get("path").unwrap().text().unwrap();let path=f.app.snapshots.join(&name).join("files").join(relative);
+    fs::remove_file(&path).unwrap();make_fifo(&path);
+    assert!(snapshots::verify(&f.app,&name).unwrap_err().contains("regular file"));
+}
 #[test]fn symlink_destination_is_rejected(){
     let f=Fixture::new();let name=snapshot(&f);let outside=f.app.home.join("outside");write(&outside,"untouched");let target=f.app.home.join(".config/kitty/kitty.conf");fs::remove_file(&target).unwrap();symlink(&outside,&target).unwrap();
     assert!(snapshots::restore(&f.app,&name).is_err());assert_eq!(fs::read_to_string(outside).unwrap(),"untouched");
@@ -244,6 +262,7 @@ fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
 }
 #[test]fn corrupt_protection_metadata_disables_cleanup(){let f=Fixture::new();write(&f.app.state.join("protected-snapshots.json"),"not json");assert!(snapshots::plan(&f.app,1).is_err());}
 #[test]fn dangling_protection_metadata_symlink_disables_cleanup(){let f=Fixture::new();fs::create_dir_all(&f.app.state).unwrap();symlink(f.app.home.join("missing-protection-file"),f.app.state.join("protected-snapshots.json")).unwrap();assert!(snapshots::plan(&f.app,1).is_err());}
+#[test]fn fifo_protection_metadata_disables_cleanup_without_reading(){let f=Fixture::new();fs::create_dir_all(&f.app.state).unwrap();make_fifo(&f.app.state.join("protected-snapshots.json"));assert!(snapshots::plan(&f.app,1).unwrap_err().contains("regular file"));}
 
 #[test] fn portrait_preferences_validate_and_survive_presets() {
     let f = Fixture::new();

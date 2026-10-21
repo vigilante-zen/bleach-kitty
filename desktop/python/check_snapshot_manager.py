@@ -161,6 +161,26 @@ class SnapshotManagementChecks(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '16 MiB size limit'):
             self.store.plan(1)
 
+    def test_fifo_protection_metadata_is_rejected_without_reading(self):
+        self.store.state.mkdir()
+        os.mkfifo(self.store.state / 'protected-snapshots.json')
+        with self.assertRaisesRegex(ValueError, 'regular file'):
+            self.store.plan(1)
+
+    def test_backup_verifier_rejects_fifo_manifest_without_reading(self):
+        home = self.home / 'fifo-home'
+        name = self.names[0]
+        snapshot = home / 'Backups/Bleach-Desktop' / name
+        snapshot.mkdir(parents=True)
+        os.mkfifo(snapshot / 'manifest.json')
+        script = Path(__file__).parent / 'bin/bankai-desktop-backup'
+        env = os.environ.copy()
+        env['HOME'] = str(home)
+        result = subprocess.run([sys.executable, str(script), 'verify', name], env=env,
+                                capture_output=True, text=True, check=False, timeout=3)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('regular file', result.stderr)
+
     def test_oversized_manifest_is_ineligible_without_parsing(self):
         path = self.store.root / self.names[0] / 'manifest.json'
         path.write_bytes(b' ' * (16 * 1024 * 1024 + 1))

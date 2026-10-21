@@ -66,6 +66,8 @@ class SnapshotStore:
         reject_symlinks(path)
         if not path.exists():
             return set()
+        if not path.is_file():
+            raise ValueError('Snapshot protection metadata must be a regular file.')
         raw = read_bounded(path, MAX_MANIFEST_BYTES,
                            'Snapshot protection metadata exceeds the 16 MiB size limit.')
         data = json.loads(raw.decode('utf-8'))

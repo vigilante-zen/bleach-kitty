@@ -110,6 +110,8 @@ def verify_manifest(snapshot, home):
     reject_links(snapshot, snapshot.parent)
     manifest = snapshot / 'manifest.json'
     reject_links(manifest, snapshot)
+    if not manifest.is_file():
+        raise ValueError('Snapshot manifest must be a regular file.')
     raw = read_manifest(manifest)
     data = json.loads(raw)
     if not isinstance(data, dict) or type(data.get('version')) is not int or data['version'] != 1 or not isinstance(data.get('files'), list) or not data['files']:

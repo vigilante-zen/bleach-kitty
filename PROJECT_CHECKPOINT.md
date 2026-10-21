@@ -35,6 +35,8 @@ Rust and Python snapshot scanners now validate the manifest's `absent` list befo
 
 Python protection metadata loading now checks dangling symlinks before testing for file existence and reads no more than 16 MiB plus one byte, matching Rust's bounded JSON reader. Regression tests cover dangling links and oversized metadata; Python snapshot checks (20) and runtime checks pass, as do 35 Rust tests and Clippy with warnings denied.
 
+Snapshot verification and protection loading in both editions now reject FIFOs and other non-regular files before opening or hashing them, preventing indefinite waits on special files. Python and Rust cover FIFO manifests, payloads and protection metadata. All 22 Python snapshot checks, the Python runtime check, 38 Rust tests and Clippy with warnings denied pass.
+
 The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 57 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
 Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.

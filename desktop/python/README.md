@@ -4,7 +4,7 @@
 
 Source for the original Bankai desktop control center. Requires Linux/KDE Plasma 6, Python 3, PySide6, and the Bleach Kitty terminal theme from the repository root.
 
-`control_center.py` provides the window and tray; `snapshot_manager.py` manages verified snapshots and cleanup. `bin/` contains the four installed command scripts. Both editions share desktop preferences and backups.
+`control_center.py` provides the window and tray; `snapshot_manager.py` manages verified snapshots and cleanup. `bin/` contains the four installed command scripts. Preset application snapshots first and rolls back its configuration and state-marker writes if a later write fails. Both editions share desktop preferences and backups.
 
 Install or update with `python3 desktop/python/install.py` from the repository root. The installer creates the app launcher, installs shared assets, backs up existing files and supports uninstalling. Follow the [complete installation guide](INSTALL.md) for requirements and commands.
 

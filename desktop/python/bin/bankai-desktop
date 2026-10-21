@@ -5,8 +5,10 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
+import tempfile
 
 HOME = Path.home()
 DATA = HOME / '.local/share/bleach-desktop'
@@ -15,9 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'shared') if (Path(
 import appearance_settings
 PRESETS = {p['id']: (p['title'], p['portrait'], p['accent']) for p in appearance_settings.catalog()}
 
-def put(path, section, key, value):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    text = path.read_text() if path.exists() else ''
+def put_text(text, section, key, value):
     header = '[' + section + ']'
     lines = text.splitlines()
     try:
@@ -31,7 +31,64 @@ def put(path, section, key, value):
             lines.insert(end, f'{key}={value}')
         else:
             lines[match] = f'{key}={value}'
-    path.write_text('\n'.join(lines) + '\n')
+    return '\n'.join(lines) + '\n'
+
+def put(path, section, key, value):
+    text = path.read_text() if path.exists() else ''
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(put_text(text, section, key, value))
+
+def atomic_write(path, contents, mode=0o600):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            os.fchmod(stream.fileno(), mode)
+            stream.write(contents)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        Path(temporary).unlink(missing_ok=True)
+
+def write_transaction(home, edits, writer=atomic_write):
+    originals = {}
+    for relative in edits:
+        rel = Path(relative)
+        if rel.is_absolute() or '..' in rel.parts or not rel.parts:
+            raise ValueError(f'Invalid configuration path: {relative}')
+        path = Path(home) / rel
+        appearance_settings.checked(path, home)
+        try:
+            metadata = path.lstat()
+        except FileNotFoundError:
+            originals[relative] = None
+        else:
+            if not stat.S_ISREG(metadata.st_mode):
+                raise ValueError(f'Refusing to replace a non-file configuration path: {relative}')
+            originals[relative] = (path.read_bytes(), stat.S_IMODE(metadata.st_mode))
+
+    attempted = []
+    for relative, contents in edits.items():
+        path = Path(home) / relative
+        attempted.append(relative)
+        try:
+            appearance_settings.checked(path, home)
+            writer(path, contents, originals[relative][1] if originals[relative] else 0o600)
+        except (OSError, ValueError) as error:
+            rollback_errors = []
+            for previous in reversed(attempted):
+                rollback_path = Path(home) / previous
+                original = originals[previous]
+                try:
+                    appearance_settings.checked(rollback_path, home)
+                    if original is None: rollback_path.unlink(missing_ok=True)
+                    else: atomic_write(rollback_path, original[0], original[1])
+                except (OSError, ValueError) as rollback_error:
+                    rollback_errors.append(f'{rollback_path}: {rollback_error}')
+            message = f'Could not update {relative}: {error}'
+            if rollback_errors: message += '; rollback also failed for ' + ', '.join(rollback_errors)
+            raise OSError(message) from error
 
 def run(args):
     try:
@@ -66,72 +123,93 @@ for (var i = 0; i < ps.length; ++i) {
 }
 '''
 
-def apply(name, pending_only=False):
-    label, portrait, accent = PRESETS[name]
+def apply(name, pending_only=False, expected_appearance=None):
+    label, portrait, base_accent = PRESETS[name]
     options = appearance_settings.load(HOME)
-    accent = options['accent'] or accent
+    if expected_appearance is not None and options != expected_appearance:
+        raise ValueError('Appearance settings changed while applying the saved preset. Retry the action.')
     preset = next(p for p in appearance_settings.catalog() if p['id'] == name)
-    filename = preset['manga'] if options['edition'] == 'manga' else preset['image']
-    image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / filename
-    if not image.is_file():
-        raise ValueError(f'Wallpaper is missing: {image}')
+    image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / (preset['manga'] if options['edition'] == 'manga' else preset['image'])
+    if not image.is_file(): raise ValueError(f'Wallpaper is missing: {image}')
     if not pending_only:
-        # Save a verified full snapshot before every switch.
+        # The backup command uses the same lock, so take our lock after it exits.
         result = run([str(HOME / '.local/bin/bankai-desktop-backup')])
         if result is None or result.returncode:
             raise ValueError('Could not back up current desktop; settings were not changed.')
         print(result.stdout.strip())
-    scheme = 'Bleach' + label
-    globals_ = HOME / '.config/kdeglobals'
-    # Populate the active colors as well as the selected scheme for offline setup.
-    source = (HOME / '.local/share/color-schemes' / (scheme + '.colors')).read_text()
-    section = ''
-    for line in source.splitlines():
-        if line.startswith('['):
-            section = line[1:-1]
-        elif '=' in line and (section.startswith('Colors:') or section == 'WM'):
-            key, value = line.split('=', 1)
-            put(globals_, section, key, value)
-    put(globals_, 'General', 'ColorScheme', scheme)
-    put(globals_, 'General', 'AccentColor', ','.join(str(int(accent[i:i+2], 16)) for i in (1, 3, 5)))
-    put(HOME / '.config/plasmarc', 'Theme', 'name', 'breeze-dark')
-    lock = HOME / '.config/kscreenlockerrc'
-    put(lock, 'Greeter', 'WallpaperPlugin', 'org.kde.image')
-    put(lock, 'Greeter][Wallpaper][org.kde.image][General', 'Image', image.as_uri())
-    put(lock, 'Greeter][Wallpaper][org.kde.image][General', 'FillMode', '2')
-    (HOME / '.config/fastfetch/portrait-choice').write_text(portrait + '\n')
-    terminal = HOME / '.config/kitty/themes/bleach-desktop.conf'
-    terminal.write_text(f'# Managed by bankai-desktop\ncursor {accent}\nactive_border_color {accent}\nactive_tab_background {accent}\nactive_tab_foreground #090c12\nselection_background {accent}\nselection_foreground #090c12\ncolor1 {accent}\ncolor9 {accent}\n')
-    config = HOME / '.config/kitty/kitty.conf'
-    include = 'include themes/bleach-desktop.conf'
-    if include not in config.read_text().splitlines():
-        config.write_text(config.read_text().rstrip() + '\n\n' + include + '\n')
-    STATE.mkdir(parents=True, exist_ok=True)
-    (DATA / 'current').write_text(name + '\n')
-    (STATE / 'pending').write_text(name + '\n')
-    # Updating persisted wallpapers also covers screens not currently connected.
-    applets = HOME / '.config/plasma-org.kde.plasma.desktop-appletsrc'
-    text = applets.read_text()
-    desktop_ids = re.findall(r'^\[Containments\]\[(\d+)\]\n(?:(?!\n\[).)*?plugin=org\.kde\.plasma\.(?:folder|desktop)\n', text, re.M | re.S)
-    for desktop in desktop_ids:
-        put(applets, f'Containments][{desktop}][Wallpaper][org.kde.image][General', 'Image', image.as_uri())
-    desktop_js = 'var ds = desktops(); for (var i=0;i<ds.length;++i) { ds[i].wallpaperPlugin="org.kde.image"; ds[i].currentConfigGroup=["Wallpaper","org.kde.image","General"]; ds[i].writeConfig("Image",' + json.dumps(image.as_uri()) + '); }\n'
-    result = run(['qdbus6', 'org.kde.plasmashell', '/PlasmaShell', 'org.kde.PlasmaShell.evaluateScript', desktop_js + panel_script()])
-    online = result is not None and result.returncode == 0 and not re.search(r'error|exception', result.stdout, re.I)
-    if online:
-        # The CLI skips an already-selected scheme. Force a refresh of the
-        # persisted colors so applications receive KDE's change notification.
-        put(globals_, 'General', 'ColorScheme', 'BreezeDark')
-        colors = run(['plasma-apply-colorscheme', scheme, '--accent-color', accent])
-        put(globals_, 'General', 'ColorScheme', scheme)
-        theme = run(['plasma-apply-desktoptheme', 'breeze-dark'])
-        if colors is not None and colors.returncode == 0 and theme is not None and theme.returncode == 0:
-            (STATE / 'pending').unlink(missing_ok=True)
-            print(f'{label} applied. Open a new Kitty window for the matching greeting.')
+
+    with appearance_settings.shared_state_lock(HOME):
+        options = appearance_settings.load(HOME)
+        if expected_appearance is not None and options != expected_appearance:
+            raise ValueError('Appearance settings changed while applying the saved preset. Retry the action.')
+        accent = options['accent'] or base_accent
+        image = HOME / 'Pictures/Bleach-TYBW/Wallpapers' / (preset['manga'] if options['edition'] == 'manga' else preset['image'])
+        if not image.is_file(): raise ValueError(f'Wallpaper is missing: {image}')
+        scheme = 'Bleach' + label
+        globals_ = HOME / '.config/kdeglobals'
+        source_path = HOME / '.local/share/color-schemes' / (scheme + '.colors')
+        appearance_settings.checked(source_path, HOME)
+        source = source_path.read_text()
+        edits = {}
+
+        def set_kconfig(relative, section, key, value):
+            path = HOME / relative
+            appearance_settings.checked(path, HOME)
+            text = edits[relative].decode() if relative in edits else (path.read_text() if path.exists() else '')
+            edits[relative] = put_text(text, section, key, value).encode()
+
+        section = ''
+        for line in source.splitlines():
+            if line.startswith('['): section = line[1:-1]
+            elif '=' in line and (section.startswith('Colors:') or section == 'WM'):
+                key, value = line.split('=', 1)
+                set_kconfig('.config/kdeglobals', section, key, value)
+        set_kconfig('.config/kdeglobals', 'General', 'ColorScheme', scheme)
+        set_kconfig('.config/kdeglobals', 'General', 'AccentColor', ','.join(str(int(accent[i:i+2], 16)) for i in (1, 3, 5)))
+        set_kconfig('.config/plasmarc', 'Theme', 'name', 'breeze-dark')
+        set_kconfig('.config/kscreenlockerrc', 'Greeter', 'WallpaperPlugin', 'org.kde.image')
+        set_kconfig('.config/kscreenlockerrc', 'Greeter][Wallpaper][org.kde.image][General', 'Image', image.as_uri())
+        set_kconfig('.config/kscreenlockerrc', 'Greeter][Wallpaper][org.kde.image][General', 'FillMode', '2')
+        edits['.config/fastfetch/portrait-choice'] = (portrait + '\n').encode()
+        terminal = f'# Managed by bankai-desktop\ncursor {accent}\nactive_border_color {accent}\nactive_tab_background {accent}\nactive_tab_foreground #090c12\nselection_background {accent}\nselection_foreground #090c12\ncolor1 {accent}\ncolor9 {accent}\n'
+        edits['.config/kitty/themes/bleach-desktop.conf'] = terminal.encode()
+        config = HOME / '.config/kitty/kitty.conf'
+        appearance_settings.checked(config, HOME)
+        kitty = edits['.config/kitty/kitty.conf'].decode() if '.config/kitty/kitty.conf' in edits else config.read_text()
+        include = 'include themes/bleach-desktop.conf'
+        if include not in kitty.splitlines():
+            edits['.config/kitty/kitty.conf'] = (kitty.rstrip() + '\n\n' + include + '\n').encode()
+        applets = HOME / '.config/plasma-org.kde.plasma.desktop-appletsrc'
+        appearance_settings.checked(applets, HOME)
+        text = applets.read_text()
+        desktop_ids = re.findall(r'^\[Containments\]\[(\d+)\]\n(?:(?!\n\[).)*?plugin=org\.kde\.plasma\.(?:folder|desktop)\n', text, re.M | re.S)
+        relative = '.config/plasma-org.kde.plasma.desktop-appletsrc'
+        for desktop in desktop_ids:
+            text = put_text(text, f'Containments][{desktop}][Wallpaper][org.kde.image][General', 'Image', image.as_uri())
+        if desktop_ids: edits[relative] = text.encode()
+        edits['.local/share/bleach-desktop/current'] = (name + '\n').encode()
+        edits['.local/state/bleach-desktop/pending'] = (name + '\n').encode()
+        write_transaction(HOME, edits)
+
+        desktop_js = 'var ds = desktops(); for (var i=0;i<ds.length;++i) { ds[i].wallpaperPlugin="org.kde.image"; ds[i].currentConfigGroup=["Wallpaper","org.kde.image","General"]; ds[i].writeConfig("Image",' + json.dumps(image.as_uri()) + '); }\n'
+        result = run(['qdbus6', 'org.kde.plasmashell', '/PlasmaShell', 'org.kde.PlasmaShell.evaluateScript', desktop_js + panel_script()])
+        online = result is not None and result.returncode == 0 and not re.search(r'error|exception', result.stdout, re.I)
+        if online:
+            try:
+                put(globals_, 'General', 'ColorScheme', 'BreezeDark')
+                colors = run(['plasma-apply-colorscheme', scheme, '--accent-color', accent])
+                put(globals_, 'General', 'ColorScheme', scheme)
+                theme = run(['plasma-apply-desktoptheme', 'breeze-dark'])
+                if colors is not None and colors.returncode == 0 and theme is not None and theme.returncode == 0:
+                    try: (STATE / 'pending').unlink(missing_ok=True)
+                    except OSError: print('Preset applied. A refresh marker remains for the next login.')
+                    else: print(f'{label} applied. Open a new Kitty window for the matching greeting.')
+                else:
+                    print('Wallpaper and launchers applied. Color/style refresh remains pending for next login.')
+            except OSError as error:
+                print(f'{label} saved. Immediate refresh failed ({error}); the next KDE login will apply it.')
         else:
-            print('Wallpaper and launchers applied. Color/style refresh remains pending for next login.')
-    else:
-        print(f'{label} saved. Desktop refresh is queued for your next KDE login.')
+            print(f'{label} saved. Desktop refresh is queued for your next KDE login.')
 
 def apply_custom(identifier):
     row = next((p for p in appearance_settings.custom_presets(HOME) if p['id'] == identifier), None)
@@ -140,7 +218,7 @@ def apply_custom(identifier):
     options = dict(previous, edition=row['edition'], accent=row['accent'], login=row['login'])
     appearance_settings.save(HOME, options, expected=previous)
     try:
-        apply(row['preset'])
+        apply(row['preset'], expected_appearance=options)
     except (OSError, ValueError) as error:
         try: appearance_settings.save(HOME, previous, expected=options)
         except (OSError, ValueError) as restore_error:

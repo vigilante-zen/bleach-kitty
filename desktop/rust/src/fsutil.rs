@@ -97,9 +97,15 @@ pub fn hash_bytes(data: &[u8]) -> String {
     String::from_utf8_lossy(&output[..64]).to_string()
 }
 pub fn read_json(path: &Path) -> Result<Value> {
+    read_json_limited(path, MAX_JSON_BYTES)
+}
+pub fn read_json_limited(path: &Path, max_bytes: usize) -> Result<Value> {
     let mut bytes = vec![];
-    File::open(path).text()?.take((MAX_JSON_BYTES + 1) as u64).read_to_end(&mut bytes).text()?;
-    if bytes.len() > MAX_JSON_BYTES { return Err("JSON file exceeds the size limit".into()); }
+    let limit = u64::try_from(max_bytes.saturating_add(1)).unwrap_or(u64::MAX);
+    File::open(path).text()?.take(limit).read_to_end(&mut bytes).text()?;
+    if bytes.len() > max_bytes {
+        return Err(format!("JSON file exceeds the {max_bytes} byte size limit"));
+    }
     json::parse(&String::from_utf8(bytes).text()?)
 }
 pub fn remove_if_exists(path: &Path) -> Result<()> {

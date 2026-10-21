@@ -92,6 +92,18 @@ class ControlCenterChecks(unittest.TestCase):
         finally:
             center.QInputDialog.getText = original
 
+    def test_custom_preset_file_size_is_bounded(self):
+        path = center.DATA / 'custom-presets.json'
+        path.write_bytes(b' ' * (center.appearance_settings.MAX_CUSTOM_PRESET_BYTES + 1))
+        with self.assertRaisesRegex(ValueError, '64 KiB size limit'):
+            center.appearance_settings.custom_presets(self.home)
+
+    def test_custom_preset_fifo_is_rejected_without_reading(self):
+        path = center.DATA / 'custom-presets.json'
+        os.mkfifo(path)
+        with self.assertRaisesRegex(ValueError, 'regular file'):
+            center.appearance_settings.custom_presets(self.home)
+
     def test_custom_presets_refresh_after_external_edits_without_losing_selection(self):
         self.window.setup_tray(show=False)
         options = center.appearance_settings.defaults()

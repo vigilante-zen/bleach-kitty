@@ -6,8 +6,38 @@ import os
 from pathlib import Path
 import random
 import re
+import stat
 import tempfile
 import uuid
+
+MAX_CUSTOM_PRESET_BYTES = 64 * 1024
+
+def _read_custom_presets(path):
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return []
+    if not stat.S_ISREG(metadata.st_mode):
+        raise ValueError('Saved custom presets must be stored in a regular file')
+    with path.open('rb') as stream:
+        data = stream.read(MAX_CUSTOM_PRESET_BYTES + 1)
+    if len(data) > MAX_CUSTOM_PRESET_BYTES:
+        raise ValueError('Saved custom presets exceed the 64 KiB size limit')
+    return json.loads(data.decode('utf-8'))
+
+def _write_custom_presets(path, rows, home):
+    data = (json.dumps(rows, indent=2) + '\n').encode('utf-8')
+    if len(data) > MAX_CUSTOM_PRESET_BYTES:
+        raise ValueError('Saved custom presets exceed the 64 KiB size limit')
+    checked(path, home)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp = tempfile.mkstemp(dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(data)
+        os.replace(temp, path)
+    finally:
+        Path(temp).unlink(missing_ok=True)
 
 def catalog():
     return json.loads((Path(__file__).resolve().parent / 'presets.json').read_text())['presets']
@@ -105,8 +135,7 @@ def shuffled(home, current):
 def custom_presets(home):
     path = Path(home) / '.local/share/bleach-desktop/custom-presets.json'
     checked(path, home)
-    if not path.exists(): return []
-    value = json.loads(path.read_text())
+    value = _read_custom_presets(path)
     if not isinstance(value, list) or len(value) > 50: raise ValueError('Invalid saved preset list')
     keys = {p['id'] for p in catalog()}
     names = set(); ids = set(); result = []
@@ -134,12 +163,7 @@ def save_custom_preset(home, name, preset, options):
         if len(rows) >= 50: raise ValueError('You can save up to 50 custom presets')
         row = dict(id='custom-' + uuid.uuid4().hex, name=name, preset=preset, accent=value['accent'], login=value['login'], edition=value['edition'])
         rows.append(row)
-        checked(path, home); path.parent.mkdir(parents=True, exist_ok=True)
-        fd, temp = tempfile.mkstemp(dir=path.parent)
-        try:
-            with os.fdopen(fd,'w') as stream: json.dump(rows,stream,indent=2); stream.write('\n')
-            os.replace(temp,path)
-        finally: Path(temp).unlink(missing_ok=True)
+        _write_custom_presets(path, rows, home)
         return row
 
 def delete_custom_preset(home, identifier):
@@ -148,9 +172,4 @@ def delete_custom_preset(home, identifier):
         rows = custom_presets(home)
         kept = [row for row in rows if row['id'] != identifier]
         if len(kept) == len(rows): raise ValueError('Saved preset not found')
-        checked(path,home)
-        fd,temp = tempfile.mkstemp(dir=path.parent)
-        try:
-            with os.fdopen(fd,'w') as stream: json.dump(kept,stream,indent=2); stream.write('\n')
-            os.replace(temp,path)
-        finally: Path(temp).unlink(missing_ok=True)
+        _write_custom_presets(path, kept, home)

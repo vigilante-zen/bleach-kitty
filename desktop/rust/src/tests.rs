@@ -66,6 +66,24 @@ fn bootstrap_reports_invalid_custom_presets_without_hiding_the_problem() {
 }
 
 #[test]
+fn oversized_custom_preset_file_is_rejected_before_parsing() {
+    let f = Fixture::new();
+    let path = f.app.data.join("custom-presets.json");
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    fs::write(&path, vec![b' '; 64 * 1024 + 1]).unwrap();
+    assert!(custom_presets::list(&f.app).unwrap_err().contains("size limit"));
+}
+
+#[test]
+fn fifo_custom_preset_file_is_rejected_without_reading() {
+    let f = Fixture::new();
+    let path = f.app.data.join("custom-presets.json");
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    make_fifo(&path);
+    assert!(custom_presets::list(&f.app).unwrap_err().contains("regular file"));
+}
+
+#[test]
 fn bootstrap_rejects_symlinked_state_ancestors_before_gui_startup() {
     let f=Fixture::new();
     let local=f.app.home.join(".local");fs::create_dir_all(&local).unwrap();

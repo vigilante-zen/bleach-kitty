@@ -1,10 +1,17 @@
 use std::{collections::BTreeSet, fs, time::{SystemTime, UNIX_EPOCH}};
 use crate::{App, json::Value, obj, fsutil::{self, Result, TextResult, Lock}};
 
+const MAX_CUSTOM_PRESET_BYTES: usize = 64 * 1024;
+
 fn path(app: &App) -> std::path::PathBuf { app.data.join("custom-presets.json") }
 pub fn list(app: &App) -> Result<Vec<Value>> {
     let path=path(app); fsutil::reject_links(&path,&app.home)?;
-    let rows=match fs::read_to_string(path) { Ok(text)=>crate::json::parse(&text)?.array()?.clone(), Err(e) if e.kind()==std::io::ErrorKind::NotFound=>vec![], Err(e)=>return Err(e.to_string()) };
+    let rows=match fs::symlink_metadata(&path) {
+        Ok(metadata) if metadata.is_file() => fsutil::read_json_limited(&path, MAX_CUSTOM_PRESET_BYTES)?.array()?.clone(),
+        Ok(_) => return Err("Saved custom presets must be stored in a regular file".into()),
+        Err(error) if error.kind()==std::io::ErrorKind::NotFound => vec![],
+        Err(error) => return Err(error.to_string()),
+    };
     if rows.len()>50{return Err("At most 50 custom presets are supported".into());}
     let mut ids=BTreeSet::new(); let mut names=BTreeSet::new();
     for row in &rows {
@@ -31,13 +38,18 @@ pub fn save(app: &App, request: &Value) -> Result<Value> {
     if rows.iter().any(|r|r.get("name").and_then(Value::text).is_ok_and(|n|n.eq_ignore_ascii_case(name))){return Err("A saved preset already has that name".into());}
     let stamp=SystemTime::now().duration_since(UNIX_EPOCH).text()?.as_nanos();
     let row=obj!{"id"=>format!("custom-{stamp:x}"),"name"=>name,"preset"=>base,"accent"=>accent,"login"=>login,"edition"=>edition};
-    rows.push(row.clone()); fsutil::atomic_write(&path(app),format!("{}\n",Value::from(rows).dump()).as_bytes(),None)?; Ok(row)
+    rows.push(row.clone());
+    let text=format!("{}\n",Value::from(rows).dump());
+    if text.len()>MAX_CUSTOM_PRESET_BYTES{return Err("Saved custom presets exceed the 64 KiB size limit".into());}
+    fsutil::atomic_write(&path(app),text.as_bytes(),None)?; Ok(row)
 }
 pub fn delete(app:&App,request:&Value)->Result<Value>{
     let id=request.get("id")?.text()?; let _lock=Lock::acquire(&app.state)?; let mut rows=list(app)?;
     let old=rows.len(); rows.retain(|r|r.get("id").and_then(Value::text).ok()!=Some(id));
     if rows.len()==old{return Err("Saved preset not found".into());}
-    fsutil::atomic_write(&path(app),format!("{}\n",Value::from(rows).dump()).as_bytes(),None)?; Ok(obj!{"message"=>"Custom preset deleted."})
+    let text=format!("{}\n",Value::from(rows).dump());
+    if text.len()>MAX_CUSTOM_PRESET_BYTES{return Err("Saved custom presets exceed the 64 KiB size limit".into());}
+    fsutil::atomic_write(&path(app),text.as_bytes(),None)?; Ok(obj!{"message"=>"Custom preset deleted."})
 }
 pub fn apply(app:&App,request:&Value)->Result<Value>{
     let id=request.get("id")?.text()?; let row=list(app)?.into_iter().find(|r|r.get("id").and_then(Value::text).ok()==Some(id)).ok_or("Saved preset not found")?;

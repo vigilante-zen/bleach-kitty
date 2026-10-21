@@ -55,6 +55,7 @@ impl App {
                 "autostart" => self.home.join(".config/autostart/bleach-bankai-rust.desktop").exists(), "offline" => self.offline }),
             "appearance" => appearance::load(self),
             "save-appearance" => appearance::save(self,request),
+            "repair-appearance" => appearance::repair(self),
             "reset-appearance" => appearance::reset(self),
             "custom-presets" => Ok(Value::from(custom_presets::list(self)?)),
             "save-custom-preset" => custom_presets::save(self,request),

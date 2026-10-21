@@ -64,6 +64,15 @@ fn stale_appearance_save_does_not_replace_newer_shared_preferences() {
     assert!(error.contains("changed in another Bankai window"));
     assert_eq!(appearance::load(&f.app).unwrap(),newer);
 }
+#[test]
+fn appearance_repair_preserves_corrupt_file_before_restoring_defaults() {
+    let f=Fixture::new();let path=f.app.data.join("appearance.json");write(&path,"not valid json\n");
+    f.app.dispatch(&obj!{"op"=>"repair-appearance"}).unwrap();
+    assert_eq!(appearance::load(&f.app).unwrap(),appearance::defaults(&f.app).unwrap());
+    let backups=fs::read_dir(&f.app.data).unwrap().filter_map(|row|row.ok()).filter(|row|row.file_name().to_string_lossy().starts_with("appearance.json.corrupt-")).collect::<Vec<_>>();
+    assert_eq!(backups.len(),1);assert_eq!(fs::read_to_string(backups[0].path()).unwrap(),"not valid json\n");
+    assert!(f.app.dispatch(&obj!{"op"=>"repair-appearance"}).unwrap_err().contains("readable again"));
+}
 #[test]fn hash_matches_known_sha256(){assert_eq!(fsutil::hash_bytes(b"abc"),"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");let f=Fixture::new();let path=f.app.home.join("data");fs::write(&path,b"abc").unwrap();assert_eq!(fsutil::hash(&path).unwrap(),fsutil::hash_bytes(b"abc"));}
 #[test]fn snapshot_round_trip_preserves_mode_and_absent_files(){
     let f=Fixture::new();let target=f.app.home.join(".config/kitty/kitty.conf");fs::set_permissions(&target,fs::Permissions::from_mode(0o640)).unwrap();let name=snapshot(&f);

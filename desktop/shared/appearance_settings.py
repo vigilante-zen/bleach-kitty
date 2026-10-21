@@ -54,6 +54,13 @@ def load(home):
     if not path.exists(): return defaults()
     return validate(json.loads(path.read_text()))
 
+def write_preferences(path, value):
+    fd, temp = tempfile.mkstemp(dir=path.parent)
+    try:
+        with os.fdopen(fd, 'w') as stream: json.dump(value, stream, indent=2); stream.write('\n')
+        os.replace(temp, path)
+    finally: Path(temp).unlink(missing_ok=True)
+
 def save(home, value, expected=None):
     value = validate(value)
     path = Path(home) / '.local/share/bleach-desktop/appearance.json'
@@ -62,11 +69,31 @@ def save(home, value, expected=None):
     with shared_state_lock(home):
         if expected is not None and load(home) != validate(expected):
             raise ValueError('Appearance settings changed in another Bankai window. Close and reopen Appearance options before saving.')
-        fd, temp = tempfile.mkstemp(dir=path.parent)
+        write_preferences(path, value)
+
+def repair(home):
+    path = Path(home) / '.local/share/bleach-desktop/appearance.json'
+    checked(path, home)
+    with shared_state_lock(home):
+        checked(path, home)
+        try: load(home)
+        except (OSError, ValueError, TypeError): pass
+        else: raise ValueError('Appearance settings are readable again. Reopen Appearance options.')
+        backup = None
+        if path.exists():
+            backup = path.with_name(path.name + '.corrupt-' + uuid.uuid4().hex)
+            os.replace(path, backup)
         try:
-            with os.fdopen(fd, 'w') as stream: json.dump(value, stream, indent=2); stream.write('\n')
-            os.replace(temp, path)
-        finally: Path(temp).unlink(missing_ok=True)
+            write_preferences(path, defaults())
+        except OSError as error:
+            if backup is not None:
+                try: os.replace(backup, path)
+                except OSError as restore_error:
+                    raise OSError(f'{error}; could not restore the unreadable settings file: {restore_error}') from error
+            raise
+        message = 'Appearance settings were restored to defaults.'
+        if backup is not None: message += ' The unreadable file was preserved as ' + str(backup) + '.'
+        return dict(message=message, backup=str(backup) if backup is not None else '')
 
 def shuffled(home, current):
     settings = load(home)

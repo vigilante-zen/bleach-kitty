@@ -1217,9 +1217,18 @@ public:
     try {
       value = rpc({{"op", "appearance"}}).toObject();
     } catch (const std::exception &e) {
-      QMessageBox::information(this, "Appearance options",
-          "Saved appearance settings could not be loaded. The file was left untouched.\n\n" +
-              QString::fromUtf8(e.what()));
+      const auto answer = QMessageBox::question(this, "Appearance options",
+          "Saved appearance settings could not be loaded. Restore defaults and preserve a backup of this file?\n\n" +
+              QString::fromUtf8(e.what()), QMessageBox::Yes | QMessageBox::No,
+          QMessageBox::No);
+      if (answer == QMessageBox::Yes) {
+        try {
+          const auto result = rpc({{"op", "repair-appearance"}}).toObject();
+          notice->setText(result.value("message").toString());
+        } catch (const std::exception &repairError) {
+          QMessageBox::information(this, "Appearance options", QString::fromUtf8(repairError.what()));
+        }
+      }
       return;
     }
     QDialog dialog(this); dialog.setObjectName("appearance-options-dialog"); dialog.setWindowTitle("Appearance options");
@@ -1576,7 +1585,7 @@ static void smokeStaleAppearanceSave(Window &window, const QJsonObject &original
   if (!failure.isEmpty())
     throw std::runtime_error(failure.toStdString());
 }
-static void smokeMalformedAppearanceRead(Window &window, const QJsonObject &original) {
+static void smokeMalformedAppearanceRecovery(Window &window, const QJsonObject &original) {
   QSaveFile malformed(window.data + "/appearance.json");
   const QByteArray corruptData = "not valid json\n";
   if (!malformed.open(QIODevice::WriteOnly) ||
@@ -1586,18 +1595,28 @@ static void smokeMalformedAppearanceRead(Window &window, const QJsonObject &orig
   QString failure;
   QTimer::singleShot(50, &window, [&] {
     auto *message = qobject_cast<QMessageBox *>(QApplication::activeModalWidget());
-    if (!message || !message->text().contains("could not be loaded"))
-      failure = "Malformed Appearance settings were not reported clearly";
-    else
-      message->accept();
+    if (!message || !message->text().contains("preserve a backup") || !message->button(QMessageBox::Yes)) {
+      failure = "Malformed Appearance settings did not offer safe recovery";
+      if (message) message->close();
+    } else message->button(QMessageBox::Yes)->click();
     handled = true;
   });
   window.appearanceOptions();
   if (!handled)
-    failure = "Malformed Appearance settings warning did not open";
-  QFile saved(window.data + "/appearance.json");
-  if (!saved.open(QIODevice::ReadOnly) || saved.readAll() != corruptData)
-    failure = "Opening Appearance options changed malformed settings";
+    failure = "Malformed Appearance settings recovery prompt did not open";
+  auto repaired = rpc({{"op", "appearance"}}).toObject();
+  if (repaired != original)
+    failure = "Malformed Appearance settings were not restored to defaults";
+  const auto backups = QDir(window.data).entryList({"appearance.json.corrupt-*"}, QDir::Files);
+  if (backups.size() != 1)
+    failure = "Malformed Appearance settings were not backed up";
+  else {
+    QFile saved(window.data + "/" + backups.first());
+    if (!saved.open(QIODevice::ReadOnly) || saved.readAll() != corruptData)
+      failure = "Malformed Appearance backup did not preserve the original bytes";
+  }
+  if (!window.notice->text().contains("preserved as"))
+    failure = "Appearance recovery did not show where the backup was kept";
   try {
     rpc({{"op", "save-appearance"}, {"appearance", original}});
   } catch (const std::exception &e) {
@@ -1782,7 +1801,7 @@ static int smoke(Window &window, const QString &directory) {
   if (rpc({{"op", "appearance"}}) != appearanceBefore)
     throw std::runtime_error("Canceling appearance options changed preferences");
   smokeStaleAppearanceSave(window, appearanceBefore.toObject());
-  smokeMalformedAppearanceRead(window, appearanceBefore.toObject());
+  smokeMalformedAppearanceRecovery(window, appearanceBefore.toObject());
   auto originalArtwork = rpc({{"op", "portraits"}}).toObject();
   window.navigation->setCurrentRow(2);
   window.portraitArt->setCurrentIndex(2);
@@ -1866,7 +1885,7 @@ static int smoke(Window &window, const QString &directory) {
                          "protection, searchable preset and character pickers, "
                          "configured Random pool summary, custom-preset recovery and "
                          "external refresh, external snapshot refresh, reset confirmation, "
-                         "stale appearance conflict and malformed-settings messaging, "
+                         "stale appearance conflict and malformed-settings recovery, "
                          "worker process and screenshots.\n";
   return 0;
 }

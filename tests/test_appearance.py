@@ -47,6 +47,17 @@ class AppearanceChecks(unittest.TestCase):
                 appearance.save(home,stale,expected=expected)
             self.assertEqual(appearance.load(home),newer)
 
+    def test_repair_preserves_malformed_preferences_and_refuses_to_reset_valid_state(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder); path=home/'.local/share/bleach-desktop/appearance.json'
+            path.parent.mkdir(parents=True); path.write_text('not valid json\n')
+            result=appearance.repair(home)
+            self.assertEqual(appearance.load(home),appearance.defaults())
+            backup=Path(result['backup'])
+            self.assertEqual(backup.read_text(),'not valid json\n')
+            with self.assertRaisesRegex(ValueError,'readable again'):
+                appearance.repair(home)
+
     def test_custom_presets_round_trip_and_delete(self):
         with tempfile.TemporaryDirectory() as folder:
             home=Path(folder); options=appearance.defaults()

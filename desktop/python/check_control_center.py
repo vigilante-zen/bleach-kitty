@@ -122,16 +122,21 @@ class ControlCenterChecks(unittest.TestCase):
         path = center.HOME / '.local/share/bleach-desktop/appearance.json'
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text('{ invalid json')
-        messages = []
-        original = center.QMessageBox.information
-        center.QMessageBox.information = staticmethod(lambda *args: messages.append(args[-1]))
+        answers = [center.QMessageBox.StandardButton.No,
+                   center.QMessageBox.StandardButton.Yes]
+        original = center.QMessageBox.question
+        center.QMessageBox.question = staticmethod(lambda *args: answers.pop(0))
         try:
             self.window.appearance_options()
+            self.assertEqual(path.read_text(), '{ invalid json')
+            self.window.appearance_options()
         finally:
-            center.QMessageBox.information = original
-        self.assertEqual(path.read_text(), '{ invalid json')
-        self.assertEqual(len(messages), 1)
-        self.assertIn('file was left untouched', messages[0])
+            center.QMessageBox.question = original
+        self.assertEqual(center.appearance_settings.load(center.HOME), center.appearance_settings.defaults())
+        backups = list(path.parent.glob('appearance.json.corrupt-*'))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(backups[0].read_text(), '{ invalid json')
+        self.assertIn('preserved as', self.window.message.text())
 
     def test_ultrawide_wallpapers_match_monitor_aspect(self):
         for name in ['urahara', 'byakuya', 'yamamoto', 'ulquiorra']:

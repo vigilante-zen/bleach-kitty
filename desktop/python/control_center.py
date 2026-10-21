@@ -780,8 +780,15 @@ class ControlCenter(QMainWindow):
     def appearance_options(self):
         try: options = appearance_settings.load(HOME)
         except (OSError, ValueError, TypeError) as error:
-            QMessageBox.information(self, 'Appearance options',
-                'Saved appearance settings could not be loaded. The file was left untouched.\n\n' + str(error))
+            answer = QMessageBox.question(self, 'Appearance options',
+                'Saved appearance settings could not be loaded. Restore defaults and preserve a backup of this file?\n\n' + str(error),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No)
+            if answer == QMessageBox.StandardButton.Yes:
+                try: result = appearance_settings.repair(HOME)
+                except (OSError, ValueError, TypeError) as repair_error:
+                    QMessageBox.information(self, 'Appearance options', str(repair_error))
+                else: self.message.setText(result['message'])
             return
         dialog = QDialog(self); dialog.setWindowTitle('Appearance options')
         layout = QVBoxLayout(dialog); form = QFormLayout(); layout.addLayout(form)

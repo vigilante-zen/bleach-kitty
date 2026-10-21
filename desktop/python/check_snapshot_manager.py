@@ -1,6 +1,9 @@
 """Check cleanup against disposable snapshots; never remove real backups."""
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -40,6 +43,31 @@ class SnapshotManagementChecks(unittest.TestCase):
         with patch.object(self.store, 'locked', wraps=self.store.locked) as lock:
             self.store.plan(keep=2)
             lock.assert_called_once_with()
+
+    def test_store_rejects_symlinked_lock_file(self):
+        self.store.state.mkdir(parents=True)
+        outside = self.home / 'outside-lock'
+        outside.write_text('preserve')
+        (self.store.state / 'snapshot-management.lock').symlink_to(outside)
+        with self.assertRaisesRegex(ValueError, 'lock file'):
+            self.store.scan()
+        self.assertEqual(outside.read_text(), 'preserve')
+
+    def test_backup_cli_rejects_symlinked_state_directory(self):
+        home = self.home / 'cli-home'
+        state_parent = home / '.local/state'
+        state_parent.mkdir(parents=True)
+        outside = self.home / 'outside-state'
+        outside.mkdir()
+        (state_parent / 'bleach-desktop').symlink_to(outside)
+        script = Path(__file__).parent / 'bin/bankai-desktop-backup'
+        env = os.environ.copy()
+        env['HOME'] = str(home)
+        result = subprocess.run([sys.executable, str(script), 'list'], env=env,
+                                capture_output=True, text=True, check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Symlink', result.stderr)
+        self.assertFalse((outside / 'snapshot-management.lock').exists())
 
     def test_cleanup_keeps_newest_and_original_baseline(self):
         # The October baseline's timestamp is newer than these fixture snapshots.

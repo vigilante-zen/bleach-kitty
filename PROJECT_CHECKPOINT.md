@@ -21,6 +21,8 @@ Python snapshot scans and cleanup previews now take the same cross-edition lock 
 
 Python snapshot manifest reads now stop at 16 MiB plus one byte in both the cleanup scanner and backup/restore utility, matching Rust's bounded read and preventing oversized files from being fully loaded before rejection. The 12 snapshot-manager checks, including a read-bound assertion, and the Python runtime check passed.
 
+Python backup now checks its state directory and lock path for symlinks before opening the cross-edition lock; `SnapshotStore` also refuses a symlinked lock file. Regression checks confirm the CLI does not create a lock through a symlinked state directory. All 14 snapshot-manager checks and the Python runtime check pass.
+
 The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 57 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
 Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.

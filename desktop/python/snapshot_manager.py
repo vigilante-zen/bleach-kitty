@@ -42,7 +42,10 @@ class SnapshotStore:
         if self.root.is_symlink() or self.state.is_symlink():
             raise ValueError('Snapshot and state directories must not be symlinks.')
         self.state.mkdir(parents=True, exist_ok=True)
-        with (self.state / 'snapshot-management.lock').open('a') as stream:
+        lock_path = self.state / 'snapshot-management.lock'
+        if lock_path.is_symlink():
+            raise ValueError('Snapshot lock file must not be a symlink.')
+        with lock_path.open('a') as stream:
             fcntl.flock(stream, fcntl.LOCK_EX)
             yield
 

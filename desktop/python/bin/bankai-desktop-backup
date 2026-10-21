@@ -272,13 +272,22 @@ FILES += ['.config/kdeglobals', '.config/plasmarc', '.config/plasmashellrc',
           '.local/share/applications/org.kde.konsole.desktop']
 PATTERNS += ['.local/share/color-schemes/Bleach*.colors', '.local/share/applications/bleach-preset-*.desktop']
 
+def run_locked():
+    home = Path.home()
+    state = home / '.local/state/bleach-desktop'
+    reject_links(state, home)
+    state.mkdir(parents=True, exist_ok=True)
+    reject_links(state, home)
+    lock_path = state / 'snapshot-management.lock'
+    reject_links(lock_path, state)
+    with lock_path.open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        main()
+
+
 if __name__ == '__main__':
     try:
-        state = Path.home() / '.local/state/bleach-desktop'
-        state.mkdir(parents=True, exist_ok=True)
-        with (state / 'snapshot-management.lock').open('a') as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
-            main()
+        run_locked()
     except (OSError, ValueError, TypeError) as error:
         print(f'bankai-desktop-backup: {error}', file=sys.stderr)
         sys.exit(1)

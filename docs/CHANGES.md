@@ -4,6 +4,7 @@
 
 - Load the Rust wallpaper preview and preset-card thumbnails in background workers, skip stale preview decodes after rapid character changes, and prioritize worker RPC parsing ahead of queued artwork.
 - Show an explicit, screen-reader-readable unavailable state when a preset thumbnail cannot be loaded.
+- Decode terminal-picker portrait thumbnails off the UI thread and discard results from superseded searches and filters.
 - Update the desktop comparison benchmark to run both source editions, verify matching preset catalogs, record host/runtime versions, and let reports be written outside the repository.
 - Parse worker RPC JSON responses on a background thread so large snapshot scans and task replies do not block the Rust UI event loop.
 - Batch Qt snapshot-filter updates during refresh so large saved-snapshot lists do not trigger a filter pass and repaint for every row.

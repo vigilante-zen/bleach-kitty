@@ -543,6 +543,45 @@ public:
               Qt::QueuedConnection);
         }), 0);
   }
+  void loadPortraitThumbnail(
+      QLabel *thumbnail, const QString &path, const QString &title,
+      const std::shared_ptr<std::atomic<quint64>> &requestedGeneration,
+      quint64 generation) {
+    QPointer<Window> windowGuard(this);
+    QPointer<QLabel> thumbnailGuard(thumbnail);
+    responseParserPool.start(QRunnable::create(
+        [windowGuard, thumbnailGuard, path, title, requestedGeneration,
+         generation] {
+          if (requestedGeneration->load(std::memory_order_acquire) != generation)
+            return;
+          QImageReader reader(path);
+          if (reader.size().isValid())
+            reader.setScaledSize(
+                reader.size().scaled(126, 82, Qt::KeepAspectRatio));
+          QImage image = reader.read();
+          if (!windowGuard ||
+              requestedGeneration->load(std::memory_order_acquire) != generation)
+            return;
+          QMetaObject::invokeMethod(
+              windowGuard.data(),
+              [thumbnailGuard, title, image = std::move(image)]() mutable {
+                if (!thumbnailGuard)
+                  return;
+                if (image.isNull()) {
+                  thumbnailGuard->setText("Artwork unavailable");
+                  thumbnailGuard->setAccessibleDescription(
+                      title + " portrait artwork unavailable.");
+                  thumbnailGuard->setProperty("portrait-thumbnail-error", true);
+                } else {
+                  thumbnailGuard->setPixmap(QPixmap::fromImage(image));
+                  thumbnailGuard->setAccessibleDescription(
+                      title + " portrait thumbnail.");
+                }
+                thumbnailGuard->setProperty("portrait-thumbnail-complete", true);
+              },
+              Qt::QueuedConnection);
+        }), 0);
+  }
   bool presetThumbnailsLoaded() const {
     return std::all_of(cards.cbegin(), cards.cend(), [](const auto &card) {
       return card->property("thumbnail-loaded").toBool();
@@ -1147,10 +1186,14 @@ public:
     layout->addWidget(close);
     int gridAvailableWidth = dialog.width();
     QStringList previousVisibleIds;
+    auto thumbnailGeneration =
+        std::make_shared<std::atomic<quint64>>(0);
     auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites,
                     &recentlyUsed, &displayNames, &dialog, &gridAvailableWidth,
                     &previousVisibleIds, announcementTimer,
-                    resultCount]() {
+                    resultCount, thumbnailGeneration]() {
+      const auto currentThumbnailGeneration =
+          thumbnailGeneration->fetch_add(1, std::memory_order_acq_rel) + 1;
       QString focusedId;
       for (int index = 0; index < grid->count(); ++index)
         if (auto *card = grid->itemAt(index)->widget(); card && card->hasFocus())
@@ -1210,8 +1253,12 @@ public:
         cardLayout->setContentsMargins(3, 3, 3, 3);
         cardLayout->setSpacing(3);
         auto *thumbnail = new QLabel;
+        thumbnail->setObjectName("portrait-thumbnail");
+        thumbnail->setAccessibleName(title + " terminal artwork thumbnail");
+        thumbnail->setAccessibleDescription("Portrait artwork is loading.");
         thumbnail->setAlignment(Qt::AlignCenter);
         thumbnail->setFixedHeight(82);
+        thumbnail->setText("Loading…");
         auto *caption = new QLabel(title);
         caption->setAlignment(Qt::AlignCenter);
         caption->setWordWrap(true);
@@ -1221,8 +1268,8 @@ public:
         const auto color = home + "/.config/fastfetch/portraits/" + id + ".png";
         const auto manga = home + "/.config/fastfetch/manga/" + id + ".png";
         const auto image = portraitArt->currentData().toString() == "manga" && QFile::exists(manga) ? manga : color;
-        QPixmap pixmap(image);
-        if (!pixmap.isNull()) thumbnail->setPixmap(pixmap.scaled(126, 82, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        loadPortraitThumbnail(thumbnail, image, title, thumbnailGeneration,
+                              currentThumbnailGeneration);
         connect(card, &QPushButton::clicked, &dialog, [this, &dialog, id] {
           portraitChoice->setCurrentIndex(portraitChoice->findData(id));
           updatePortraitPreview();
@@ -2106,6 +2153,31 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       dialog->reject();
       return;
     }
+    auto pickerThumbnailsComplete = [&] {
+      const auto thumbnails = dialog->findChildren<QLabel *>("portrait-thumbnail");
+      return !thumbnails.isEmpty() &&
+             std::all_of(thumbnails.cbegin(), thumbnails.cend(), [](const auto *thumbnail) {
+               return thumbnail->property("portrait-thumbnail-complete").toBool();
+             });
+    };
+    QElapsedTimer thumbnailWait;
+    thumbnailWait.start();
+    while (!pickerThumbnailsComplete() && thumbnailWait.elapsed() < 3000) {
+      qApp->processEvents();
+      QThread::msleep(1);
+    }
+    if (!pickerThumbnailsComplete()) {
+      failure = "Terminal picker thumbnails did not finish their background loads";
+      dialog->reject();
+      return;
+    }
+    bool pickerThumbnailLoaded = false;
+    for (auto *thumbnail : dialog->findChildren<QLabel *>("portrait-thumbnail")) {
+      pickerThumbnailLoaded = pickerThumbnailLoaded ||
+          !thumbnail->property("portrait-thumbnail-error").toBool();
+    }
+    if (!pickerThumbnailLoaded)
+      failure = "Terminal picker did not load its available thumbnail previews";
     const auto poolSummary = dialog->findChild<QLabel *>("random-pool-summary")->text();
     if (!poolSummary.contains("Random uses") || !poolSummary.contains("shuffle") ||
         !poolSummary.contains("direct choices"))

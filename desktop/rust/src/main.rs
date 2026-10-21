@@ -3,6 +3,7 @@ mod fsutil;
 mod presets;
 mod portraits;
 mod appearance;
+mod custom_presets;
 mod snapshots;
 #[cfg(test)] mod tests;
 use std::{ffi::{CStr,CString,c_char}, fs, io::{Read,Write}, path::PathBuf};
@@ -35,13 +36,17 @@ impl App {
     fn dispatch(&self, request: &Value) -> Result<Value> {
         let op = request.get("op")?.text()?;
         match op {
-            "bootstrap" => Ok(obj! { "presets" => self.catalog.get("presets")?.clone(), "style" => include_str!("../assets/style.qss"),
+            "bootstrap" => Ok(obj! { "presets" => self.catalog.get("presets")?.clone(), "custom_presets" => Value::from(custom_presets::list(self).unwrap_or_default()), "style" => include_str!("../assets/style.qss"),
                 "home" => self.home.to_string_lossy().to_string(), "data" => self.data.to_string_lossy().to_string(), "version" => env!("CARGO_PKG_VERSION"),
                 "mask_svg" => include_str!("../assets/bleach-tray.svg"), "terminal_svg" => include_str!("../assets/bleach-terminal.svg"), "monitor_svg" => include_str!("../assets/bleach-monitor.svg"), "backups_svg" => include_str!("../assets/bleach-backups.svg") }),
             "status" => Ok(obj! { "current" => self.current(), "pending" => self.state.join("pending").exists(),
                 "autostart" => self.home.join(".config/autostart/bleach-bankai-rust.desktop").exists(), "offline" => self.offline }),
             "appearance" => appearance::load(self),
             "save-appearance" => appearance::save(self,request),
+            "custom-presets" => Ok(Value::from(custom_presets::list(self)?)),
+            "save-custom-preset" => custom_presets::save(self,request),
+            "delete-custom-preset" => custom_presets::delete(self,request),
+            "apply-custom-preset" => custom_presets::apply(self,request),
             "shuffle-login" => appearance::shuffle_login(self),
             "portraits" => portraits::status(self),
             "save-portraits" => portraits::save(self, request),

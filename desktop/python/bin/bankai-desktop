@@ -135,7 +135,7 @@ def apply(name, pending_only=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('preset', nargs='?', default='status', choices=[*PRESETS, 'status', 'apply-pending', 'shuffle-login'])
+    parser.add_argument('preset', nargs='?', default='status')
     args = parser.parse_args()
     if args.preset == 'status':
         print('Presets: ' + ', '.join(PRESETS))
@@ -145,6 +145,14 @@ def main():
         current = (DATA / 'current').read_text().strip() if (DATA / 'current').exists() else ''
         chosen = appearance_settings.shuffled(HOME, current)
         if chosen: apply(chosen)
+    elif args.preset == 'apply-custom':
+        identifier = sys.argv[2] if len(sys.argv) > 2 else ''
+        row = next((p for p in appearance_settings.custom_presets(HOME) if p['id'] == identifier), None)
+        if not row: raise ValueError('Saved preset not found')
+        options = appearance_settings.load(HOME)
+        options.update(edition=row['edition'], accent=row['accent'], login=row['login'])
+        appearance_settings.save(HOME, options)
+        apply(row['preset'])
     elif args.preset == 'apply-pending':
         marker = STATE / 'pending'
         if marker.exists():
@@ -153,6 +161,7 @@ def main():
                 raise ValueError('Invalid pending preset')
             apply(name, pending_only=True)
     else:
+        if args.preset not in PRESETS: raise ValueError('Unknown preset. Run bankai-desktop --help.')
         apply(args.preset)
 
 if __name__ == '__main__':

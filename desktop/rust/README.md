@@ -32,6 +32,7 @@ The terminal-artwork update passed 19 Rust unit tests, 18 compiled-binary integr
 ## Ported behavior
 
 - All seventeen presets, wallpaper previews, explicit Apply, and automatic snapshots before changes.
+- Named custom combinations that capture the current wallpaper, accent, and login-scene choices.
 - KDE desktop and lock-screen wallpaper, color schemes and terminal accents; independent terminal portrait and art preferences.
 - Hollow-mask tray icon colored for the saved character; updates after command-line changes.
 - Tray preset selection, terminal and monitor launchers, snapshot creation, and window reopening.

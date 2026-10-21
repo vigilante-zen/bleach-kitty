@@ -5,6 +5,7 @@ from pathlib import Path
 import random
 import re
 import tempfile
+import uuid
 
 def catalog():
     return json.loads((Path(__file__).resolve().parent / 'presets.json').read_text())['presets']
@@ -52,3 +53,53 @@ def shuffled(home, current):
     if not settings['shuffle_login']: return None
     pool = [p for p in settings['pool'] if p != current] or settings['pool']
     return random.SystemRandom().choice(pool)
+
+def custom_presets(home):
+    path = Path(home) / '.local/share/bleach-desktop/custom-presets.json'
+    checked(path, home)
+    if not path.exists(): return []
+    value = json.loads(path.read_text())
+    if not isinstance(value, list) or len(value) > 50: raise ValueError('Invalid saved preset list')
+    keys = {p['id'] for p in catalog()}
+    names = set(); ids = set(); result = []
+    for row in value:
+        if not isinstance(row, dict): raise ValueError('Invalid saved preset')
+        name, preset, accent, login, edition, identifier = (row.get(k) for k in ('name','preset','accent','login','edition','id'))
+        if not isinstance(name, str) or not name.strip() or len(name.strip()) > 40: raise ValueError('Saved preset names must be 1–40 characters')
+        if not isinstance(identifier, str) or not identifier.startswith('custom-') or len(identifier) > 64: raise ValueError('Invalid saved preset id')
+        if identifier in ids or name.casefold() in names: raise ValueError('Saved preset names and ids must be unique')
+        if preset not in keys or login not in keys | {'follow'}: raise ValueError('Saved preset references an unknown character')
+        if edition not in ('color','manga'): raise ValueError('Saved preset has an invalid wallpaper edition')
+        if not isinstance(accent,str) or (accent and not re.fullmatch(r'#[0-9a-fA-F]{6}',accent)): raise ValueError('Saved preset has an invalid accent color')
+        ids.add(identifier); names.add(name.casefold()); result.append(dict(id=identifier,name=name.strip(),preset=preset,accent=accent,login=login,edition=edition))
+    return result
+
+def save_custom_preset(home, name, preset, options):
+    name = name.strip()
+    if not name or len(name) > 40: raise ValueError('Name the preset with 1–40 characters')
+    if preset not in {p['id'] for p in catalog()}: raise ValueError('Choose a Bankai character or form first')
+    rows = custom_presets(home)
+    if any(row['name'].casefold() == name.casefold() for row in rows): raise ValueError('A saved preset already has that name')
+    if len(rows) >= 50: raise ValueError('You can save up to 50 custom presets')
+    value = validate(options)
+    rows.append(dict(id='custom-' + uuid.uuid4().hex, name=name, preset=preset, accent=value['accent'], login=value['login'], edition=value['edition']))
+    path = Path(home) / '.local/share/bleach-desktop/custom-presets.json'
+    checked(path, home); path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temp = tempfile.mkstemp(dir=path.parent)
+    try:
+        with os.fdopen(fd,'w') as stream: json.dump(rows,stream,indent=2); stream.write('\n')
+        os.replace(temp,path)
+    finally: Path(temp).unlink(missing_ok=True)
+    return rows[-1]
+
+def delete_custom_preset(home, identifier):
+    rows = custom_presets(home)
+    kept = [row for row in rows if row['id'] != identifier]
+    if len(kept) == len(rows): raise ValueError('Saved preset not found')
+    path = Path(home) / '.local/share/bleach-desktop/custom-presets.json'
+    checked(path,home)
+    fd,temp = tempfile.mkstemp(dir=path.parent)
+    try:
+        with os.fdopen(fd,'w') as stream: json.dump(kept,stream,indent=2); stream.write('\n')
+        os.replace(temp,path)
+    finally: Path(temp).unlink(missing_ok=True)

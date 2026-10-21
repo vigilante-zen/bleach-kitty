@@ -58,6 +58,21 @@ fn rename_snapshot(f:&Fixture,name:&str){let created=snapshot(f);fs::rename(f.ap
     let kitty=fs::read_to_string(f.app.home.join(".config/kitty/kitty.conf")).unwrap();assert_eq!(kitty.matches("include themes/bleach-desktop.conf").count(),1);
     assert!(fs::read_to_string(f.app.home.join(".config/kdeglobals")).unwrap().contains("Unrelated=preserved"));
 }
+#[test]fn custom_preset_saves_applies_and_deletes_current_choices(){
+    let f=Fixture::new();
+    write(&f.app.wallpapers.join("rukia-manga.png"),"fake manga wallpaper");
+    let saved=custom_presets::save(&f.app,&obj!{"name"=>"Night Rukia","preset"=>"rukia","accent"=>"#aabbcc","login"=>"ichigo","edition"=>"manga"}).unwrap();
+    let id=saved.get("id").unwrap().text().unwrap();
+    assert_eq!(custom_presets::list(&f.app).unwrap().len(),1);
+    let applied=custom_presets::apply(&f.app,&obj!{"id"=>id}).unwrap();
+    assert!(applied.get("pending").unwrap().boolean().unwrap());
+    let options=appearance::load(&f.app).unwrap();
+    assert_eq!(options.get("edition").unwrap().text().unwrap(),"manga");
+    assert_eq!(options.get("accent").unwrap().text().unwrap(),"#aabbcc");
+    assert_eq!(options.get("login").unwrap().text().unwrap(),"ichigo");
+    custom_presets::delete(&f.app,&obj!{"id"=>id}).unwrap();
+    assert!(custom_presets::list(&f.app).unwrap().is_empty());
+}
 #[test]fn missing_assets_do_not_change_settings(){let f=Fixture::new();fs::remove_file(f.app.wallpapers.join("urahara-desktop.png")).unwrap();assert!(presets::apply(&f.app,"urahara").is_err());assert!(!f.app.data.join("current").exists());}
 #[test]fn cleanup_preserves_recent_protected_and_baseline(){
     let f=Fixture::new();for i in 0..5{rename_snapshot(&f,&format!("20261019-21000{i}-000000"));}rename_snapshot(&f,snapshots::BASELINE);snapshots::protect(&f.app,"20261019-210000-000000",true).unwrap();

@@ -134,6 +134,7 @@ class Window : public QMainWindow {
 public:
   QJsonObject bootstrap;
   QJsonArray presets;
+  QJsonArray customPresets;
   QString home, data, wallpapers, selected, trayPreset;
   QListWidget *navigation;
   QStackedWidget *pages;
@@ -142,6 +143,7 @@ public:
   Artwork *art;
   QLabel *saved, *notice, *previewNote, *storage, *snapshotDetails;
   QComboBox *snapshots, *portraitChoice, *portraitArt;
+  QComboBox *customPresetChoice = nullptr;
   QSpinBox *keep;
   QCheckBox *autostart, *matchDesktop;
   QPushButton *portraitChooser;
@@ -166,6 +168,7 @@ public:
   Window() {
     bootstrap = rpc({{"op", "bootstrap"}}).toObject();
     presets = bootstrap.value("presets").toArray();
+    customPresets = bootstrap.value("custom_presets").toArray();
     home = bootstrap.value("home").toString();
     data = bootstrap.value("data").toString();
     wallpapers = home + "/Pictures/Bleach-TYBW/Wallpapers";
@@ -307,6 +310,47 @@ public:
     previewNote->setText("Previewing " + p.value("title").toString() +
                          ". Applying saves a snapshot first.");
   }
+  void refreshCustomPresets() {
+    if (!customPresetChoice) return;
+    try { customPresets = rpc({{"op", "custom-presets"}}).toArray(); }
+    catch (const std::exception &e) { customPresets = {}; }
+    customPresetChoice->blockSignals(true);
+    customPresetChoice->clear();
+    for (auto value : customPresets) {
+      auto row=value.toObject();
+      customPresetChoice->addItem(row.value("name").toString(),row.value("id").toString());
+    }
+    customPresetChoice->blockSignals(false);
+    customPresetChoice->setEnabled(!customPresets.isEmpty());
+  }
+  void saveCustomPreset() {
+    bool accepted=false;
+    auto name=QInputDialog::getText(this,"Save custom preset","Preset name (1–40 characters):",QLineEdit::Normal,{},&accepted);
+    if(!accepted) return;
+    try {
+      auto options=rpc({{"op","appearance"}}).toObject();
+      auto result=rpc({{"op","save-custom-preset"},{"name",name},{"preset",selected},
+        {"accent",options.value("accent")},{"login",options.value("login")},{"edition",options.value("edition")}}).toObject();
+      refreshCustomPresets();
+      customPresetChoice->setCurrentIndex(customPresetChoice->count()-1);
+      notice->setText("Saved current wallpaper, accent, and login-scene choices.");
+    } catch(const std::exception &e) { QMessageBox::information(this,"Save custom preset",e.what()); }
+  }
+  void previewCustomPreset(int index) {
+    if(index<0||index>=customPresets.size()) return;
+    auto row=customPresets[index].toObject();
+    selectPreset(row.value("preset").toString());
+    notice->setText("Previewing saved combination ‘"+row.value("name").toString()+"’. Apply when ready.");
+  }
+  void applyCustomPreset() {
+    auto id=customPresetChoice->currentData().toString(); if(id.isEmpty()) return;
+    startTask({{"op","apply-custom-preset"},{"id",id}},"Applying saved preset…");
+  }
+  void deleteCustomPreset() {
+    auto id=customPresetChoice->currentData().toString(); if(id.isEmpty()) return;
+    try { rpc({{"op","delete-custom-preset"},{"id",id}}); refreshCustomPresets(); notice->setText("Saved preset deleted."); }
+    catch(const std::exception &e) { QMessageBox::information(this,"Delete custom preset",e.what()); }
+  }
   QWidget *appearancePage() {
     auto *page = new QWidget;
     auto *layout = new QVBoxLayout(page);
@@ -364,6 +408,16 @@ public:
     }));
     actions->addStretch();
     layout->addLayout(actions);
+    auto *savedRow=new QHBoxLayout;
+    customPresetChoice=new QComboBox;
+    customPresetChoice->setMinimumWidth(190);
+    connect(customPresetChoice,&QComboBox::currentIndexChanged,this,[this](int index){previewCustomPreset(index);});
+    savedRow->addWidget(customPresetChoice,1);
+    savedRow->addWidget(button("Save current choices",[this]{saveCustomPreset();}));
+    savedRow->addWidget(button("Apply saved",[this]{applyCustomPreset();},true));
+    savedRow->addWidget(button("Delete",[this]{deleteCustomPreset();}));
+    layout->addLayout(savedRow);
+    refreshCustomPresets();
     auto *scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);

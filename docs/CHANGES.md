@@ -8,6 +8,7 @@
 - Correct Ichigo's wallpaper to his Royal Palace True Shikai design and Yamamoto's TYBW arm/weapon design. Keep Ulquiorra as a legacy option.
 - Add TYBW Ichigo and Bankai Kenpachi color/manga terminal portraits, character accents and a TYBW forms group: 46 portraits / 92 editions, still 36 characters.
 - Add shared appearance controls in both apps for color/manga backgrounds, custom accents, fixed/following login scenes, and optional login shuffle with a character pool.
+- Save, preview, apply and delete named custom combinations of the current wallpaper, accent and login-scene choices in both apps.
 - Add terminal installer updates that retain preferences, original backups and edited files, and deliver new artwork through either desktop installer.
 - Replace the Ichigo desktop/lock-screen wallpaper and monochrome login scene with a weapon-free standing pose. Make Python wallpaper selection honor the shared preset catalog, matching Rust for versioned asset filenames.
 - Add full and compact Fastfetch layouts for TYBW Ichigo and Bankai Kenpachi. Refine Fastfetch key colors and btop highlight colors for TYBW Ichigo, Askin, Lille, Nemu and Yachiru.

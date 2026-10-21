@@ -13,7 +13,7 @@ from PySide6.QtGui import QActionGroup, QColor, QDesktopServices, QFont, QIcon, 
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
-    QApplication, QButtonGroup, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QColorDialog, QFormLayout, QLineEdit, QListWidgetItem, QFrame, QGridLayout, QHBoxLayout, QLabel,
+    QApplication, QButtonGroup, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QColorDialog, QFormLayout, QInputDialog, QLineEdit, QListWidgetItem, QFrame, QGridLayout, QHBoxLayout, QLabel,
     QListWidget, QMainWindow, QMenu, QMessageBox, QPushButton, QSpinBox, QStackedWidget,
     QScrollArea, QSystemTrayIcon, QTextEdit, QToolButton, QVBoxLayout, QWidget,
 )
@@ -170,6 +170,7 @@ class ControlCenter(QMainWindow):
         self.tray = None
         self.tray_actions = []
         self.preset_actions = {}
+        self.custom_rows = []
         self.quitting = False
         body = QWidget()
         self.setCentralWidget(body)
@@ -382,6 +383,18 @@ class ControlCenter(QMainWindow):
         actions.addWidget(self.button('Open wallpaper', self.open_wallpaper))
         actions.addStretch()
         layout.addLayout(actions)
+        saved_row = QHBoxLayout()
+        self.custom_combo = QComboBox()
+        self.custom_combo.setMinimumWidth(190)
+        self.custom_combo.currentIndexChanged.connect(self.preview_custom_preset)
+        saved_row.addWidget(self.custom_combo, 1)
+        saved_row.addWidget(self.button('Save current choices', self.save_custom_preset))
+        self.custom_apply_button = self.button('Apply saved', self.apply_custom_preset, primary=True)
+        self.custom_delete_button = self.button('Delete', self.delete_custom_preset)
+        saved_row.addWidget(self.custom_apply_button)
+        saved_row.addWidget(self.custom_delete_button)
+        layout.addLayout(saved_row)
+        self.refresh_custom_presets()
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
@@ -586,6 +599,53 @@ class ControlCenter(QMainWindow):
         name = self.selected
         self.run_task([str(BIN / 'bankai-desktop'), name], 'Applying ' + PRESETS[name][0] + '…',
                       'Preset saved. Open a new terminal for the matching greeting.')
+
+    def refresh_custom_presets(self):
+        try: self.custom_rows = appearance_settings.custom_presets(HOME)
+        except (OSError, ValueError, TypeError) as error:
+            self.custom_rows = []
+            if hasattr(self, 'message'): self.message.setText('Could not read saved presets: ' + str(error))
+        self.custom_combo.blockSignals(True)
+        self.custom_combo.clear()
+        for row in self.custom_rows: self.custom_combo.addItem(row['name'], row['id'])
+        self.custom_combo.blockSignals(False)
+        available = bool(self.custom_rows)
+        self.custom_apply_button.setEnabled(available)
+        self.custom_delete_button.setEnabled(available)
+
+    def save_custom_preset(self):
+        name, accepted = QInputDialog.getText(self, 'Save custom preset', 'Preset name (1–40 characters):')
+        if not accepted: return
+        try:
+            appearance_settings.save_custom_preset(HOME, name, self.selected, appearance())
+            self.refresh_custom_presets()
+            self.custom_combo.setCurrentIndex(self.custom_combo.count() - 1)
+            self.message.setText('Saved current wallpaper, accent, and login-scene choices.')
+        except (OSError, ValueError, TypeError) as error:
+            QMessageBox.information(self, 'Save custom preset', str(error))
+
+    def preview_custom_preset(self, index):
+        if index < 0 or index >= len(self.custom_rows): return
+        row = self.custom_rows[index]
+        self.select_preset(row['preset'])
+        self.message.setText(f"Previewing saved combination ‘{row['name']}’. Apply when ready.")
+
+    def apply_custom_preset(self):
+        identifier = self.custom_combo.currentData()
+        row = next((row for row in self.custom_rows if row['id'] == identifier), None)
+        if not row: return
+        self.run_task([str(BIN / 'bankai-desktop'), 'apply-custom', identifier],
+                      'Applying ' + row['name'] + '…', 'Custom preset applied.')
+
+    def delete_custom_preset(self):
+        identifier = self.custom_combo.currentData()
+        if not identifier: return
+        try:
+            appearance_settings.delete_custom_preset(HOME, identifier)
+            self.refresh_custom_presets()
+            self.message.setText('Saved preset deleted.')
+        except (OSError, ValueError, TypeError) as error:
+            QMessageBox.information(self, 'Delete custom preset', str(error))
 
     def verify_snapshot(self):
         name = self.snapshots.currentData()

@@ -35,4 +35,15 @@ class AppearanceChecks(unittest.TestCase):
             with self.assertRaises(ValueError): appearance.save(home, options)
             self.assertEqual(outside.read_text(),'unchanged')
 
+    def test_custom_presets_round_trip_and_delete(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder); options=appearance.defaults()
+            options.update(edition='manga',accent='#aabbcc',login='rukia')
+            row=appearance.save_custom_preset(home,'Night Rukia','rukia',options)
+            self.assertEqual(row['preset'],'rukia')
+            self.assertEqual(appearance.custom_presets(home),[row])
+            with self.assertRaises(ValueError): appearance.save_custom_preset(home,'night rukia','ichigo',options)
+            appearance.delete_custom_preset(home,row['id'])
+            self.assertEqual(appearance.custom_presets(home),[])
+
 if __name__ == '__main__': unittest.main()

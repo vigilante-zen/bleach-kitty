@@ -73,6 +73,24 @@ class ControlCenterChecks(unittest.TestCase):
         self.window.apply_preset()
         self.assertEqual(commands[0][0], [str(center.BIN / 'bankai-desktop'), 'rukia'])
 
+    def test_custom_preset_can_be_saved_previewed_applied_and_deleted(self):
+        original = center.QInputDialog.getText
+        center.QInputDialog.getText = staticmethod(lambda *args, **kwargs: ('Night Ichigo', True))
+        try:
+            self.window.save_custom_preset()
+            self.assertEqual(self.window.custom_combo.count(), 1)
+            self.assertEqual(self.window.custom_rows[0]['preset'], 'ichigo')
+            self.window.preview_custom_preset(0)
+            self.assertIn('Night Ichigo', self.window.message.text())
+            commands = []
+            self.window.run_task = lambda *args: commands.append(args)
+            self.window.apply_custom_preset()
+            self.assertEqual(commands[0][0], [str(center.BIN / 'bankai-desktop'), 'apply-custom', self.window.custom_rows[0]['id']])
+            self.window.delete_custom_preset()
+            self.assertEqual(self.window.custom_combo.count(), 0)
+        finally:
+            center.QInputDialog.getText = original
+
     def test_ultrawide_wallpapers_match_monitor_aspect(self):
         for name in ['urahara', 'byakuya', 'yamamoto', 'ulquiorra']:
             size = QImageReader(str(center.WALLPAPERS / center.PRESETS[name][3])).size()

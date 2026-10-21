@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Make snapshot restore transactional in both desktop editions. Stage and verify snapshot bytes before applying them, then restore replaced or deleted files with their original permissions if a later operation fails.
+- Make snapshot restore transactional in both desktop editions. Stage and verify snapshot bytes before applying them, then restore replaced or deleted files with their original permissions if a later operation fails. Require the manifest version to be an integer in both editions.
 - Apply preset changes in both desktop editions as transactions across desktop configuration and saved-state markers; roll back earlier writes if a later write fails. Custom preset application now snapshots the previous appearance choices, then commits the preset and replacement choices together so failed applies leave both unchanged.
 - Serialize Python custom-preset edits with Rust and snapshot operations to prevent concurrent updates from being lost. Refresh custom presets in both editions after external changes while preserving selection, and offer to restore malformed appearance settings after backing up the unreadable file. Show the exact characters eligible for terminal Random, use unbiased random selection for login shuffle, and refresh the Backups page after external changes. Reject stale appearance saves across editions, keep the Rust window usable when saved presets are malformed by showing an error and allowing reload after repair, and reject symlinked current-preset state.
 - Run Clippy with warnings denied in Rust CI and document the lint command in the Rust install and development guides.

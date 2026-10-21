@@ -150,6 +150,11 @@ fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
     if let Value::Object(map)=&mut manifest{map.insert("files".into(),Value::from(vec![obj!{"path"=>"../outside","mode"=>0o600u64,"sha256"=>"bad"}]));}
     fs::write(&path,manifest.dump()).unwrap();assert!(snapshots::verify(&f.app,&name).is_err());
 }
+#[test]fn boolean_snapshot_version_is_not_accepted_as_integer_one(){
+    let f=Fixture::new();let name=snapshot(&f);let path=f.app.snapshots.join(&name).join("manifest.json");let mut manifest=fsutil::read_json(&path).unwrap();
+    if let Value::Object(map)=&mut manifest{map.insert("version".into(),Value::from(true));}
+    fs::write(&path,manifest.dump()).unwrap();assert!(snapshots::verify(&f.app,&name).is_err());
+}
 #[test]fn symlink_destination_is_rejected(){
     let f=Fixture::new();let name=snapshot(&f);let outside=f.app.home.join("outside");write(&outside,"untouched");let target=f.app.home.join(".config/kitty/kitty.conf");fs::remove_file(&target).unwrap();symlink(&outside,&target).unwrap();
     assert!(snapshots::restore(&f.app,&name).is_err());assert_eq!(fs::read_to_string(outside).unwrap(),"untouched");

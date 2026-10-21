@@ -77,7 +77,7 @@ def verify_manifest(snapshot, home):
     manifest = snapshot / 'manifest.json'
     reject_links(manifest, snapshot)
     data = json.loads(manifest.read_text())
-    if not isinstance(data, dict) or data.get('version') != 1 or not isinstance(data.get('files'), list) or not data['files']:
+    if not isinstance(data, dict) or type(data.get('version')) is not int or data['version'] != 1 or not isinstance(data.get('files'), list) or not data['files']:
         raise ValueError('Invalid snapshot manifest.')
     seen = set()
     for entry in data['files']:

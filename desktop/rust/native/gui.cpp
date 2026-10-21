@@ -549,6 +549,17 @@ public:
       QLabel *thumbnail, const QString &path, const QString &title,
       const std::shared_ptr<std::atomic<quint64>> &requestedGeneration,
       quint64 generation) {
+    const auto showUnavailable = [](QLabel *label, const QString &name) {
+      label->setText("Artwork unavailable");
+      label->setAccessibleDescription(name + " portrait artwork unavailable.");
+      label->setProperty("portrait-thumbnail-error", true);
+      if (auto *card = qobject_cast<QPushButton *>(label->parentWidget())) {
+        const QString notice = "Portrait artwork unavailable.";
+        const QString description = card->accessibleDescription();
+        if (!description.contains(notice))
+          card->setAccessibleDescription(description + " " + notice);
+      }
+    };
     const QFileInfo file(path);
     const QString cacheKey =
         QString("%1|%2|%3")
@@ -564,12 +575,7 @@ public:
       return;
     }
     if (portraitThumbnailFailures.contains(cacheKey)) {
-      thumbnail->setText("Artwork unavailable");
-      thumbnail->setAccessibleDescription(title + " portrait artwork unavailable.");
-      thumbnail->setProperty("portrait-thumbnail-error", true);
-      if (auto *card = qobject_cast<QPushButton *>(thumbnail->parentWidget()))
-        card->setAccessibleDescription(card->accessibleDescription() +
-                                       " Portrait artwork unavailable.");
+      showUnavailable(thumbnail, title);
       thumbnail->setProperty("portrait-thumbnail-cache-hit", true);
       thumbnail->setProperty("portrait-thumbnail-complete", true);
       return;
@@ -578,7 +584,7 @@ public:
     QPointer<QLabel> thumbnailGuard(thumbnail);
     responseParserPool.start(QRunnable::create(
         [windowGuard, thumbnailGuard, path, cacheKey, title, requestedGeneration,
-         generation] {
+         generation, showUnavailable] {
           if (requestedGeneration->load(std::memory_order_acquire) != generation)
             return;
           QImageReader reader(path);
@@ -591,23 +597,15 @@ public:
             return;
           QMetaObject::invokeMethod(
               windowGuard.data(),
-              [windowGuard, thumbnailGuard, cacheKey, title,
-               requestedGeneration, generation,
+              [windowGuard, thumbnailGuard, cacheKey, title, requestedGeneration,
+               generation, showUnavailable,
                image = std::move(image)]() mutable {
                 if (!windowGuard || !thumbnailGuard ||
                     requestedGeneration->load(std::memory_order_acquire) != generation)
                   return;
                 if (image.isNull()) {
                   windowGuard->portraitThumbnailFailures.insert(cacheKey);
-                  thumbnailGuard->setText("Artwork unavailable");
-                  thumbnailGuard->setAccessibleDescription(
-                      title + " portrait artwork unavailable.");
-                  thumbnailGuard->setProperty("portrait-thumbnail-error", true);
-                  if (auto *card = qobject_cast<QPushButton *>(
-                          thumbnailGuard->parentWidget()))
-                    card->setAccessibleDescription(
-                        card->accessibleDescription() +
-                        " Portrait artwork unavailable.");
+                  showUnavailable(thumbnailGuard, title);
                 } else {
                   if (!windowGuard->portraitThumbnailCache.contains(cacheKey)) {
                     if (windowGuard->portraitThumbnailCache.size() >= 64)
@@ -2611,6 +2609,20 @@ static int smoke(Window &window, const QString &directory) {
            .contains("Portrait artwork unavailable"))
     throw std::runtime_error(
         "Unavailable terminal portrait was not exposed in its card description");
+  QPushButton cachedMissingPortraitCard;
+  cachedMissingPortraitCard.setAccessibleDescription("Choose Missing Terminal");
+  QLabel cachedMissingPortraitLabel(&cachedMissingPortraitCard);
+  window.loadPortraitThumbnail(
+      &cachedMissingPortraitLabel,
+      missingThumbnailDirectory.path() + "/not-present-portrait.png",
+      "Missing Terminal", missingPortraitGeneration, 1);
+  const auto cachedMissingDescription =
+      accessibleText(&cachedMissingPortraitCard, QAccessible::Description);
+  if (!cachedMissingPortraitLabel.property("portrait-thumbnail-cache-hit").toBool() ||
+      !cachedMissingPortraitLabel.property("portrait-thumbnail-error").toBool() ||
+      cachedMissingDescription.count("Portrait artwork unavailable.") != 1)
+    throw std::runtime_error(
+        "Cached unavailable terminal portrait duplicated its accessible description");
   if (fitDialogSize(QSize(620, 500), QSize(640, 480)) != QSize(608, 448) ||
       fitDialogSize(QSize(380, 460), QSize(800, 600)) != QSize(380, 460))
     throw std::runtime_error("Dialog sizing does not respect available display geometry");

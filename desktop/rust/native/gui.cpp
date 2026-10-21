@@ -1,6 +1,9 @@
 #include <QtNetwork>
 #include <QtSvg/QSvgRenderer>
 #include <QtWidgets>
+#include <QPointer>
+#include <QRunnable>
+#include <QThreadPool>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -238,6 +241,7 @@ public:
   bool snapshotScanOutputExceededLimit = false;
   bool snapshotRefreshPending = false;
   bool snapshotScanInProgress = false;
+  bool snapshotScanParsing = false;
   QFileSystemWatcher watcher;
   QTimer debounce, poll, slowTimer;
   bool quitting = false;
@@ -252,6 +256,25 @@ public:
       return;
     }
     buffer += chunk;
+  }
+  void parseWorkerResponse(
+      QByteArray response,
+      std::function<void(const QJsonObject &)> completion) {
+    QPointer<Window> guard(this);
+    QThreadPool::globalInstance()->start(QRunnable::create(
+        [guard, response = std::move(response),
+         completion = std::move(completion)]() mutable {
+          const auto reply = QJsonDocument::fromJson(response).object();
+          if (!guard)
+            return;
+          QMetaObject::invokeMethod(
+              guard.data(),
+              [guard, reply, completion = std::move(completion)]() mutable {
+                if (guard)
+                  completion(reply);
+              },
+              Qt::QueuedConnection);
+        }));
   }
   Window() {
     bootstrap = rpc({{"op", "bootstrap"}}).toObject();
@@ -1336,45 +1359,58 @@ public:
   bool waitForSnapshotScan(int timeoutMs) {
     QElapsedTimer elapsed;
     elapsed.start();
-    while ((snapshotScanProcess || snapshotRefreshPending || snapshotScanInProgress) &&
+    while ((snapshotScanProcess || snapshotScanParsing || snapshotRefreshPending ||
+            snapshotScanInProgress) &&
            elapsed.elapsed() < timeoutMs) {
       qApp->processEvents();
       QThread::msleep(5);
     }
-    return !snapshotScanProcess && !snapshotRefreshPending && !snapshotScanInProgress;
+    return !snapshotScanProcess && !snapshotScanParsing &&
+           !snapshotRefreshPending && !snapshotScanInProgress;
+  }
+  void finishSnapshotScanResponse(const QJsonObject &reply, int code,
+                                  QProcess::ExitStatus status) {
+    snapshotScanParsing = false;
+    const bool good = !snapshotScanOutputExceededLimit && code == 0 &&
+                      status == QProcess::NormalExit &&
+                      reply.value("ok").toBool() &&
+                      reply.value("result").isArray();
+    const auto values = reply.value("result").toArray();
+    const auto error = snapshotScanOutputExceededLimit
+                           ? "Snapshot list exceeded the 32 MiB response limit."
+                           : reply.value("error").toString(
+                                 "Snapshot scan failed. Use Refresh to try again.");
+    if (good)
+      applySnapshotResults(values);
+    else
+      snapshotScanFailed(error);
+    const bool shouldRefresh = snapshotRefreshPending &&
+                               !snapshotScanOutputExceededLimit;
+    snapshotRefreshPending = false;
+    if (shouldRefresh)
+      refreshSnapshots();
   }
   void finishSnapshotScan(QProcess *worker, int code, QProcess::ExitStatus status) {
     if (snapshotScanProcess != worker)
       return;
     appendWorkerOutput(snapshotScanOutput, worker,
                        snapshotScanOutputExceededLimit);
-    auto reply = snapshotScanOutputExceededLimit
-                     ? QJsonObject{}
-                     : QJsonDocument::fromJson(snapshotScanOutput).object();
-    bool good = !snapshotScanOutputExceededLimit && code == 0 &&
-                status == QProcess::NormalExit &&
-                reply.value("ok").toBool() && reply.value("result").isArray();
-    const auto values = reply.value("result").toArray();
-    const auto error = snapshotScanOutputExceededLimit
-                           ? "Snapshot list exceeded the 32 MiB response limit."
-                           : reply.value("error").toString(
-                                 "Snapshot scan failed. Use Refresh to try again.");
     snapshotScanProcess = nullptr;
-    if (good)
-      applySnapshotResults(values);
-    else
-      snapshotScanFailed(error);
     worker->deleteLater();
-    const bool shouldRefresh = snapshotRefreshPending &&
-                               !snapshotScanOutputExceededLimit;
-    snapshotRefreshPending = false;
-    if (shouldRefresh) {
-      refreshSnapshots();
+    snapshotScanParsing = true;
+    if (snapshotScanOutputExceededLimit) {
+      finishSnapshotScanResponse({}, code, status);
+      return;
     }
+    auto response = std::move(snapshotScanOutput);
+    parseWorkerResponse(std::move(response),
+                        [this, code, status](const QJsonObject &reply) {
+                          finishSnapshotScanResponse(reply, code, status);
+                        });
   }
   void refreshSnapshots() {
     watchBackupDirectories();
-    if (snapshotScanProcess) {
+    if (snapshotScanProcess || snapshotScanParsing) {
       snapshotRefreshPending = true;
       return;
     }
@@ -1561,50 +1597,59 @@ public:
     connect(worker, &QProcess::finished, this,
             [this, worker, request](int code, QProcess::ExitStatus status) {
               appendWorkerOutput(output, worker, outputExceededLimit);
-              auto reply = outputExceededLimit
-                               ? QJsonObject{}
-                               : QJsonDocument::fromJson(output).object();
-              bool good = !outputExceededLimit && code == 0 &&
-                          status == QProcess::NormalExit &&
-                          reply.value("ok").toBool();
-              auto result = reply.value("result").toObject();
-              const auto error = outputExceededLimit
-                                     ? "Worker response exceeded the 32 MiB UI limit. Reduce the snapshot or file count and retry."
-                                     : reply.value("error").toString(
-                                           "Action failed. See activity.");
-              notice->setText(
-                  good ? result.value("message").toString("Action completed.")
-                       : error);
-              log->setPlainText(
-                  QString::fromUtf8(output.right(2 * 1024 * 1024)));
-              if (!good) {
-                log->show();
-                logButton->setText("Hide activity");
-              }
-              finishTask(worker);
-              if (good && request.value("op").toString() == "inspect-snapshot")
-                showSnapshotPreview(result);
-              if (good && request.value("op").toString() == "plan")
-                showCleanupPlan(result);
-              if (good && request.value("op").toString() == "reset-appearance")
-                selectPreset("tybw");
-              if (good && request.value("op").toString() == "save-appearance")
-                selectPreset(selected);
-              if (good && request.value("op").toString() == "save-custom-preset") {
-                refreshCustomPresets();
-                customPresetChoice->setCurrentIndex(
-                    customPresetChoice->findData(result.value("id").toString()));
+              const bool overflow = outputExceededLimit;
+              auto response = std::move(output);
+              const auto logText =
+                  QString::fromUtf8(response.right(2 * 1024 * 1024));
+              auto complete = [this, worker, request, code, status, logText,
+                               overflow](const QJsonObject &reply) {
+                if (process != worker)
+                  return;
+                const bool good = !overflow && code == 0 &&
+                                  status == QProcess::NormalExit &&
+                                  reply.value("ok").toBool();
+                auto result = reply.value("result").toObject();
+                const auto error = overflow
+                                       ? "Worker response exceeded the 32 MiB UI limit. Reduce the snapshot or file count and retry."
+                                       : reply.value("error").toString(
+                                             "Action failed. See activity.");
                 notice->setText(
-                    "Saved current wallpaper, accent, and login-scene choices.");
-              }
-              if (good && request.value("op").toString() == "delete-custom-preset") {
-                refreshCustomPresets();
-                notice->setText("Saved preset deleted.");
-              }
-              if (tray && tray->isVisible() && !isVisible())
-                tray->showMessage("Bankai Rust", notice->text(),
-                                  good ? QSystemTrayIcon::Information
-                                       : QSystemTrayIcon::Warning);
+                    good ? result.value("message").toString("Action completed.")
+                         : error);
+                log->setPlainText(logText);
+                if (!good) {
+                  log->show();
+                  logButton->setText("Hide activity");
+                }
+                finishTask(worker);
+                if (good && request.value("op").toString() == "inspect-snapshot")
+                  showSnapshotPreview(result);
+                if (good && request.value("op").toString() == "plan")
+                  showCleanupPlan(result);
+                if (good && request.value("op").toString() == "reset-appearance")
+                  selectPreset("tybw");
+                if (good && request.value("op").toString() == "save-appearance")
+                  selectPreset(selected);
+                if (good && request.value("op").toString() == "save-custom-preset") {
+                  refreshCustomPresets();
+                  customPresetChoice->setCurrentIndex(
+                      customPresetChoice->findData(result.value("id").toString()));
+                  notice->setText(
+                      "Saved current wallpaper, accent, and login-scene choices.");
+                }
+                if (good && request.value("op").toString() == "delete-custom-preset") {
+                  refreshCustomPresets();
+                  notice->setText("Saved preset deleted.");
+                }
+                if (tray && tray->isVisible() && !isVisible())
+                  tray->showMessage("Bankai Rust", notice->text(),
+                                    good ? QSystemTrayIcon::Information
+                                         : QSystemTrayIcon::Warning);
+              };
+              if (overflow)
+                complete({});
+              else
+                parseWorkerResponse(std::move(response), std::move(complete));
             });
     connect(worker, &QProcess::errorOccurred, this,
             [this, worker](QProcess::ProcessError error) {

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Parse worker RPC JSON responses on a background thread so large snapshot scans and task replies do not block the Rust UI event loop.
 - Batch Qt snapshot-filter updates during refresh so large saved-snapshot lists do not trigger a filter pass and repaint for every row.
 - Limit the shared custom-preset file to 64 KiB and read it through bounded streams in Rust and Python; reject FIFOs and other non-regular files before opening them.
 - Preserve worker RPC responses up to 32 MiB so large snapshot lists, cleanup reviews and restore previews remain parseable; stop oversized responses with a clear limit message instead of silently truncating JSON.

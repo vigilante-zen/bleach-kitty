@@ -3,8 +3,11 @@ import importlib.machinery
 import importlib.util
 import hashlib
 import json
+import os
 from pathlib import Path
+import subprocess
 import stat
+import sys
 import tempfile
 import unittest
 
@@ -16,6 +19,47 @@ spec.loader.exec_module(backup)
 
 
 class RestoreTransactionChecks(unittest.TestCase):
+    def test_snapshot_creation_rejects_dangling_config_symlinks(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            kitty = home / '.config/kitty/kitty.conf'
+            kitty.parent.mkdir(parents=True)
+            kitty.write_text('font_size 12\n')
+            linked = home / '.config/kdeglobals'
+            linked.symlink_to(home / 'missing-kdeglobals')
+            root = home / 'Backups/Bleach-Desktop'
+            with self.assertRaisesRegex(ValueError, 'Symlink cannot be backed up or restored'):
+                backup.create(home, root)
+            self.assertTrue(linked.is_symlink())
+            self.assertFalse(any(path.is_dir() and (path / 'manifest.json').exists() for path in root.iterdir()))
+
+    def test_executed_python_backup_command_includes_desktop_configuration(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            kitty = home / '.config/kitty/kitty.conf'
+            globals_ = home / '.config/kdeglobals'
+            kitty.parent.mkdir(parents=True)
+            kitty.write_text('font_size 12\n')
+            globals_.write_text('[General]\nColorScheme=BleachRukia\n')
+            env = dict(os.environ, HOME=str(home))
+            command = [sys.executable, str(ROOT / 'desktop/python/bin/bankai-desktop-backup')]
+            subprocess.run(command, env=env, check=True, capture_output=True, text=True)
+
+            snapshot_root = home / 'Backups/Bleach-Desktop'
+            snapshots = [path for path in snapshot_root.iterdir() if path.is_dir() and (path / 'manifest.json').is_file()]
+            self.assertEqual(len(snapshots), 1)
+            manifest = json.loads((snapshots[0] / 'manifest.json').read_text())
+            saved = {entry['path'] for entry in manifest['files']}
+            self.assertIn('.config/kdeglobals', saved)
+
+            globals_.write_text('[General]\nColorScheme=BreezeDark\n')
+            added = home / '.config/fish/config.fish'
+            added.parent.mkdir(parents=True)
+            added.write_text('# added after snapshot\n')
+            subprocess.run(command + ['restore', snapshots[0].name], env=env, check=True, capture_output=True, text=True)
+            self.assertEqual(globals_.read_text(), '[General]\nColorScheme=BleachRukia\n')
+            self.assertFalse(added.exists())
+
     def test_oversized_snapshot_manifest_is_rejected_before_json_parsing(self):
         with tempfile.TemporaryDirectory() as folder:
             home = Path(folder)

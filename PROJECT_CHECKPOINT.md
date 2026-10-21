@@ -13,7 +13,9 @@ Snapshot restore in both Rust and Python now stages and verifies all target byte
 
 Snapshot manifests are capped at 16 MiB across Rust verification, Python backup/restore and Python snapshot scanning; creation refuses a manifest larger than the verifier accepts.
 
-The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 53 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
+Subprocess and extracted-package tests confirm the Python backup CLI includes and restores KDE configuration alongside terminal settings. Creation now rejects dangling symlinks in configured files instead of recording them as absent.
+
+The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 55 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
 Release-package verification runs a snapshot create/restore cycle against the extracted Python package and prebuilt Rust package, including absent-file cleanup and the pre-restore backup. The Python, Rust-source and prebuilt-Rust archives all passed that check. Regular push and pull-request CI now builds and verifies the same three packages.
 

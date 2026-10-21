@@ -44,17 +44,33 @@ def reject_links(path, root):
 
 
 def create(home, root):
+    reject_links(root, home)
     root.mkdir(parents=True, exist_ok=True)
+    reject_links(root, home)
     name = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
     temporary = Path(tempfile.mkdtemp(prefix='.partial-', dir=root))
     try:
-        paths = {home / p for p in FILES if (home / p).is_file()}
+        paths = set()
+        for relative in FILES:
+            path = home / relative
+            reject_links(path, home)
+            if path.is_file():
+                paths.add(path)
         for pattern in PATTERNS:
-            paths.update(p for p in home.glob(pattern) if p.is_file())
+            for path in home.glob(pattern):
+                reject_links(path, home)
+                if path.is_file():
+                    paths.add(path)
         for tree in TREES:
-            paths.update(p for p in (home / tree).rglob('*') if p.is_file())
+            directory = home / tree
+            reject_links(directory, home)
+            if directory.exists():
+                for path in directory.rglob('*'):
+                    reject_links(path, home)
+                    if path.is_file():
+                        paths.add(path)
         if not paths:
-            raise ValueError('No Kitty theme files were found.')
+            raise ValueError('No desktop or terminal files were found.')
         entries = []
         for path in sorted(paths):
             reject_links(path, home)
@@ -225,8 +241,6 @@ def main():
     else:
         snapshot, count = create(home, root)
         print(f'Saved {count} files: {snapshot}')
-
-
 
 TREES += ['.local/share/bleach-desktop', '.local/share/plasma/look-and-feel/org.zen.bleach.desktop', 'Pictures/Bleach-TYBW']
 FILES += ['.config/kdeglobals', '.config/plasmarc', '.config/plasmashellrc',

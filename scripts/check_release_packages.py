@@ -24,6 +24,9 @@ def check_snapshot_restore(root, edition, temporary):
     kitty = home / '.config/kitty/kitty.conf'
     kitty.parent.mkdir(parents=True)
     kitty.write_text('font_size 12\n')
+    globals_ = home / '.config/kdeglobals'
+    globals_.parent.mkdir(parents=True, exist_ok=True)
+    globals_.write_text('[General]\nColorScheme=BleachRukia\n')
     env = dict(os.environ, HOME=str(home))
     if edition == 'rust':
         env['BANKAI_HOME'] = str(home)
@@ -36,12 +39,13 @@ def check_snapshot_restore(root, edition, temporary):
 
     name = snapshots[0].name
     kitty.write_text('font_size 24\n')
+    globals_.write_text('[General]\nColorScheme=BreezeDark\n')
     absent = home / '.config/fish/config.fish'
     absent.parent.mkdir(parents=True)
     absent.write_text('# added after snapshot\n')
     restore = command + ['restore', name]
     subprocess.run(restore, cwd=root, env=env, check=True, capture_output=True, text=True)
-    if kitty.read_text() != 'font_size 12\n' or absent.exists():
+    if kitty.read_text() != 'font_size 12\n' or globals_.read_text() != '[General]\nColorScheme=BleachRukia\n' or absent.exists():
         raise ValueError(f'{edition} packaged snapshot restore did not restore files and absences')
     if len([path for path in snapshot_root.iterdir() if path.is_dir() and (path / 'manifest.json').is_file()]) != 2:
         raise ValueError(f'{edition} packaged restore did not preserve a pre-restore snapshot')

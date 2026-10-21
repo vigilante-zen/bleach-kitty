@@ -1392,17 +1392,17 @@ protected:
 };
 static QJsonObject benchmark(Window &window, qint64 elapsed) {
   QFile status("/proc/self/status");
-  status.open(QIODevice::ReadOnly);
   QJsonObject result{{"startup_ms", double(elapsed)}, {"edition", "rust-qt"}};
-  for (auto line : status.readAll().split('\n'))
-    for (auto key : {QByteArray("VmRSS:"), QByteArray("VmHWM:")})
-      if (line.startsWith(key))
-        result.insert(QString::fromUtf8(key.chopped(1)) + "_kib",
-                      QString::fromUtf8(line.mid(key.size()))
-                          .simplified()
-                          .split(' ')
-                          .first()
-                          .toDouble());
+  if (status.open(QIODevice::ReadOnly))
+    for (auto line : status.readAll().split('\n'))
+      for (auto key : {QByteArray("VmRSS:"), QByteArray("VmHWM:")})
+        if (line.startsWith(key))
+          result.insert(QString::fromUtf8(key.chopped(1)) + "_kib",
+                        QString::fromUtf8(line.mid(key.size()))
+                            .simplified()
+                            .split(' ')
+                            .first()
+                            .toDouble());
   result.insert("preset_count", window.presets.size());
   return result;
 }

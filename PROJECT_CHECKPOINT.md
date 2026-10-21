@@ -74,3 +74,11 @@ Release-package verification runs a snapshot create/restore cycle against the ex
 The next project change can follow the user's next request. The latest push attempt failed because this environment could not resolve `github.com`; push `main` when GitHub DNS is available.
 
 The active Codex project goal tracks this continuation across sessions. Start by checking `git status` and reading the current implementation before editing.
+
+## Resume here
+
+The current saved project state is commit `bc47bbf` (`Show filtered character count in terminal picker`) on `main`, tracking `origin/main`; the branch is 74 commits ahead of its upstream. There are no uncommitted tracked changes. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
+
+The latest Rust UI change adds a live, singular/plural-aware matching-character count to the terminal picker. Its accessible label reflects both search text and faction filter, and the smoke test covers matching and empty results. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized Rust build, the offscreen GUI smoke test and `git diff --check`.
+
+To resume, open this repository, read this checkpoint, then check `git status --short --branch` and inspect the implementation related to the next requested change. Keep `artifacts/` untouched. GitHub may still need syncing: push `main` only when network access is available and after checking the remote state.

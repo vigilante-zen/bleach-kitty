@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Let regular Rust controls inherit KDE's configured UI font and size, while keeping the themed colors and control-specific typography.
 - Add screen-reader context for Rust navigation, saved custom presets, terminal-follow and art-style options, autostart, and the activity log; verify the Qt-exposed labels in the native smoke test.
 - Add an integrity-checked restore preview to the Rust Backups page, listing every saved file to restore and every setting to remove before the user confirms an actual restore.
 - Widen the Rust sidebar enough to show full navigation labels and keyboard shortcuts; tighten its internal spacing so labels still fit on narrower displays.

@@ -1,5 +1,6 @@
 
-QWidget { background: #090c12; color: #e8edf5; font-family: "Noto Sans"; font-size: 13px; }
+/* Inherit the desktop's UI font and size so KDE accessibility settings apply. */
+QWidget { background: #090c12; color: #e8edf5; }
 QFrame#sidebar { background: #101620; border-right: 1px solid #253044; }
 QFrame#sidebar QLabel { background: transparent; }
 QLabel#brand { font-size: 29px; font-weight: 800; letter-spacing: 5px; }
@@ -21,6 +22,6 @@ QToolButton:hover { background: #1a2638; border-color: #8294aa; }
 QToolButton:checked { border: 2px solid #e8edf5; background: #1a2638; }
 QComboBox { background: #151f2d; border: 1px solid #32435c; border-radius: 6px; padding: 10px; }
 QComboBox QAbstractItemView { background: #151f2d; selection-background-color: #334861; }
-QTextEdit { background: #0d131d; border: 1px solid #263348; border-radius: 7px; font-family: monospace; font-size: 11px; }
+QTextEdit { background: #0d131d; border: 1px solid #263348; border-radius: 7px; font-family: monospace; }
 QMessageBox QLabel { min-width: 360px; }
 QPushButton:focus, QToolButton:focus, QComboBox:focus, QLineEdit:focus, QSpinBox:focus, QListWidget:focus, QCheckBox:focus, QPlainTextEdit:focus { border: 2px solid #ff8492; }

@@ -19,6 +19,36 @@ spec.loader.exec_module(backup)
 
 
 class RestoreTransactionChecks(unittest.TestCase):
+    def test_path_check_includes_the_boundary_and_rejects_escape(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            boundary = home / 'real-root'
+            boundary.mkdir()
+            boundary_link = home / 'linked-root'
+            boundary_link.symlink_to(boundary, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'Symlink cannot be backed up or restored'):
+                backup.reject_links(boundary_link / 'snapshot', boundary_link)
+            with self.assertRaisesRegex(ValueError, 'Path escapes its allowed directory'):
+                backup.reject_links(home / 'outside', boundary)
+
+    def test_verifier_rejects_symlinked_snapshot_boundary(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home = Path(folder)
+            actual_root = home / 'actual-snapshots'
+            snapshot = actual_root / '20261021-120000-000001'
+            source = snapshot / 'files/.config/kitty/config'
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b'kitty config')
+            (snapshot / 'manifest.json').write_text(json.dumps({
+                'version': 1,
+                'files': [{'path': '.config/kitty/config', 'sha256': hashlib.sha256(b'kitty config').hexdigest(), 'mode': 0o600}],
+                'absent': [],
+            }))
+            linked_root = home / 'linked-snapshots'
+            linked_root.symlink_to(actual_root, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'Symlink cannot be backed up or restored'):
+                backup.verify_manifest(linked_root / snapshot.name, home)
+
     def test_snapshot_creation_rejects_dangling_config_symlinks(self):
         with tempfile.TemporaryDirectory() as folder:
             home = Path(folder)

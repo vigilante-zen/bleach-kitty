@@ -37,9 +37,15 @@ def allowed(relative):
 
 
 def reject_links(path, root):
-    while path != root:
+    try:
+        path.relative_to(root)
+    except ValueError as error:
+        raise ValueError(f'Path escapes its allowed directory: {path}') from error
+    while True:
         if path.is_symlink():
             raise ValueError(f'Symlink cannot be backed up or restored: {path}')
+        if path == root:
+            break
         path = path.parent
 
 

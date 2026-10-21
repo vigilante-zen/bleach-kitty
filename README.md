@@ -129,7 +129,10 @@ Uninstall restores replaced originals and removes files added by this installer,
 
 ```sh
 python3 -m unittest discover -s tests -v
+python3 scripts/check_presets.py
 ```
+
+The preset check confirms every roster entry has valid matching desktop artwork, a packaged manga login scene, and its KDE color scheme; it also detects unreferenced assets.
 
 The installer can target an isolated directory via `--home /absolute/test/home`. That option is for staging/testing; desktop launchers and config references are expanded for that directory. Validation on the original setup covered all portraits/palettes, Fish/Kitty configuration, full shuffle cycles, groups and exact-edition replay. No real desktop session is launched by the automated installer tests.
 

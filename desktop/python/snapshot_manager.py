@@ -97,13 +97,20 @@ class SnapshotStore:
                     raise ValueError('Snapshot manifest exceeds the 16 MiB size limit.')
                 data = json.loads(raw)
                 entries = data.get('files') if isinstance(data, dict) else None
-                if data.get('version') != 1 or not isinstance(entries, list) or not entries:
+                if (type(data.get('version')) is not int or data['version'] != 1
+                        or not isinstance(entries, list) or not entries):
                     raise ValueError('Snapshot metadata is invalid.')
                 expected = {'manifest.json'}
+                seen = set()
                 for entry in entries:
                     relative = entry.get('path') if isinstance(entry, dict) else None
-                    if not isinstance(relative, str) or Path(relative).is_absolute() or '..' in Path(relative).parts:
+                    relative_path = Path(relative) if isinstance(relative, str) else None
+                    if (relative_path is None or not relative or relative_path.is_absolute()
+                            or str(relative_path) != relative
+                            or any(part in ('', '.', '..') for part in relative.split('/'))
+                            or relative in seen):
                         raise ValueError('Snapshot paths are invalid.')
+                    seen.add(relative)
                     expected.add('files/' + relative)
                 row['files'] = len(entries)
                 actual = set()

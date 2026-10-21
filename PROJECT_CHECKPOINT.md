@@ -17,7 +17,7 @@ Subprocess and extracted-package tests confirm the Python backup CLI includes an
 
 Python snapshot path checks now reject symlinked boundary directories and paths outside their allowed root, matching Rust behavior.
 
-Python snapshot scans and cleanup previews now take the same cross-edition lock used by Rust and the Python backup utility. Cleanup revalidates its reviewed plan through the internal scan while holding one lock, avoiding nested locking. This prevents the desktop UI from reading a partially written or concurrently removed snapshot. The snapshot-manager suite now has 10 passing checks, including lock use; `python desktop/python/check.py` also passed after this change.
+Python snapshot scans and cleanup previews now take the same cross-edition lock used by Rust and the Python backup utility. Cleanup revalidates its reviewed plan through the internal scan while holding one lock, avoiding nested locking. The scanner also rejects boolean manifest versions, duplicate paths and noncanonical relative paths, matching Rust's cleanup eligibility checks. The snapshot-manager suite now has 11 passing checks covering these cases and lock use; `python desktop/python/check.py` also passed after these changes.
 
 The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 57 Python tests, 33 Rust tests, 22 Rust/Python snapshot compatibility checks, nine Python snapshot-manager checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 

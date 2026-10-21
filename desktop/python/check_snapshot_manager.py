@@ -100,6 +100,21 @@ class SnapshotManagementChecks(unittest.TestCase):
         self.assertFalse(row['eligible'])
         self.assertIn('16 MiB size limit', row['reason'])
 
+    def test_scanner_rejects_boolean_versions_duplicate_and_noncanonical_paths(self):
+        path = self.store.root / self.names[0] / 'manifest.json'
+        original = json.loads(path.read_text())
+        invalid_manifests = [
+            {**original, 'version': True},
+            {**original, 'files': original['files'] * 2},
+            {**original, 'files': [{'path': './.config/example'}]},
+        ]
+        for manifest in invalid_manifests:
+            with self.subTest(manifest=manifest):
+                path.write_text(json.dumps(manifest))
+                row = next(item for item in self.store.scan() if item['name'] == self.names[0])
+                self.assertFalse(row['eligible'])
+        path.write_text(json.dumps(original))
+
     def test_cannot_escape_snapshot_directory(self):
         plan = self.store.plan(1)
         plan['candidates'][0]['name'] = '../outside'

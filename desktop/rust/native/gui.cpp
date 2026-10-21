@@ -121,7 +121,9 @@ protected:
     painter.fillRect(rect(), QColor("#111925"));
     if (!image.isNull()) {
       if (previewSize != size()) {
-        scaledPreview = image.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        const QSize artworkSize(qRound(width() * 0.42), qRound(height() * 0.84));
+        scaledPreview = image.scaled(artworkSize, Qt::KeepAspectRatio,
+                                     Qt::SmoothTransformation);
         previewSize = size();
       }
       const auto &scaled = scaledPreview;
@@ -332,7 +334,7 @@ public:
   }
   void resizeEvent(QResizeEvent *event) override {
     QMainWindow::resizeEvent(event);
-    int columns = qBound(1, (width() - 290) / 160, 4);
+    int columns = qBound(1, (width() - 350) / 190, 4);
     if (!presetGrid || columns == presetColumns)
       return;
     presetColumns = columns;
@@ -533,7 +535,7 @@ public:
     }));
     actions->addStretch();
     layout->addLayout(actions);
-    auto *savedRow=new QHBoxLayout;
+    auto *savedRow=new QVBoxLayout;
     customPresetChoice=new QComboBox;
     customPresetChoice->setObjectName("custom-preset-choice");
     customPresetChoice->setAccessibleName("Saved custom presets");
@@ -541,21 +543,24 @@ public:
         "Choose a saved combination of wallpaper, accent, and login scene.");
     customPresetChoice->setMinimumWidth(190);
     connect(customPresetChoice,&QComboBox::currentIndexChanged,this,[this](int index){previewCustomPreset(index);});
-    savedRow->addWidget(customPresetChoice,1);
-    auto *saveCustom = button("Save current choices",[this]{saveCustomPreset();});
+    savedRow->addWidget(customPresetChoice);
+    auto *savedActions = new QHBoxLayout;
+    auto *saveCustom = button("Save choices",[this]{saveCustomPreset();});
     saveCustom->setObjectName("save-custom-preset");
     saveCustom->setAccessibleDescription(
         "Save the selected character with the current accent and login scene.");
-    savedRow->addWidget(saveCustom);
+    savedActions->addWidget(saveCustom);
     auto *applyCustom = button("Apply saved",[this]{applyCustomPreset();},true);
     applyCustom->setObjectName("apply-custom-preset");
     applyCustom->setAccessibleDescription(
         "Apply the selected saved character, accent, and login scene.");
-    savedRow->addWidget(applyCustom);
+    savedActions->addWidget(applyCustom);
     auto *deleteCustom = button("Delete",[this]{deleteCustomPreset();});
     deleteCustom->setObjectName("delete-custom-preset");
     deleteCustom->setAccessibleDescription("Delete the selected saved custom preset.");
-    savedRow->addWidget(deleteCustom);
+    savedActions->addWidget(deleteCustom);
+    savedActions->addStretch();
+    savedRow->addLayout(savedActions);
     layout->addLayout(savedRow);
     refreshCustomPresets();
     auto *scroll = new QScrollArea;
@@ -2170,6 +2175,9 @@ static int smoke(Window &window, const QString &directory) {
   window.resize(900, 650);
   window.navigation->setCurrentRow(0);
   qApp->processEvents();
+  auto *appearanceScroll = qobject_cast<QScrollArea *>(window.pages->widget(0));
+  if (!appearanceScroll || appearanceScroll->horizontalScrollBar()->maximum() > 0)
+    throw std::runtime_error("Appearance controls overflow horizontally at small window sizes");
   window.grab().save(directory + "/rust-small.png");
   window.navigation->setCurrentRow(2);
   window.matchDesktop->setChecked(false);

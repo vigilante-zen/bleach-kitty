@@ -63,6 +63,18 @@ static QSize fitDialogSize(const QSize &requested, const QSize &available) {
   return QSize(qMax(1, qMin(requested.width(), available.width() - 32)),
                qMax(1, qMin(requested.height(), available.height() - 32)));
 }
+class ResponsiveDialog : public QDialog {
+public:
+  using QDialog::QDialog;
+  std::function<void(const QSize &)> resized;
+
+protected:
+  void resizeEvent(QResizeEvent *event) override {
+    QDialog::resizeEvent(event);
+    if (resized)
+      resized(event->size());
+  }
+};
 static QLabel *label(const QString &text, const QString &name = {}) {
   auto *w = new QLabel(text);
   w->setWordWrap(true);
@@ -810,7 +822,7 @@ public:
   }
   void choosePortrait() {
     if (matchDesktop->isChecked() || process) return;
-    QDialog dialog(this);
+    ResponsiveDialog dialog(this);
     dialog.setObjectName("terminal-character-picker");
     dialog.setWindowTitle("Choose terminal character");
     const auto *screen = QGuiApplication::primaryScreen();
@@ -952,7 +964,13 @@ public:
     auto *close = new QDialogButtonBox(QDialogButtonBox::Close);
     connect(close, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     layout->addWidget(close);
-    auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites, &recentlyUsed, &displayNames, &dialog]() {
+    int gridAvailableWidth = dialog.width();
+    auto rebuild = [this, search, filters, grid, gridPage, empty, &members, &favorites,
+                    &recentlyUsed, &displayNames, &dialog, &gridAvailableWidth]() {
+      QString focusedId;
+      for (int index = 0; index < grid->count(); ++index)
+        if (auto *card = grid->itemAt(index)->widget(); card && card->hasFocus())
+          focusedId = card->property("portraitId").toString();
       while (auto *item = grid->takeAt(0)) {
         if (auto *widget = item->widget()) { widget->hide(); widget->deleteLater(); }
         delete item;
@@ -973,8 +991,9 @@ public:
           return displayNames.value(left, left).compare(displayNames.value(right, right), Qt::CaseInsensitive) < 0;
         });
       }
-      const int columnCount = qBound(1, (dialog.width() - 100) / 164, 4);
+      const int columnCount = qBound(1, (gridAvailableWidth - 100) / 164, 4);
       int row = 0, column = 0;
+      QPushButton *restoreFocus = nullptr;
       for (const auto &id : ids) {
         auto title = displayNames.value(id, id);
         if (title == id) {
@@ -991,6 +1010,8 @@ public:
         card->setDefault(false);
         card->setProperty("gridRow", row);
         card->setProperty("gridColumn", column);
+        card->setProperty("gridColumns", columnCount);
+        card->setProperty("portraitId", id);
         card->setFixedWidth(154);
         card->setMinimumHeight(142);
         card->setStyleSheet("padding: 4px;");
@@ -1045,6 +1066,8 @@ public:
           connect(shortcut, &QShortcut::activated, card, [card] { card->click(); });
         }
         grid->addWidget(card, row, column++);
+        if (id == focusedId)
+          restoreFocus = card;
         if (column == columnCount) { column = 0; ++row; }
       }
       const bool noCards = grid->count() == 0;
@@ -1058,10 +1081,19 @@ public:
         empty->setText("No characters in this group. Try another filter.");
       empty->setVisible(noCards);
       gridPage->adjustSize();
+      if (restoreFocus)
+        QTimer::singleShot(0, restoreFocus,
+                           [restoreFocus] { restoreFocus->setFocus(Qt::OtherFocusReason); });
     };
     connect(search, &QLineEdit::textChanged, &dialog, rebuild);
     connect(filters, &QComboBox::currentIndexChanged, &dialog, rebuild);
     rebuild();
+    dialog.resized = [&dialog, randomRow, rebuild, &gridAvailableWidth](const QSize &size) {
+      gridAvailableWidth = size.width();
+      randomRow->setDirection(size.width() <= 740 ? QBoxLayout::TopToBottom
+                                                   : QBoxLayout::LeftToRight);
+      rebuild();
+    };
     dialog.exec();
   }
   void updatePortraitPreview() {
@@ -1772,6 +1804,34 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       dialog->reject();
       return;
     }
+    dialog->activateWindow();
+    qApp->processEvents();
+    uryuCard->setFocus(Qt::OtherFocusReason);
+    qApp->processEvents();
+    const bool hadCardFocus = uryuCard->hasFocus();
+    const int narrowWidth = qMax(1, dialog->width() - 100);
+    dialog->resize(narrowWidth, dialog->height());
+    qApp->processEvents();
+    if (dialog->width() > narrowWidth) {
+      dialog->resize(narrowWidth, dialog->height());
+      qApp->processEvents();
+    }
+    uryuCard = nullptr;
+    for (auto *card : dialog->findChildren<QPushButton *>("portrait-card"))
+      if (card->isVisible() && card->property("portraitId").toString() == "uryu") {
+        uryuCard = card;
+        break;
+      }
+    const int expectedColumns = qBound(1, (dialog->width() - 100) / 164, 4);
+    if (!uryuCard) {
+      failure = "Resizing the character picker lost its visible character card";
+      dialog->reject();
+      return;
+    }
+    if ((hadCardFocus && !uryuCard->hasFocus()) ||
+        uryuCard->property("gridColumns").toInt() != expectedColumns ||
+        cardScroll->horizontalScrollBar()->maximum() > 0)
+      failure = "Resizing the character picker did not reflow cards and preserve keyboard focus";
     uryuCard->click();
     auto selectedCharacter = window.portraitChoice->currentData().toString();
     selectedCharacter.replace('-', ' ');

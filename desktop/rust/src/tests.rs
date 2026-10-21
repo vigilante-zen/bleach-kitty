@@ -119,6 +119,28 @@ fn failed_custom_preset_apply_restores_previous_appearance_settings() {
     snapshots::restore(&f.app,&name).unwrap();assert_eq!(fs::read_to_string(&target).unwrap(),"font_size 12\n");assert_eq!(fs::metadata(target).unwrap().permissions().mode()&0o777,0o640);assert!(!added.exists());
     assert!(fs::read_dir(&f.app.snapshots).unwrap().count()>=2);
 }
+#[test]
+fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
+    let f=Fixture::new();
+    let first=f.app.home.join(".config/kitty/restore-a");let removed=f.app.home.join(".config/kitty/restore-b");let last=f.app.home.join(".config/kitty/restore-c");
+    write(&first,"first original");write(&removed,"removed original");write(&last,"last original");
+    fs::set_permissions(&first,fs::Permissions::from_mode(0o640)).unwrap();
+    let edits=std::collections::BTreeMap::from([
+        (".config/kitty/restore-a".to_string(),Some((b"first replacement".to_vec(),0o600))),
+        (".config/kitty/restore-b".to_string(),None),
+        (".config/kitty/restore-c".to_string(),Some((b"last replacement".to_vec(),0o600))),
+    ]);
+    let mut writes=0;
+    let error=snapshots::restore_transaction_with(&f.app,&edits,|path,bytes,mode|{
+        writes+=1;if writes==2 { Err("injected restore failure".into()) }
+        else { fsutil::atomic_write(path,bytes,Some(mode)) }
+    }).unwrap_err();
+    assert!(error.contains("injected restore failure"));
+    assert_eq!(fs::read_to_string(&first).unwrap(),"first original");
+    assert_eq!(fs::metadata(&first).unwrap().permissions().mode()&0o777,0o640);
+    assert_eq!(fs::read_to_string(removed).unwrap(),"removed original");
+    assert_eq!(fs::read_to_string(last).unwrap(),"last original");
+}
 #[test]fn corruption_prevents_restore_before_any_replacement(){
     let f=Fixture::new();let name=snapshot(&f);let active=f.app.home.join(".config/kitty/kitty.conf");write(&active,"current settings");write(&f.app.snapshots.join(&name).join("files/.config/kitty/kitty.conf"),"corrupt snapshot");
     assert!(snapshots::restore(&f.app,&name).is_err());assert_eq!(fs::read_to_string(active).unwrap(),"current settings");

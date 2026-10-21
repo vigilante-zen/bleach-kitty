@@ -15,7 +15,7 @@ bankai status
 
 You can also search **Bankai** in KDE's app launcher. `bankai-rust` remains a direct compatibility command. The Python alternative is `bankai-python`. The Rust app has its own instance channel and optional login-startup preference. It is not enabled at login by default. Avoid enabling both tray apps at login unless you want two icons.
 
-Both editions read the same saved preset, character artwork, KDE settings, Kitty accents, portrait selection, snapshots and protected-snapshot list. Applying a preset or restoring a snapshot changes the shared desktop. Appearance-option saves detect changes made in the other edition while a dialog is open; close and reopen the options before retrying. Comparing their windows and previews is read-only; do not apply competing presets from both editions simultaneously.
+Both editions read the same saved preset, character artwork, KDE settings, Kitty accents, portrait selection, snapshots and protected-snapshot list. Applying a preset or restoring a snapshot changes the shared desktop. Snapshot restore stages and verifies its files first, then rolls earlier replacements and deletions back with their original permissions if a later operation fails. Appearance-option saves detect changes made in the other edition while a dialog is open; close and reopen the options before retrying. Comparing their windows and previews is read-only; do not apply competing presets from both editions simultaneously.
 
 ## Terminal artwork controls
 

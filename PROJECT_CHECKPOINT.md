@@ -9,9 +9,9 @@ This file records a continuation point for the Bankai desktop project.
 
 ## Latest completed work
 
-Custom preset application in both Rust and Python now creates its automatic safety snapshot before updating shared appearance choices. The preset configuration, current/pending markers, and replacement appearance settings are committed together with rollback on write failure. Rust and Python regression checks confirm the snapshot retains the previous choices.
+Snapshot restore in both Rust and Python now stages and verifies all target bytes before applying them. Replacements and absent-file deletions are transactional: if a later operation fails, earlier files are restored with their original contents and permissions. Failure-injection tests cover a restore that has already replaced and deleted files before failing.
 
-Validation passed: 50 Python unit tests, 30 Rust unit tests, 22 Rust/Python binary compatibility checks, 19 control-center checks (one local-socket test skipped by the environment), the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
+The previous custom-preset improvement also remains in place: both editions snapshot old appearance choices, then commit the preset and replacement choices together. Validation for the latest restore work passed: 51 Python tests, 31 Rust tests, 22 Rust/Python snapshot compatibility checks, the Python runtime check, Clippy with warnings denied, and an optimized Rust build.
 
 The next project change can follow the user's next request. Push `main` when GitHub DNS is available; a push from this environment previously failed because `github.com` could not be resolved.
 

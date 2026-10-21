@@ -104,18 +104,70 @@ pub fn verify(app: &App, name: &str) -> Result<Value> {
 }
 pub fn restore(app: &App, name: &str) -> Result<Value> {
     let manifest = verify(app, name)?;
-    let previous = create(app)?;
+    let mut edits = std::collections::BTreeMap::new();
     if let Some(absent) = manifest.opt("absent") {
-        for relative in absent.array()? { fsutil::remove_if_exists(&app.home.join(relative.text()?))?; }
+        for relative in absent.array()? { edits.insert(relative.text()?.to_string(), None); }
     }
     for entry in manifest.get("files")?.array()? {
-        let relative = entry.get("path")?.text()?;
-        let source = app.snapshots.join(name).join("files").join(relative);
-        let dest = app.home.join(relative);
-        fsutil::reject_links(&dest, &app.home)?;
-        fsutil::atomic_write(&dest, &fs::read(source).text()?, Some(entry.get("mode")?.number()? as u32))?;
+        let relative = entry.get("path")?.text()?.to_string();
+        let source = app.snapshots.join(name).join("files").join(&relative);
+        fsutil::reject_links(&source, &app.snapshots.join(name))?;
+        let bytes = fs::read(source).text()?;
+        if fsutil::hash_bytes(&bytes) != entry.get("sha256")?.text()? { return Err(format!("Integrity check failed: {relative}")); }
+        edits.insert(relative, Some((bytes, entry.get("mode")?.number()? as u32)));
     }
+    let previous = create(app)?;
+    restore_transaction_with(app, &edits, |path, bytes, mode| fsutil::atomic_write(path, bytes, Some(mode)))?;
     Ok(obj! { "message" => "Snapshot restored. Log out and back in to reload KDE.", "previous" => previous.get("name")?.clone() })
+}
+
+pub(crate) fn restore_transaction_with<F>(app: &App, edits: &std::collections::BTreeMap<String,Option<(Vec<u8>,u32)>>, mut writer: F) -> Result<()>
+where F: FnMut(&std::path::Path, &[u8], u32) -> Result<()> {
+    let mut originals = std::collections::BTreeMap::<String,Option<(Vec<u8>,u32)>>::new();
+    for (relative, replacement) in edits {
+        if !allowed(app, relative) { return Err(format!("Invalid snapshot path: {relative}")); }
+        if replacement.as_ref().is_some_and(|(_, mode)| *mode > 0o777) { return Err("Invalid snapshot permissions".into()); }
+        let path = app.home.join(relative);
+        fsutil::reject_links(&path, &app.home)?;
+        let original = match fs::symlink_metadata(&path) {
+            Ok(metadata) if metadata.is_file() => Some((fs::read(&path).text()?, metadata.permissions().mode() & 0o777)),
+            Ok(_) => return Err(format!("Destination is not a file: {relative}")),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+            Err(error) => return Err(error.to_string()),
+        };
+        originals.insert(relative.clone(), original);
+    }
+
+    let mut attempted = Vec::new();
+    for (relative, replacement) in edits {
+        let path = app.home.join(relative);
+        attempted.push(relative.clone());
+        let result = (|| {
+            fsutil::reject_links(&path, &app.home)?;
+            match replacement {
+                Some((bytes, mode)) => writer(&path, bytes, *mode),
+                None => fsutil::remove_if_exists(&path),
+            }
+        })();
+        if let Err(error) = result {
+            let mut rollback_errors = Vec::new();
+            for previous in attempted.iter().rev() {
+                let path = app.home.join(previous);
+                let rollback = (|| {
+                    fsutil::reject_links(&path, &app.home)?;
+                    match originals.get(previous).and_then(Option::as_ref) {
+                        Some((bytes, mode)) => fsutil::atomic_write(&path, bytes, Some(*mode)),
+                        None => fsutil::remove_if_exists(&path),
+                    }
+                })();
+                if let Err(rollback_error) = rollback { rollback_errors.push(format!("{}: {rollback_error}", path.display())); }
+            }
+            let message = format!("Could not restore {relative}: {error}");
+            return if rollback_errors.is_empty() { Err(message) }
+                else { Err(format!("{message}; rollback also failed for {}", rollback_errors.join(", "))) };
+        }
+    }
+    Ok(())
 }
 
 fn protections(app: &App) -> Result<BTreeSet<String>> {

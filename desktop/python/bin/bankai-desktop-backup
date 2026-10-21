@@ -72,7 +72,7 @@ def create(home, root):
             shutil.rmtree(temporary)
 
 
-def verify(snapshot, home):
+def verify_manifest(snapshot, home):
     reject_links(snapshot, snapshot.parent)
     manifest = snapshot / 'manifest.json'
     reject_links(manifest, snapshot)
@@ -107,7 +107,76 @@ def verify(snapshot, home):
         reject_links(home / relative, home)
         if (home / relative).exists() and not (home / relative).is_file():
             raise ValueError('Invalid absent-file destination.')
-    return data['files']
+    return data
+
+
+def verify(snapshot, home):
+    return verify_manifest(snapshot, home)['files']
+
+
+def atomic_write(path, contents, mode):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix='.' + path.name, dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            os.fchmod(stream.fileno(), mode)
+            stream.write(contents)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def restore_transaction(home, edits, writer=None):
+    writer = writer or atomic_write
+    originals = {}
+    for relative, replacement in edits.items():
+        if not allowed(relative):
+            raise ValueError(f'Invalid restore path: {relative}')
+        if replacement is not None and (not isinstance(replacement, tuple) or len(replacement) != 2
+                                        or not isinstance(replacement[0], bytes)
+                                        or type(replacement[1]) is not int or not 0 <= replacement[1] <= 0o777):
+            raise ValueError(f'Invalid restore entry: {relative}')
+        path = home / relative
+        reject_links(path, home)
+        try:
+            metadata = path.lstat()
+        except FileNotFoundError:
+            originals[relative] = None
+        else:
+            if not stat.S_ISREG(metadata.st_mode):
+                raise ValueError(f'Restore destination is not a file: {relative}')
+            originals[relative] = (path.read_bytes(), stat.S_IMODE(metadata.st_mode))
+
+    attempted = []
+    for relative, replacement in edits.items():
+        path = home / relative
+        attempted.append(relative)
+        try:
+            reject_links(path, home)
+            if replacement is None:
+                path.unlink(missing_ok=True)
+            else:
+                writer(path, replacement[0], replacement[1])
+        except (OSError, ValueError) as error:
+            rollback_errors = []
+            for previous in reversed(attempted):
+                rollback_path = home / previous
+                original = originals[previous]
+                try:
+                    reject_links(rollback_path, home)
+                    if original is None:
+                        rollback_path.unlink(missing_ok=True)
+                    else:
+                        atomic_write(rollback_path, original[0], original[1])
+                except (OSError, ValueError) as rollback_error:
+                    rollback_errors.append(f'{rollback_path}: {rollback_error}')
+            message = f'Could not restore {relative}: {error}'
+            if rollback_errors:
+                message += '; rollback also failed for ' + ', '.join(rollback_errors)
+            raise OSError(message) from error
 
 
 def main():
@@ -121,27 +190,23 @@ def main():
         if not args.snapshot or Path(args.snapshot).name != args.snapshot or args.snapshot in ['.', '..']:
             parser.error('Provide a snapshot name from bankai-desktop-backup list.')
         snapshot = root / args.snapshot
-        entries = verify(snapshot, home)
+        data = verify_manifest(snapshot, home)
+        entries = data['files']
         if args.action == 'verify':
             print(f'Verified {len(entries)} files: {snapshot.name}')
             return
-        # Validate the whole snapshot before replacing files, and retain current settings.
-        previous, _ = create(home, root)
-        for relative in json.loads((snapshot / 'manifest.json').read_text()).get('absent', []):
-            (home / relative).unlink(missing_ok=True)
+        # Stage verified bytes before changing anything, then retain current settings.
+        edits = {relative: None for relative in data.get('absent', [])}
         for entry in entries:
             relative = entry['path']
-            dest = home / relative
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            fd, temporary = tempfile.mkstemp(prefix='.' + dest.name, dir=dest.parent)
-            os.close(fd)
-            try:
-                shutil.copy2(snapshot / 'files' / relative, temporary)
-                os.chmod(temporary, entry['mode'])
-                os.replace(temporary, dest)
-            finally:
-                if os.path.exists(temporary):
-                    os.unlink(temporary)
+            source = snapshot / 'files' / relative
+            reject_links(source, snapshot)
+            contents = source.read_bytes()
+            if hashlib.sha256(contents).hexdigest() != entry['sha256']:
+                raise ValueError(f'Integrity check failed: {relative}')
+            edits[relative] = (contents, entry['mode'])
+        previous, _ = create(home, root)
+        restore_transaction(home, edits)
         print(f'Restored {len(entries)} files. Log out and back in to reload KDE settings.')
         print(f'Previous settings saved: {previous.name}')
     elif args.snapshot:

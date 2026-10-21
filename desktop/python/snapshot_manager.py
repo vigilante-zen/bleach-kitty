@@ -31,6 +31,13 @@ def read_manifest(path):
     return raw
 
 
+def reject_symlinks(path):
+    path = Path(os.path.abspath(path))
+    for boundary in (path, *path.parents):
+        if boundary.is_symlink():
+            raise ValueError(f'Snapshot storage path must not contain symlinks: {boundary}')
+
+
 class SnapshotStore:
     def __init__(self, root=None, state=None):
         home = Path.home()
@@ -39,12 +46,11 @@ class SnapshotStore:
 
     @contextmanager
     def locked(self):
-        if self.root.is_symlink() or self.state.is_symlink():
-            raise ValueError('Snapshot and state directories must not be symlinks.')
+        reject_symlinks(self.root)
+        reject_symlinks(self.state)
         self.state.mkdir(parents=True, exist_ok=True)
         lock_path = self.state / 'snapshot-management.lock'
-        if lock_path.is_symlink():
-            raise ValueError('Snapshot lock file must not be a symlink.')
+        reject_symlinks(lock_path)
         with lock_path.open('a') as stream:
             fcntl.flock(stream, fcntl.LOCK_EX)
             yield

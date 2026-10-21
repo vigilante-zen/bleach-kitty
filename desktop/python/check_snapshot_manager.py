@@ -49,9 +49,18 @@ class SnapshotManagementChecks(unittest.TestCase):
         outside = self.home / 'outside-lock'
         outside.write_text('preserve')
         (self.store.state / 'snapshot-management.lock').symlink_to(outside)
-        with self.assertRaisesRegex(ValueError, 'lock file'):
+        with self.assertRaisesRegex(ValueError, 'must not contain symlinks'):
             self.store.scan()
         self.assertEqual(outside.read_text(), 'preserve')
+
+    def test_store_rejects_symlinked_snapshot_parent(self):
+        target = self.home / 'real-snapshot-parent'
+        target.mkdir()
+        alias = self.home / 'snapshot-parent-alias'
+        alias.symlink_to(target, target_is_directory=True)
+        linked_store = SnapshotStore(alias / self.store.root.name, self.store.state)
+        with self.assertRaisesRegex(ValueError, 'must not contain symlinks'):
+            linked_store.scan()
 
     def test_backup_cli_rejects_symlinked_state_directory(self):
         home = self.home / 'cli-home'

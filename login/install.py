@@ -20,7 +20,7 @@ SERVICE = 'etc/systemd/system/bankai-login-sync.service'
 WATCH = 'etc/systemd/system/bankai-login-sync.path'
 FOLLOW = 'var/lib/bankai-login/follow.json'
 DYNAMIC = PREFIX + '/theme.conf.user'
-PRESETS = ('ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach')
+PRESETS = ('ichigo', 'rukia', 'quincy', 'aizen', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach', 'grimmjow', 'yoruichi', 'gin', 'orihime')
 THEME_FILES = ('Main.qml', 'metadata.desktop', 'theme.conf', 'assets/ichigo.png') + tuple(f'assets/scene-{key}.png' for key in PRESETS)
 
 def sha(data): return hashlib.sha256(data).hexdigest()

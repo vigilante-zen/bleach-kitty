@@ -85,10 +85,10 @@ cargo build --release --locked
 QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 ```
 
-After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai --smoke-test`. Smoke checks read installed artwork and snapshots without applying presets. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` compares against the checked-in Python backup source when present, or its installed helper otherwise. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai restore SNAPSHOT_NAME`.
+After installing a prebuilt package, use `QT_QPA_PLATFORM=offscreen ~/.local/bin/bankai --smoke-test`. Smoke checks read installed artwork and snapshots without applying presets. They save screenshots under `artifacts/` unless `BANKAI_ARTIFACT_DIR` overrides the location. Live KDE behavior needs desktop testing. `scripts/check_binary.py` checks Rust/Python snapshot compatibility and verifies the Rust preset catalog matches the shared Python catalog. Benchmarking requires the Python desktop edition too. For restore, select a local snapshot or run `bankai restore SNAPSHOT_NAME`.
 
 ## Appearance controls
 
 Open **Appearance options** beside the background controls. Choose Color or Manga for desktop/lock screen, an optional custom accent (`#RRGGBB`), a fixed manga login character or Follow background, and the character pool for optional shuffle when Bankai starts at login. Save, then Apply a preset for wallpaper/accent changes. Login choice syncs after the one-time SDDM setup. Enable only one edition at login when using shuffle. Settings are shared by both apps and included in desktop snapshots; uninstall preserves them.
 
-Twelve desktop presets include TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. Terminal selection also offers TYBW True Shikai Ichigo and Bankai Kenpachi; the `tybw-forms` terminal group rotates TYBW forms separately from the desktop shuffle pool. Ulquiorra remains a legacy-arc option.
+Thirteen desktop presets include Aizen, TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. Terminal selection also offers TYBW True Shikai Ichigo and Bankai Kenpachi; the `tybw-forms` terminal group rotates TYBW forms separately from the desktop shuffle pool. Ulquiorra remains a legacy-arc option.

@@ -62,6 +62,13 @@ class CompiledRustChecks(unittest.TestCase):
         self.assertTrue(reply['ok'], reply)
         return reply['result']
 
+    def test_python_and_rust_desktop_catalogs_match(self):
+        shared_path = PROJECT.parent / 'shared/appearance_settings.py'
+        spec = importlib.util.spec_from_file_location('shared_appearance', shared_path)
+        appearance = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(appearance)
+        self.assertEqual(CATALOG['presets'], appearance.catalog())
+
     def snapshot(self, name=None):
         created = self.rpc('backup')['name']
         if name:
@@ -125,7 +132,7 @@ class CompiledRustChecks(unittest.TestCase):
         manifest.write_text(json.dumps(data))
         self.rpc('restore', name=name, fail=True)
 
-    def test_all_twelve_presets_are_native_and_update_both_screens(self):
+    def test_all_seventeen_presets_are_native_and_update_both_screens(self):
         for preset in CATALOG['presets']:
             result = self.rpc('apply', preset=preset['id'])
             self.assertTrue(result['pending'])

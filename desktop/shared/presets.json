@@ -3,7 +3,7 @@
     {
       "id": "ichigo",
       "title": "Ichigo",
-      "subtitle": "Ember orange · TYBW True Shikai",
+      "subtitle": "Ember orange · Royal Palace True Shikai",
       "accent": "#ff9d52",
       "image": "ichigo-desktop.png",
       "portrait": "ichigo-tybw",
@@ -12,7 +12,7 @@
     {
       "id": "rukia",
       "title": "Rukia",
-      "subtitle": "Ice blue · Hakka no Togame",
+      "subtitle": "Ice blue · Sode no Shirayuki",
       "accent": "#a9dfff",
       "image": "rukia-desktop.png",
       "portrait": "rukia-bankai",
@@ -21,11 +21,20 @@
     {
       "id": "quincy",
       "title": "Quincy",
-      "subtitle": "Spirit blue · Uryu",
+      "subtitle": "Spirit blue · Uryū’s Quincy bow",
       "accent": "#4baaff",
       "image": "quincy-desktop.png",
       "portrait": "uryu",
       "manga": "quincy-manga.png"
+    },
+    {
+      "id": "aizen",
+      "title": "Aizen",
+      "subtitle": "Violet · Kyōka Suigetsu",
+      "accent": "#b799ff",
+      "image": "aizen-desktop.png",
+      "portrait": "aizen",
+      "manga": "aizen-manga.png"
     },
     {
       "id": "tybw",
@@ -39,7 +48,7 @@
     {
       "id": "urahara",
       "title": "Urahara",
-      "subtitle": "Emerald · 21:9 ultrawide",
+      "subtitle": "Emerald · Benihime",
       "accent": "#a8d18d",
       "image": "urahara-desktop.png",
       "portrait": "urahara",
@@ -48,7 +57,7 @@
     {
       "id": "byakuya",
       "title": "Byakuya",
-      "subtitle": "Cherry blossom · 21:9 ultrawide",
+      "subtitle": "Cherry blossom · Senbonzakura",
       "accent": "#f2a6cf",
       "image": "byakuya-desktop.png",
       "portrait": "byakuya",
@@ -57,7 +66,7 @@
     {
       "id": "yamamoto",
       "title": "Yamamoto",
-      "subtitle": "Ember gold · 21:9 ultrawide",
+      "subtitle": "Ember gold · Zanka no Tachi",
       "accent": "#ffb56b",
       "image": "yamamoto-desktop.png",
       "portrait": "yamamoto",
@@ -66,7 +75,7 @@
     {
       "id": "ulquiorra",
       "title": "Ulquiorra",
-      "subtitle": "Emerald moon · 21:9 ultrawide",
+      "subtitle": "Emerald moon · Murciélago",
       "accent": "#76e3a3",
       "image": "ulquiorra-desktop.png",
       "portrait": "ulquiorra",
@@ -75,7 +84,7 @@
     {
       "id": "renji",
       "title": "Renji",
-      "subtitle": "Crimson · True Bankai",
+      "subtitle": "Crimson · Sōō Zabimaru",
       "accent": "#e76a73",
       "image": "renji-desktop.png",
       "portrait": "renji-bankai",
@@ -84,7 +93,7 @@
     {
       "id": "hitsugaya",
       "title": "Hitsugaya",
-      "subtitle": "Frost · Adult Bankai",
+      "subtitle": "Frost · Daiguren Hyōrinmaru",
       "accent": "#a8e6ef",
       "image": "hitsugaya-desktop.png",
       "portrait": "hitsugaya-bankai",
@@ -93,7 +102,7 @@
     {
       "id": "kenpachi",
       "title": "Kenpachi",
-      "subtitle": "Scarlet · Bankai",
+      "subtitle": "Scarlet · Nozarashi",
       "accent": "#e45462",
       "image": "kenpachi-desktop.png",
       "portrait": "kenpachi-bankai",
@@ -102,11 +111,47 @@
     {
       "id": "yhwach",
       "title": "Yhwach",
-      "subtitle": "Imperial · TYBW",
+      "subtitle": "Imperial · The Almighty",
       "accent": "#b68fce",
       "image": "yhwach-desktop.png",
       "portrait": "yhwach",
       "manga": "yhwach-manga.png"
+    },
+    {
+      "id": "grimmjow",
+      "title": "Grimmjow",
+      "subtitle": "Cobalt · Pantera",
+      "accent": "#58b8f5",
+      "image": "grimmjow-desktop.png",
+      "portrait": "grimmjow",
+      "manga": "grimmjow-manga.png"
+    },
+    {
+      "id": "yoruichi",
+      "title": "Yoruichi",
+      "subtitle": "Gold · Shunkō (no Zanpakutō)",
+      "accent": "#e8b74c",
+      "image": "yoruichi-desktop.png",
+      "portrait": "yoruichi",
+      "manga": "yoruichi-manga.png"
+    },
+    {
+      "id": "gin",
+      "title": "Gin",
+      "subtitle": "Violet · Shinso",
+      "accent": "#c2b4ee",
+      "image": "gin-desktop.png",
+      "portrait": "gin",
+      "manga": "gin-manga.png"
+    },
+    {
+      "id": "orihime",
+      "title": "Orihime",
+      "subtitle": "Rose · Santen Kesshun",
+      "accent": "#f1b2c8",
+      "image": "orihime-desktop.png",
+      "portrait": "orihime",
+      "manga": "orihime-manga.png"
     }
   ]
 }

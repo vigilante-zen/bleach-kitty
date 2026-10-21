@@ -31,7 +31,7 @@ The terminal-artwork update passed 19 Rust unit tests, 18 compiled-binary integr
 
 ## Ported behavior
 
-- All twelve presets, wallpaper previews, explicit Apply, and automatic snapshots before changes.
+- All seventeen presets, wallpaper previews, explicit Apply, and automatic snapshots before changes.
 - KDE desktop and lock-screen wallpaper, color schemes and terminal accents; independent terminal portrait and art preferences.
 - Hollow-mask tray icon colored for the saved character; updates after command-line changes.
 - Tray preset selection, terminal and monitor launchers, snapshot creation, and window reopening.
@@ -81,8 +81,8 @@ References: [Rust FFI](https://doc.rust-lang.org/nomicon/ffi.html), [Qt tray API
 ## Validation
 
 - The initial five Rust unit tests passed before toolchain removal.
-- Fifteen integration checks passed against the compiled release executable, using disposable homes. They cover all twelve presets and two desktop containments, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, and independent autostart settings.
-- The native offscreen smoke check passed: eight previews and exact mask accents, nonmutating preview selection, tray action population, cleanup protection, background Rust worker, and screenshots at normal/smaller sizes.
+- Twenty integration checks pass against the compiled release executable using disposable homes. They cover all seventeen presets and two desktop containments, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, and independent autostart settings.
+- The native offscreen smoke check passed: seventeen previews and exact mask accents, nonmutating preview selection, tray action population, cleanup protection, searchable character selection, background Rust worker, and screenshots at normal/smaller sizes.
 - The existing real baseline snapshot was verified read-only by Rust.
 - No real desktop settings were changed and no real snapshots were deleted during validation.
 - Live KDE tray display, cross-process single-instance activation and live color/wallpaper application remain unverified from this sandbox because it blocks session-bus and Unix-socket access.
@@ -110,7 +110,7 @@ QT_QPA_PLATFORM=offscreen target/release/bankai-rust --smoke-test
 
 Disable the Rust login-startup checkbox if enabled and quit Bankai Rust. Remove `~/.local/bin/bankai-rust`, `~/.local/share/applications/bleach-bankai-rust.desktop`, `~/.config/fish/completions/bankai-rust.fish`, `~/.local/share/icons/hicolor/scalable/apps/bleach-bankai-rust.svg`, and `~/.local/share/bankai-rust`. The project can be retained for future builds. The existing Python command, artwork and shared desktop settings remain available.
 
-The benchmark measurements above are historical results from the original eight-preset build. The expanded twelve-preset build and appearance options have not been re-benchmarked.
+The benchmark measurements above are historical results from the original eight-preset build. The expanded seventeen-preset build and appearance options have not been re-benchmarked.
 
 ## Lightweight interface polish
 

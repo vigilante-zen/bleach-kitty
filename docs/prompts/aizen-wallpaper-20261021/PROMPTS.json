@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-21",
+  "generator": "Built-in image_gen.imagegen",
+  "transparent_background": false,
+  "assets": [
+    {
+      "preset": "aizen",
+      "edition": "color",
+      "path": "desktop/shared/wallpapers/aizen-desktop.png",
+      "width": 1915,
+      "height": 821,
+      "sha256": "5d037047b634d7881faa92d9fb6d7b5b37e229103580673ba935a21d433361a2",
+      "prompt": "Use case: stylized-concept. Asset type: panoramic KDE desktop and lock-screen wallpaper for the Bankai Bleach theme, character Aizen. Primary request: create a premium, restrained Bleach TYBW fan-art wallpaper that matches an established dark ultrawide anime desktop series. Scene/backdrop: ruined Soul Society at night, with a distant shattered Seireitei skyline and subtle spiritual haze. Subject: Sōsuke Aizen, composed and imposing, long brown hair, white Hōgyoku-era robe over dark clothing, calm expression, holding his sword low; clearly recognizable silhouette, single character only. Style/medium: polished painterly anime illustration with fine manga-ink detail and cinematic lighting. Composition/framing: panoramic 21:9 desktop wallpaper; full figure placed in the far right quarter with safe margins; central 55 percent mostly empty, very dark near-black space for desktop icons and lock-screen text; faint environment along the bottom. Lighting/mood: restrained violet-white spiritual glow at the far edges, subtle highlights on Aizen, ominous and controlled. Color palette: charcoal, muted violet, silver, pale ivory. Constraints: edge-to-edge artwork; no borders, no lettering, no logos, no UI, no watermark; keep the center uncluttered and dark; no extra characters.",
+      "previous_sha256": "1dd15d8ede8d2101af3f088bf1650853d76726e7b673767e16e13151c2e5849b",
+      "revision_prompt": "Make a precise identity-and-prop correction to this existing Bankai desktop wallpaper. Preserve the entire composition, 21:9 canvas, Aizen’s face, costume, pose, hand placement, ruins, lighting, palette, and dark empty center exactly. Change only the sword so it is unmistakably Sōsuke Aizen’s sealed Zanpakutō Kyōka Suigetsu: a conventional slender katana, with its recognizable six-sided hexagonal guard and dark hilt. Keep it lowered in the same hand and same diagonal orientation. Do not turn it into an oversized cleaver, cane sword, glowing fantasy weapon, or a different character’s blade. Maintain the original restrained monochrome-violet painterly anime style and clean blade silhouette. Do not add anything else, and add no text, logos, borders, or watermark."
+    },
+    {
+      "preset": "aizen",
+      "edition": "manga",
+      "source": "desktop/shared/wallpapers/aizen-desktop.png",
+      "path": "login/theme/assets/scene-aizen.png",
+      "width": 1916,
+      "height": 821,
+      "sha256": "4cd210b56433060d893605427a06ffcfb3b292b3b70bad71219f1bb98e577bbe",
+      "prompt": "Use case: style-transfer. Asset type: manga-edition desktop wallpaper, paired with the existing Bankai Aizen Color wallpaper. Primary request: transform the reference image into a refined monochrome manga-ink illustration while preserving the exact scene, Aizen's identity, pose, framing, and panoramic composition. Input image: Image 1 is the source wallpaper; use it as the composition and identity reference. Subject: keep the same single Aizen figure on the far right in a white robe, sword lowered, ruined Soul Society in the distance. Style/medium: high-contrast black-and-white manga ink, precise linework, screentone shading, restrained hatching, clean silhouette. Composition/framing: preserve the source's ultrawide 21:9 layout and dark, uncluttered central 55 percent for desktop icons and lock-screen text; keep the character fully visible at the far right with safe margins. Constraints: change only the rendering style to manga ink; keep scene and character placement; no text, panels, borders, logos, UI, or watermark.",
+      "revision_prompt": "Make the matching Manga edition of this exact Aizen wallpaper. Preserve the entire scene, character identity, exact pose and lowered Kyōka Suigetsu sword, including its six-sided guard, along with architecture, framing, lighting and 21:9 composition. Convert the full image to refined black-and-white manga ink with crisp linework, screentone shading and restrained hatching; the blade and guard must remain clearly readable and consistent with the Color source. Keep the center dark and uncluttered. No color, text, lettering, panels, borders, logo, UI, watermark or extra characters."
+    }
+  ]
+}

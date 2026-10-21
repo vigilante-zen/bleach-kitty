@@ -1,10 +1,10 @@
 {
-  "date": "2026-10-20",
+  "date": "2026-10-21",
   "generator": "Built-in image_gen.imagegen; local Pillow monochrome conversion for Ichigo login scene",
   "use_case": "style-transfer",
   "prompt": "Use case: style-transfer. Edit target: the supplied full desktop wallpaper. Convert this SAME full scene into a refined black-and-white manga ink illustration for a login screen. Preserve character identities, facial features, costume designs, poses, camera, all major architecture and environmental elements, and the complete wide landscape composition. This is a style conversion of the full wallpaper, NOT a headshot or cropped portrait. Keep the subject positions and generous dark central negative space. Use expressive crisp black brush ink, bone-white highlights, varied crosshatching and fine screentones; convert colored energy effects into white ink and halftone. Strictly black, white and neutral gray, no colored accents, no sepia. No typography, no text, no speech bubbles, no panels, no logo, no watermark, no UI. Output one standalone landscape image preserving the source aspect ratio and full scene.",
   "transparent_background": false,
-  "notes": "Twelve full manga wallpaper scenes. Four TYBW presets and corrected Ichigo/Yamamoto designs were added in the TYBW expansion. Ichigo now has a weapon-free standing pose; the matching monochrome login scene is derived locally from the same wallpaper. Exact prompts, conversion details and output hashes are in docs/prompts/tybw-expansion-20261020/PROMPTS.json. All are unofficial AI-generated fan art, excluded from the code MIT license.",
+  "notes": "Seventeen full manga wallpaper scenes. Four TYBW presets and corrected Ichigo/Yamamoto designs were added in the TYBW expansion. Ichigo now has a weapon-free standing pose; the matching monochrome login scene is derived locally from the same wallpaper. Exact prompts, conversion details and output hashes are in docs/prompts/tybw-expansion-20261020/PROMPTS.json. All are unofficial AI-generated fan art, excluded from the code MIT license. Aizen was added on 2026-10-21 with paired Color and Manga wallpapers; the exact prompts, dimensions and hashes are recorded in docs/prompts/aizen-wallpaper-20261021/PROMPTS.json. Grimmjow and Yoruichi were added with character-specific paired scenes; Yoruichi’s paired Color and Manga scenes were regenerated with both hands forward and a clear two-arm pose; prior hashes and prompts are preserved; prompt notes, dimensions and hashes are in docs/prompts/roster-wallpapers-20261021/PROMPTS.json. Gin and Orihime add Shinso and Santen Kesshun (no Zanpakutō) scenes in the same prompt record.",
   "assets": [
     {
       "preset": "ichigo",
@@ -122,6 +122,58 @@
       "width": 1672,
       "height": 941,
       "prompt_record": "docs/prompts/tybw-expansion-20261020/PROMPTS.json"
+    },
+    {
+      "preset": "aizen",
+      "reference": "desktop/shared/wallpapers/aizen-desktop.png",
+      "reference_sha256": "5d037047b634d7881faa92d9fb6d7b5b37e229103580673ba935a21d433361a2",
+      "path": "login/theme/assets/scene-aizen.png",
+      "sha256": "4cd210b56433060d893605427a06ffcfb3b292b3b70bad71219f1bb98e577bbe",
+      "width": 1916,
+      "height": 821,
+      "prompt_record": "docs/prompts/aizen-wallpaper-20261021/PROMPTS.json"
+    },
+    {
+      "preset": "grimmjow",
+      "reference": "desktop/shared/wallpapers/grimmjow-desktop.png",
+      "reference_sha256": "2dd608994c687ea7c8093296948e7435e40b425c848d492449479112336f7884",
+      "path": "login/theme/assets/scene-grimmjow.png",
+      "sha256": "6b9ca1aac284e0b08231a25681c26616ef13abd3b61534064392ea5cb4ab8801",
+      "width": 1916,
+      "height": 821,
+      "prompt_record": "docs/prompts/roster-wallpapers-20261021/PROMPTS.json"
+    },
+    {
+      "preset": "yoruichi",
+      "reference": "desktop/shared/wallpapers/yoruichi-desktop.png",
+      "reference_sha256": "c2d5a18eef207da7d8169ace9cec577e118ef6dc5881a4b8aca523695c8fce37",
+      "path": "login/theme/assets/scene-yoruichi.png",
+      "sha256": "b99f1079dc627bd02201c730a14e943a3eeceffd1fd615dd0966a68e07bb43c3",
+      "width": 1915,
+      "height": 821,
+      "prompt_record": "docs/prompts/roster-wallpapers-20261021/PROMPTS.json",
+      "previous_reference_sha256": "b5059a98d9429399a10fc2830afaab9eda928ba64ba414ade73a5de70ffb6a9c",
+      "previous_sha256": "0dfc6ab66e56be998da6139c1b44e1e5e8957793a47d2fb05661fb3c9c3e9583"
+    },
+    {
+      "preset": "gin",
+      "reference": "desktop/shared/wallpapers/gin-desktop.png",
+      "reference_sha256": "9efa927ede9e2e5fe1229d6c1639b69d4ff8e7903bb1d6dd4ffbc940add34573",
+      "path": "login/theme/assets/scene-gin.png",
+      "sha256": "7430864598834d6fa80baa3c04d948a6bf5cb583a8240a2da3c40d7bc53dfea7",
+      "width": 1915,
+      "height": 821,
+      "prompt_record": "docs/prompts/roster-wallpapers-20261021/PROMPTS.json"
+    },
+    {
+      "preset": "orihime",
+      "reference": "desktop/shared/wallpapers/orihime-desktop.png",
+      "reference_sha256": "371ea6f7344e43eea2a52bcb275e915a7460741e317a6a71e207bf75401a76c5",
+      "path": "login/theme/assets/scene-orihime.png",
+      "sha256": "be144120b2454cd056b164cb7e94941bd58df66c2662740c42bfc8535330acaf",
+      "width": 1915,
+      "height": 821,
+      "prompt_record": "docs/prompts/roster-wallpapers-20261021/PROMPTS.json"
     }
   ]
 }

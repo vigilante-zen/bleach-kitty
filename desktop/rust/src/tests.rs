@@ -23,7 +23,7 @@ fn rename_snapshot(f:&Fixture,name:&str){let created=snapshot(f);fs::rename(f.ap
 
 #[test] fn catalog_is_valid() {
     let app=App::new(PathBuf::from("/tmp/bankai-test"),true).unwrap();
-    assert_eq!(app.catalog.get("presets").unwrap().array().unwrap().len(),12);
+    assert_eq!(app.catalog.get("presets").unwrap().array().unwrap().len(),17);
     assert!(snapshots::allowed(&app,".config/kitty/kitty.conf"));
     assert!(!snapshots::allowed(&app,".config/kitty/../../.ssh/id_rsa"));
     assert!(!snapshots::allowed(&app,".ssh/id_rsa"));

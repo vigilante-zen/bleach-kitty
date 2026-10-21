@@ -6,7 +6,7 @@ from pathlib import Path
 import stat
 import tempfile
 
-PRESETS = ('ichigo', 'rukia', 'quincy', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach')
+PRESETS = ('ichigo', 'rukia', 'quincy', 'aizen', 'tybw', 'urahara', 'byakuya', 'yamamoto', 'ulquiorra', 'renji', 'hitsugaya', 'kenpachi', 'yhwach', 'grimmjow', 'yoruichi', 'gin', 'orihime')
 THEME_PATH = 'usr/share/sddm/themes/bankai-manga'
 
 def selection(preset):

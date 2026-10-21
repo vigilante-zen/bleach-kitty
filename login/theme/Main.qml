@@ -5,7 +5,7 @@ Rectangle {
     id: root
     width: 1280; height: 720
     color: "#f2f0e9"
-    property var characterNames: ({ichigo: "黒崎 一護", rukia: "朽木 ルキア", quincy: "石田 雨竜", tybw: "千年血戦篇", urahara: "浦原 喜助", byakuya: "朽木 白哉", yamamoto: "山本 元柳斎", ulquiorra: "ウルキオラ", renji: "阿散井 恋次", hitsugaya: "日番谷 冬獅郎", kenpachi: "更木 剣八", yhwach: "ユーハバッハ"})
+    property var characterNames: ({ichigo: "黒崎 一護", rukia: "朽木 ルキア", quincy: "石田 雨竜", aizen: "藍染 惣右介", tybw: "千年血戦篇", urahara: "浦原 喜助", byakuya: "朽木 白哉", yamamoto: "山本 元柳斎", ulquiorra: "ウルキオラ", renji: "阿散井 恋次", hitsugaya: "日番谷 冬獅郎", kenpachi: "更木 剣八", yhwach: "ユーハバッハ", grimmjow: "グリムジョー", yoruichi: "四楓院 夜一", gin: "市丸 ギン", orihime: "井上 織姫"})
     property string selectedCharacter: typeof config !== "undefined" && characterNames[config.Character] ? config.Character : "ichigo"
     property bool busy: false
     function submit() {

@@ -13,6 +13,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QImageReader
 
 SOURCE = Path(__file__).parent / 'control_center.py'
+REPO = SOURCE.parents[2]
 spec = importlib.util.spec_from_file_location('bankai_control_center', SOURCE)
 center = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(center)
@@ -25,12 +26,13 @@ class ControlCenterChecks(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix='bankai-ui-check-')
         self.home = Path(self.temporary.name)
-        self.original = {key: getattr(center, key) for key in ['HOME', 'DATA', 'SNAPSHOTS']}
+        self.original = {key: getattr(center, key) for key in ['HOME', 'DATA', 'SNAPSHOTS', 'WALLPAPERS']}
         center.HOME = self.home
         center.DATA = self.home / 'data'
         center.DATA.mkdir()
         (center.DATA / 'current').write_text('ichigo\n')
         center.SNAPSHOTS = self.home / 'snapshots'
+        center.WALLPAPERS = REPO / 'desktop/shared/wallpapers'
         snapshot = center.SNAPSHOTS / '20261019-123456-123456'
         snapshot.mkdir(parents=True)
         (snapshot / 'manifest.json').write_text(json.dumps({'version': 1, 'files': [{'path': 'example'}]}))

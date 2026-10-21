@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-21",
+  "generator": "Built-in image_gen.imagegen",
+  "transparent_background": false,
+  "assets": [
+    {
+      "preset": "grimmjow",
+      "edition": "color",
+      "path": "desktop/shared/wallpapers/grimmjow-desktop.png",
+      "width": 1915,
+      "height": 821,
+      "sha256": "2dd608994c687ea7c8093296948e7435e40b425c848d492449479112336f7884",
+      "character_weapon_or_ability": "Pantera, his sealed Zanpakutō; blue-wrapped hilt, compact guard, slender straight blade.",
+      "prompt_basis": "Reconstructed from development prompt notes; the verbatim initial image-generation call was not retained. Color artwork uses the character-specific prop/ability described here; Manga artwork preserves the matching scene and prop/ability in ink style."
+    },
+    {
+      "preset": "grimmjow",
+      "edition": "manga",
+      "path": "login/theme/assets/scene-grimmjow.png",
+      "width": 1916,
+      "height": 821,
+      "sha256": "6b9ca1aac284e0b08231a25681c26616ef13abd3b61534064392ea5cb4ab8801",
+      "character_weapon_or_ability": "Pantera, his sealed Zanpakutō; blue-wrapped hilt, compact guard, slender straight blade.",
+      "prompt_basis": "Reconstructed from development prompt notes; the verbatim initial image-generation call was not retained. Color artwork uses the character-specific prop/ability described here; Manga artwork preserves the matching scene and prop/ability in ink style."
+    },
+    {
+      "preset": "yoruichi",
+      "edition": "color",
+      "path": "desktop/shared/wallpapers/yoruichi-desktop.png",
+      "width": 1916,
+      "height": 821,
+      "sha256": "c2d5a18eef207da7d8169ace9cec577e118ef6dc5881a4b8aca523695c8fce37",
+      "character_weapon_or_ability": "No Zanpakutō or sword; depict Shunkō lightning around her arms.",
+      "prompt_basis": "Final replacement scene regenerated with the recorded pose and hand-anatomy prompt after localized edits retained an awkward rear hand.",
+      "previous_sha256": "b5059a98d9429399a10fc2830afaab9eda928ba64ba414ade73a5de70ffb6a9c",
+      "correction_prompts": [
+        "Correct only Yoruichi’s hand anatomy in this existing 21:9 wallpaper. Preserve the exact composition, face, hair, clothing, pose, arm positions, Shunkō gold-violet lightning, moon, Soul Society rooftops, lighting, colors and dark central negative space. Make both visible hands natural and clearly attached to the arms: the forward open hand should have one palm, one thumb and exactly four distinct fingers with clean separations and believable joints; the other visible hand should have a natural relaxed hand shape with five digits. Correct proportions and wrist transitions. No fused, duplicated, missing, twisted or extra fingers; no added limbs. Keep her weapon-free. Do not alter anything outside the hands.",
+        "Make one last localized hand correction to this exact wallpaper. The forward open hand is now correct; preserve it unchanged. Correct only Yoruichi’s other hand at screen-right near her hip: make it an anatomically natural relaxed hand with exactly five clearly formed digits, correct thumb placement, visible finger separation, natural knuckles and wrist connection, resting against the white sash. Do not obscure it with cloth, lightning, or shadows. Keep both arms and the entire pose unchanged. Preserve the exact face, hair, clothes, Shunkō lightning, moonlit roofs, colors, lighting, framing and dark center. No sword, no extra limbs, no changes outside that hand.",
+        "Create a polished wide 21:9 anime wallpaper featuring Yoruichi Shihōin from Bleach in the Soul Society at night. Place the character on the RIGHT third of the frame with large clean dark negative space across the LEFT half for desktop icons. Behind her: dramatic moonlit Seireitei rooftops, mist and clouds, full moon, subtle warm lanterns. Yoruichi has dark skin, golden eyes, long flowing deep purple hair, confident calm expression, sleek black sleeveless combat outfit with white waist sash, purple and gold Shunkō lightning wrapping around shoulders and arms. No sword and no weapons.\nCRITICAL anatomy and pose: Yoruichi has exactly two arms and two hands total. Both shoulders, both arms, both wrists, and both hands are clearly visible. Pose both elbows bent naturally, with forearms angled forward in front of her torso. Place both hands side-by-side at her lower chest/upper abdomen, clearly in front of her body and separated from each other and from clothing. Make both hands simple relaxed martial arts fists, each with four fingers curled naturally and one distinct thumb wrapped across the fingers. The fists are medium-sized, fully visible, anatomically plausible, and unobstructed. Do not place any hand at her hip or behind her body. No extra limbs or duplicate hands. No open palms. Keep lightning behind the hands, never crossing them. Cinematic anime illustration, detailed consistent anatomy, atmospheric purple-blue night lighting, wide landscape composition."
+      ],
+      "previous_hashes": [
+        "7840d4473cb716bc52c1add3fccf5889ae66733d6a57f14f188052f59f8af15f",
+        "b5059a98d9429399a10fc2830afaab9eda928ba64ba414ade73a5de70ffb6a9c"
+      ]
+    },
+    {
+      "preset": "yoruichi",
+      "edition": "manga",
+      "path": "login/theme/assets/scene-yoruichi.png",
+      "width": 1915,
+      "height": 821,
+      "sha256": "b99f1079dc627bd02201c730a14e943a3eeceffd1fd615dd0966a68e07bb43c3",
+      "character_weapon_or_ability": "No Zanpakutō or sword; depict Shunkō lightning around her arms.",
+      "prompt_basis": "Regenerated from the final Color master to preserve the corrected two-arm, hands-forward pose.",
+      "previous_sha256": "0dfc6ab66e56be998da6139c1b44e1e5e8957793a47d2fb05661fb3c9c3e9583",
+      "correction_prompts": [
+        "Create a matching monochrome Manga edition of this corrected Yoruichi wallpaper. Preserve her exact face, pose, both corrected hand shapes and positions, five-finger anatomy, clothing, Shunkō energy, moonlit rooftops, framing and 21:9 composition. Keep both hands clearly visible and anatomically natural: the forward hand has one thumb plus four distinct fingers, the relaxed hand at her hip has five separated digits. Do not distort, fuse, duplicate or hide either hand. Yoruichi has no Zanpakutō: include no sword or weapon. Convert to refined black-and-white manga ink with crisp linework, screentones and restrained crosshatching; preserve the dark uncluttered center. No color, text, panels, logo, UI, border, watermark or extra characters.",
+        "Create the matching monochrome Manga edition of this exact wallpaper scene. Preserve the composition, Yoruichi's identity, face, hair, outfit, buildings, moon, lighting layout, and especially the exact pose: exactly two arms, both anatomically clear hands as fists held in front of her abdomen, no hand at her hip, no extra limbs. Convert the scene to dramatic black-and-white manga ink with fine screentone shading, crisp linework and controlled deep blacks. Make Shunkō lightning thin white ink arcs. Preserve the very wide 21:9 desktop wallpaper layout and clean dark negative space on the left. Do not add any weapons or change the hands or pose."
+      ],
+      "previous_hashes": [
+        "0d27fde5bffac217b3409e5f90e9f109d23ec0f95e03ff0d17629550d74f22fd",
+        "0dfc6ab66e56be998da6139c1b44e1e5e8957793a47d2fb05661fb3c9c3e9583"
+      ]
+    }
+  ]
+}

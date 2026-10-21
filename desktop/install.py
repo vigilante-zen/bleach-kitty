@@ -67,11 +67,16 @@ def payload(edition, home, binary=None, dry=False):
         if source.is_symlink() or not source.is_file():
             raise ValueError(f'Missing or linked package file: {source}')
         result[target] = (source.read_bytes(), mode)
+    catalog = json.loads((ROOT / 'desktop/shared/presets.json').read_text())['presets']
+    expected_counts = {
+        'wallpapers': len({preset['image'] for preset in catalog}),
+        'color-schemes': len(catalog),
+    }
     for folder, target in [('wallpapers', 'Pictures/Bleach-TYBW/Wallpapers'),
                            ('color-schemes', '.local/share/color-schemes')]:
         sources = sorted((ROOT / 'desktop/shared' / folder).glob('*'))
-        if len(sources) != 12:
-            raise ValueError(f'Expected twelve shared {folder} files')
+        if len(sources) != expected_counts[folder]:
+            raise ValueError(f'Expected {expected_counts[folder]} shared {folder} files')
         for source in sources:
             add(source, target + '/' + source.name)
     for name in ['appearance_settings.py', 'presets.json']:

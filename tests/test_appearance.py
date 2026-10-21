@@ -19,7 +19,7 @@ class AppearanceChecks(unittest.TestCase):
             home = Path(folder)
             options = appearance.load(home)
             self.assertEqual(list(home.iterdir()), [])
-            self.assertEqual(len(options['pool']), 12)
+            self.assertEqual(len(options['pool']), len(appearance.catalog()))
             options.update(edition='manga', accent='#aAbB12', login='renji', shuffle_login=True, pool=['renji'])
             appearance.save(home, options)
             self.assertEqual(appearance.load(home), options)

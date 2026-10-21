@@ -12,6 +12,12 @@ spec = importlib.util.spec_from_file_location('login_install', ROOT / 'login/ins
 login = importlib.util.module_from_spec(spec); spec.loader.exec_module(login)
 
 class LoginInstallChecks(unittest.TestCase):
+    def test_every_preset_has_a_login_scene_and_display_name(self):
+        qml = (login.THEME / 'Main.qml').read_text()
+        for preset in login.PRESETS:
+            self.assertTrue((login.THEME / f'assets/scene-{preset}.png').is_file(), preset)
+            self.assertIn(preset + ':', qml)
+
     def test_staged_lifecycle_preserves_other_settings(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -71,6 +77,14 @@ class LoginInstallChecks(unittest.TestCase):
             settings.write_text(json.dumps({'login': 'yhwach'}))
             self.assertTrue(sync.sync(root))
             self.assertEqual(selected.read_bytes(), sync.selection('yhwach'))
+            settings.write_text(json.dumps({'login': 'aizen'}))
+            self.assertTrue(sync.sync(root))
+            self.assertEqual(selected.read_bytes(), sync.selection('aizen'))
+            settings.write_text('{}')
+            for preset in ['grimmjow', 'yoruichi']:
+                marker.write_text(preset + '\n')
+                self.assertTrue(sync.sync(root))
+                self.assertEqual(selected.read_bytes(), sync.selection(preset))
             settings.unlink()
             marker.unlink(); marker.symlink_to('/etc/passwd')
             self.assertFalse(sync.sync(root))
@@ -107,6 +121,9 @@ class LoginInstallChecks(unittest.TestCase):
             config = root / login.CONFIG_PATH; config.parent.mkdir(parents=True); config.write_bytes(login.CONFIG)
             login.apply('install', root)
             self.assertTrue((target / 'assets/scene-rukia.png').is_file())
+            self.assertTrue((target / 'assets/scene-aizen.png').is_file())
+            self.assertTrue((target / 'assets/scene-grimmjow.png').is_file())
+            self.assertTrue((target / 'assets/scene-yoruichi.png').is_file())
             login.apply('restore', root)
 
     def test_failed_write_rolls_back_and_allows_retry(self):

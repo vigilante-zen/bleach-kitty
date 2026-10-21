@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Improve the Rust terminal character picker with a searchable thumbnail grid, faction/form filters, recent and favorite selections, keyboard navigation, clearer empty states and an always-available random choice.
-- Expand to twelve desktop presets with TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach, plus matching full manga scenes.
+- Add Aizen, Grimmjow, Yoruichi, Gin and Orihime as desktop presets, with matching Color and Manga wallpapers and login scenes.
+- Refine Aizen's Color and Manga sword artwork to depict Kyōka Suigetsu; make ultrawide art prompts name each character's Zanpakutō/release. Grimmjow's scene uses Pantera; Yoruichi's uses Shunkō without a sword. Gin's uses the extended Shinso; Orihime's uses Santen Kesshun without a Zanpakutō.
 - Correct Ichigo's wallpaper to his Royal Palace True Shikai design and Yamamoto's TYBW arm/weapon design. Keep Ulquiorra as a legacy option.
 - Add TYBW Ichigo and Bankai Kenpachi color/manga terminal portraits, character accents and a TYBW forms group: 46 portraits / 92 editions, still 36 characters.
 - Add shared appearance controls in both apps for color/manga backgrounds, custom accents, fixed/following login scenes, and optional login shuffle with a character pool.
@@ -11,7 +12,7 @@
 - Replace the Ichigo desktop/lock-screen wallpaper and monochrome login scene with a weapon-free standing pose. Make Python wallpaper selection honor the shared preset catalog, matching Rust for versioned asset filenames.
 - Add full and compact Fastfetch layouts for TYBW Ichigo and Bankai Kenpachi. Refine Fastfetch key colors and btop highlight colors for TYBW Ichigo, Askin, Lille, Nemu and Yachiru.
 
-- Match the login screen to the chosen desktop preset using twelve full wallpaper scenes converted to black-and-white manga. Preserve the existing login layout and controls.
+- Match the login screen to the chosen desktop preset using full wallpaper scenes converted to black-and-white manga. Preserve the existing login layout and controls.
 - Add optional one-time automatic matching setup for either edition, with a systemd path watcher, fixed preset validation, and restore/removal. App previews show the selected scene before activation.
 
 - Add the optional Ichigo manga SDDM login theme, with preview, separate administrator activation, update, restore and exact standalone-install migration.

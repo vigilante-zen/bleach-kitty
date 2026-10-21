@@ -319,7 +319,7 @@ public:
     header->addWidget(button("Appearance options", [this] { appearanceOptions(); })); layout->addLayout(header);
     layout->addWidget(
         label("Matching wallpaper, lock screen and desktop colors. "
-              "Twelve characters and forms with color and manga wallpapers.",
+              "Thirteen characters and forms with color and manga wallpapers.",
               "muted"));
     art = new Artwork;
     layout->addWidget(art, 1);

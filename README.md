@@ -75,7 +75,7 @@ The startup adds `~/.local/bin` to Fish's PATH. The package does not change your
 
 Both Bankai apps provide **Appearance options** beside the background controls: choose Color or Manga for the desktop and lock screen, set a custom accent (or leave it empty for character colors), choose a fixed manga login scene or follow the background, and choose a character pool for optional shuffle at login. Save options, then Apply a preset to update wallpaper and accent. Login choices require the one-time system setup. Enable only one Bankai edition at login for shuffle. Terminal Color/Manga/Mixed and favorites remain separate.
 
-There are twelve desktop presets, including TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. The terminal roster also includes TYBW True Shikai Ichigo and Bankai Kenpachi as separate forms.
+There are seventeen desktop presets, including Aizen, Grimmjow, Yoruichi, Gin, Orihime, TYBW Renji, adult Bankai Hitsugaya, Bankai Kenpachi and Yhwach. The terminal roster also includes TYBW True Shikai Ichigo and Bankai Kenpachi as separate forms.
 
 ## Daily commands
 

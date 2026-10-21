@@ -2215,6 +2215,22 @@ static int smoke(Window &window, const QString &directory) {
           QString("Control page %1 overflows horizontally at small window sizes")
               .arg(page)
               .toStdString());
+    QWidget *lastControl = nullptr;
+    if (page == 0)
+      lastControl = window.findChild<QPushButton *>("delete-custom-preset");
+    else if (page == 1)
+      lastControl = window.cleanupButton;
+    else
+      lastControl = window.autostart;
+    if (!lastControl)
+      throw std::runtime_error("A control page is missing its final keyboard action");
+    scroll->ensureWidgetVisible(lastControl);
+    qApp->processEvents();
+    const QRect controlRect(lastControl->mapTo(scroll->viewport(), QPoint(0, 0)),
+                           lastControl->size());
+    if (!controlRect.intersects(scroll->viewport()->rect()))
+      throw std::runtime_error("A control page's final action is unreachable by scrolling");
+    scroll->verticalScrollBar()->setValue(0);
   }
   window.navigation->setCurrentRow(0);
   qApp->processEvents();

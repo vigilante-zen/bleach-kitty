@@ -963,7 +963,7 @@ public:
             [resultCount = QPointer<QLabel>(resultCount)] {
       if (!resultCount || !resultCount->isVisible() || !QAccessible::isActive())
         return;
-      QAccessibleAnnouncementEvent event(resultCount, resultCount->text());
+      QAccessibleAnnouncementEvent event(resultCount, resultCount->accessibleDescription());
       event.setPoliteness(QAccessible::AnnouncementPoliteness::Polite);
       QAccessible::updateAccessibility(&event);
     });
@@ -1018,6 +1018,7 @@ public:
       int row = 0, column = 0;
       QPushButton *restoreFocus = nullptr;
       QStringList visibleIds;
+      QStringList visibleNames;
       for (const auto &id : ids) {
         auto title = displayNames.value(id, id);
         if (title == id) {
@@ -1027,6 +1028,7 @@ public:
         if (!query.isEmpty() && !id.contains(query, Qt::CaseInsensitive) &&
             !title.contains(query, Qt::CaseInsensitive)) continue;
         visibleIds << id;
+        visibleNames << title;
         auto *card = new QPushButton;
         card->setObjectName("portrait-card");
         card->setAccessibleName(title);
@@ -1114,8 +1116,11 @@ public:
       const bool visibleResultsChanged = previousVisibleIds != visibleIds;
       previousVisibleIds = visibleIds;
       resultCount->setText(countText);
-      resultCount->setAccessibleDescription(
-          QString("%1 shown by the current search and faction filter.").arg(countText));
+      QString countDescription =
+          QString("%1 shown by the current search and faction filter.").arg(countText);
+      if (!visibleNames.isEmpty())
+        countDescription += QString(" First result: %1.").arg(visibleNames.first());
+      resultCount->setAccessibleDescription(countDescription);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
       if (visibleResultsChanged && dialog.isVisible())
         announcementTimer->start();
@@ -1844,7 +1849,7 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       failure = "Character picker result count did not track search filters";
     if (!resultCount ||
         !accessibleText(resultCount, QAccessible::Description)
-             .contains("1 character shown by the current search and faction filter"))
+             .contains("1 character shown by the current search and faction filter. First result: Uryu."))
       failure = "Character picker accessibility description did not expose the matching count";
     if (!matchingCard || accessibleText(matchingCard, QAccessible::Name) != "Uryu" ||
         !accessibleText(matchingCard, QAccessible::Description).contains("arrow keys"))
@@ -1881,6 +1886,10 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
                     .arg(resultCount ? resultCount->text() : "missing")
                     .arg(replacementCard ? replacementCard->property("portraitId").toString() : "missing")
                     .arg(announcementTimerActive);
+    if (!resultCount ||
+        !accessibleText(resultCount, QAccessible::Description)
+             .contains("1 character shown by the current search and faction filter. First result: Test Portrait."))
+      failure = "Character picker did not expose the identity of its first result";
     search->setText("no-such-character");
     qApp->processEvents();
     auto *empty = dialog->findChild<QLabel *>("portrait-empty-state");

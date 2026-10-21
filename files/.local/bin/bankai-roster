@@ -99,7 +99,7 @@ def draw_deck(path, pool):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['next', 'list', 'status', 'add', 'remove', 'set', 'use', 'all', 'group', 'groups', 'members', 'shuffle', 'catalog', 'clear', 'toggle'])
+    parser.add_argument('action', choices=['next', 'list', 'status', 'add', 'remove', 'set', 'use', 'all', 'group', 'groups', 'members', 'shuffle', 'catalog', 'picker-data', 'clear', 'toggle'])
     parser.add_argument('names', nargs='*')
     args = parser.parse_args()
     if args.names and args.action not in ['add', 'remove', 'set', 'group', 'members', 'shuffle', 'toggle']:
@@ -157,6 +157,20 @@ def main():
             group = 'all'
         grouped = [n for n in available if n in GROUPS.get(group, available)]
         rotation = 'favorites' if enabled else ('all portraits' if group == 'all' else group)
+        if args.action == 'picker-data':
+            catalog = [{'id': name, 'title': DISPLAY_NAMES.get(name, name.replace('-', ' ').title())}
+                       for name in available]
+            print(json.dumps({
+                'groups': list(GROUPS),
+                'members': {name: [portrait for portrait in available
+                                   if portrait in members]
+                            for name, members in GROUPS.items()},
+                'favorites': saved,
+                'catalog': catalog,
+                'rotation': rotation,
+                'shuffle': shuffle,
+            }, separators=(',', ':')))
+            return
         if args.action == 'groups':
             print('all')
             print('\n'.join(GROUPS))

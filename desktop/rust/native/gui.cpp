@@ -1070,21 +1070,22 @@ public:
     scroll->setWidget(page);
     return scroll;
   }
-  QStringList rosterCommand(const QStringList &arguments) const {
+  QJsonObject rosterPickerData() const {
     QProcess command;
     auto environment = QProcessEnvironment::systemEnvironment();
     environment.insert("HOME", home);
     if (qEnvironmentVariableIsSet("BANKAI_HOME") && environment.value("XDG_STATE_HOME").isEmpty())
       environment.insert("XDG_STATE_HOME", home + "/.local/state");
     command.setProcessEnvironment(environment);
-    command.start(home + "/.local/bin/bankai-roster", arguments);
+    command.start(home + "/.local/bin/bankai-roster", {"picker-data"});
     if (!command.waitForStarted(1500) || !command.waitForFinished(3000) ||
         command.exitStatus() != QProcess::NormalExit || command.exitCode() != 0)
       return {};
-    QStringList result;
-    for (const auto &line : QString::fromUtf8(command.readAllStandardOutput()).split('\n'))
-      if (!line.trimmed().isEmpty()) result << line.trimmed();
-    return result;
+    QJsonParseError error;
+    const auto document = QJsonDocument::fromJson(command.readAllStandardOutput(), &error);
+    return error.error == QJsonParseError::NoError && document.isObject()
+               ? document.object()
+               : QJsonObject();
   }
   void choosePortrait() {
     if (matchDesktop->isChecked() || process) return;
@@ -1113,7 +1114,17 @@ public:
     filters->setAccessibleName("Filter terminal characters");
     filters->addItem("All characters", "all");
     QMap<QString, QStringList> members;
-    const auto groups = rosterCommand({"groups"});
+    const QJsonObject rosterData = rosterPickerData();
+    QSet<QString> groups;
+    for (const auto &group : rosterData.value("groups").toArray())
+      if (group.isString()) groups.insert(group.toString());
+    const auto memberData = rosterData.value("members").toObject();
+    const auto membersFor = [](const QJsonValue &value) {
+      QStringList result;
+      for (const auto &item : value.toArray())
+        if (item.isString()) result << item.toString();
+      return result;
+    };
     const QMap<QString, QString> labels = {
         {"soul-reapers", "Soul Reapers"}, {"quincy", "Quincy"},
         {"arrancars", "Arrancars"}, {"human-world", "Human world"},
@@ -1124,22 +1135,21 @@ public:
     for (const auto &group : groupOrder) {
       if (!groups.contains(group)) continue;
       filters->addItem(labels.value(group, group), group);
-      members.insert(group, rosterCommand({"members", group}));
+      members.insert(group, membersFor(memberData.value(group)));
     }
     filters->addItem("Recently used", "recent");
     filters->addItem("Favorites", "favorites");
-    const auto favorites = rosterCommand({"list"});
+    const QStringList favorites = membersFor(rosterData.value("favorites"));
     const QStringList recentlyUsed = recentPortraitIds(home);
     QMap<QString, QString> displayNames;
-    for (const auto &record : rosterCommand({"catalog"})) {
-      const auto fields = record.split('\t');
-      if (fields.size() == 2) displayNames.insert(fields[0], fields[1]);
+    for (const auto &record : rosterData.value("catalog").toArray()) {
+      const auto item = record.toObject();
+      const auto id = item.value("id").toString();
+      const auto title = item.value("title").toString();
+      if (!id.isEmpty() && !title.isEmpty()) displayNames.insert(id, title);
     }
-    QString rotation = "all portraits", shuffleMode = "portrait";
-    for (const auto &line : rosterCommand({"status"})) {
-      if (line.startsWith("Rotation: ")) rotation = line.mid(QString("Rotation: ").size());
-      else if (line.startsWith("Shuffle: ")) shuffleMode = line.mid(QString("Shuffle: ").size());
-    }
+    const QString rotation = rosterData.value("rotation").toString("all portraits");
+    const QString shuffleMode = rosterData.value("shuffle").toString("portrait");
     QStringList rotationPool = rotation == "favorites" ? favorites
         : rotation == "all portraits" ? displayNames.keys()
         : members.value(rotation);

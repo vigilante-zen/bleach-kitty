@@ -55,6 +55,24 @@ class CharacterRosterChecks(unittest.TestCase):
         self.assertIn('yachiru', members)
         self.assertNotIn('askin', members)
 
+    def test_picker_data_batches_metadata_without_changing_preferences(self):
+        data = json.loads(self.command('picker-data'))
+        self.assertEqual(data['groups'], list(self.roster.GROUPS))
+        self.assertEqual(data['members']['soul-reapers'],
+                         self.command('members', 'soul-reapers').splitlines())
+        self.assertEqual({row['id'] for row in data['catalog']},
+                         {path.stem for path in (self.home / '.config/fastfetch/portraits').glob('*.png')})
+        self.assertEqual(data['rotation'], 'all portraits')
+        self.assertEqual(data['shuffle'], 'portrait')
+        self.assertFalse((self.home / '.config/fastfetch/portrait-choice').exists())
+        self.assertFalse((self.home / '.config/fastfetch/portrait-favorites.json').exists())
+
+    def test_picker_data_reports_saved_favorites_and_active_rotation(self):
+        self.command('add', 'uryu')
+        data = json.loads(self.command('picker-data'))
+        self.assertIn('uryu', data['favorites'])
+        self.assertEqual(data['rotation'], 'favorites')
+
     def test_new_pairs_are_valid_distinct_square_pngs_with_recorded_hashes(self):
         records = json.loads((ROOT / 'docs/prompts/additions-20261020/PROMPTS.json').read_text())
         self.assertEqual({record['id'] for record in records['characters']}, NEW)

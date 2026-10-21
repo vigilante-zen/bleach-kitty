@@ -53,17 +53,17 @@ The Rust executable and its startup preference are not part of the legacy deskto
 
 ## Measured comparison
 
-Seven interleaved runs per edition, after one discarded warm-up pair, using Qt Fusion with the offscreen platform. Both source editions construct all pages, load the current 18-preset catalog and initial wallpaper, show the window, and process its first paint. The harness separately records first paint and the point when all preset thumbnails finish loading, and checks catalog counts match before reporting results.
+Seven interleaved runs per edition, after one discarded warm-up pair, using Qt Fusion with the offscreen platform. Both source editions construct all pages, load the current 18-preset catalog and initial wallpaper, show the window, and process its first paint. The harness separately records first paint and the point when the main preview and all preset thumbnails finish loading, and checks catalog counts match before reporting results.
 
 | Median measurement | Rust + Qt | Python + PySide6 |
 | --- | ---: | ---: |
-| Reported startup to first paint | 103 ms | 1,671 ms |
-| All preset thumbnails ready | 250 ms | 1,671 ms |
-| Parent-measured wall time through thumbnail readiness | 270 ms | 1,700 ms |
-| Resident memory after thumbnails load | 86.9 MiB | 105.4 MiB |
-| Peak resident memory by that point | 86.9 MiB | 105.6 MiB |
+| Reported startup to first paint | 77 ms | 1,615 ms |
+| Main preview and preset thumbnails ready | 260 ms | 1,615 ms |
+| Parent-measured wall time through artwork readiness | 279 ms | 1,644 ms |
+| Resident memory after artwork loads | 82.4 MiB | 105.5 MiB |
+| Peak resident memory by that point | 82.4 MiB | 105.5 MiB |
 
-The Rust window paints with placeholder thumbnails, then fills the character cards as scaled artwork finishes decoding on background workers. Worker RPC parsing receives higher priority than queued artwork so a click during initial loading does not wait behind the whole image queue. The current release executable is about 1.24 MiB and dynamically links the installed Qt libraries. These results measure the whole rewrite, not Rust versus Python in isolation. RSS includes shared library mappings; it is not proportional physical memory. Live Wayland startup, tray hosting, and steady-state idle CPU were not measured.
+The Rust window paints with placeholders, then fills the main preview and character cards as scaled artwork finishes decoding on background workers. Rapid character changes cannot let an older decode replace the newest selection. Worker RPC parsing receives higher priority than queued artwork so a click during initial loading does not wait behind the whole image queue. The current release executable is about 1.24 MiB and dynamically links the installed Qt libraries. These results measure the whole rewrite, not Rust versus Python in isolation. RSS includes shared library mappings; it is not proportional physical memory. Live Wayland startup, tray hosting, and steady-state idle CPU were not measured.
 
 The benchmark imports the Python source from this checkout rather than an installed copy. Raw runs default to `desktop/rust/artifacts/benchmark.json` and include the platform, CPU, architecture, Python version, and Qt versions; choose another output path to preserve an existing report or keep results outside the repository. These runs used an AMD Ryzen 9 3950X, Python 3.14.8 and Qt 6.12.0. Reproduce with:
 

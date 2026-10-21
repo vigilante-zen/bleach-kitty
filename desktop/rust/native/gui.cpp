@@ -124,20 +124,45 @@ public:
   QPixmap image, scaledPreview;
   QSize previewSize;
   QJsonObject preset;
+  QString previewMessage;
+  quint64 loadGeneration = 0;
+  quint64 imageGeneration = 0;
+  bool previewReady = false;
   Artwork() {
     setObjectName("appearance-artwork-preview");
     setAccessibleName("Appearance wallpaper preview");
     setMinimumHeight(200);
   }
-  void select(const QJsonObject &p, const QString &wallpapers) {
+  quint64 select(const QJsonObject &p) {
     preset = p;
+    const auto generation = ++loadGeneration;
+    image = QPixmap();
+    scaledPreview = QPixmap();
+    previewSize = QSize();
+    previewReady = false;
+    previewMessage = "Loading wallpaper preview…";
     setAccessibleDescription(
         QString("%1. %2. Preview of the desktop and lock screen wallpaper.")
-            .arg(p.value("title").toString(), p.value("subtitle").toString()));
-    QImageReader reader(wallpapers + "/" + p.value("image").toString());
-    if (reader.size().isValid())
-      reader.setScaledSize(reader.size().scaled(1024, 640, Qt::KeepAspectRatio));
-    image = QPixmap::fromImage(reader.read());
+            .arg(p.value("title").toString(), p.value("subtitle").toString()) +
+        " Loading preview.");
+    update();
+    return generation;
+  }
+  void finishSelect(quint64 generation, QImage decoded) {
+    if (generation != loadGeneration)
+      return;
+    imageGeneration = generation;
+    previewReady = true;
+    if (decoded.isNull()) {
+      previewMessage = "Wallpaper preview unavailable";
+      setAccessibleDescription(accessibleDescription().replace(
+          " Loading preview.", " Wallpaper preview unavailable."));
+    } else {
+      image = QPixmap::fromImage(decoded);
+      previewMessage.clear();
+      setAccessibleDescription(accessibleDescription().replace(
+          " Loading preview.", " Wallpaper preview loaded."));
+    }
     previewSize = QSize();
     update();
   }
@@ -166,6 +191,12 @@ protected:
     gradient.setColorAt(1, QColor(9, 12, 18, 245));
     painter.fillRect(rect(), gradient);
     const QFont baseFont = qApp->font();
+    if (!previewMessage.isEmpty()) {
+      painter.setPen(QColor("#bcc9da"));
+      painter.setFont(baseFont);
+      painter.drawText(QRect(24, height() / 2, width() - 48, 36),
+                       Qt::AlignLeft | Qt::AlignVCenter, previewMessage);
+    }
     const qreal fontScale = qMax(0.8, baseFont.pointSizeF() / 10.0);
     QFont eyebrowFont = baseFont;
     eyebrowFont.setPointSizeF(baseFont.pointSizeF() * 0.82);
@@ -467,10 +498,34 @@ public:
               Qt::QueuedConnection);
         }), -1);
   }
+  void loadArtworkPreview(const QJsonObject &p, quint64 generation) {
+    QPointer<Artwork> previewGuard(art);
+    const QString path = wallpapers + "/" + p.value("image").toString();
+    responseParserPool.start(QRunnable::create(
+        [previewGuard, path, generation] {
+          QImageReader reader(path);
+          if (reader.size().isValid())
+            reader.setScaledSize(
+                reader.size().scaled(1024, 640, Qt::KeepAspectRatio));
+          QImage image = reader.read();
+          if (!previewGuard)
+            return;
+          QMetaObject::invokeMethod(
+              previewGuard.data(),
+              [previewGuard, generation, image = std::move(image)]() mutable {
+                if (previewGuard)
+                  previewGuard->finishSelect(generation, std::move(image));
+              },
+              Qt::QueuedConnection);
+        }), 0);
+  }
   bool presetThumbnailsLoaded() const {
     return std::all_of(cards.cbegin(), cards.cend(), [](const auto &card) {
       return card->property("thumbnail-loaded").toBool();
     });
+  }
+  bool allArtworkLoaded() const {
+    return presetThumbnailsLoaded() && art->previewReady && !art->image.isNull();
   }
   QPushButton *button(const QString &text, std::function<void()> fn,
                       bool primary = false) {
@@ -499,7 +554,7 @@ public:
     selected = id;
     cards[id]->setChecked(true);
     auto p = preset(id);
-    art->select(p, wallpapers);
+    loadArtworkPreview(p, art->select(p));
     previewNote->setText("Previewing " + p.value("title").toString() +
                          ". Applying saves a snapshot first.");
   }
@@ -1974,10 +2029,10 @@ protected:
   }
 };
 static QJsonObject benchmark(Window &window, qint64 startupMs,
-                             qint64 thumbnailsReadyMs) {
+                             qint64 artworkReadyMs) {
   QFile status("/proc/self/status");
   QJsonObject result{{"startup_ms", double(startupMs)},
-                     {"thumbnail_ready_ms", double(thumbnailsReadyMs)},
+                     {"artwork_ready_ms", double(artworkReadyMs)},
                      {"edition", "rust-qt"},
                      {"qt_version", qVersion()}};
   if (status.open(QIODevice::ReadOnly))
@@ -2474,8 +2529,16 @@ static int smoke(Window &window, const QString &directory) {
   for (auto value : window.presets) {
     auto p = value.toObject();
     window.selectPreset(p.value("id").toString());
+    QElapsedTimer previewTimeout;
+    previewTimeout.start();
+    while (window.art->image.isNull() && previewTimeout.elapsed() < 10000) {
+      qApp->processEvents();
+      QThread::msleep(1);
+    }
     if (window.art->image.isNull())
       throw std::runtime_error("Missing native preview wallpaper");
+    if (window.art->imageGeneration != window.art->loadGeneration)
+      throw std::runtime_error("An outdated wallpaper preview replaced the current selection");
     if (window.art->image.width() > 1024 || window.art->image.height() > 640)
       throw std::runtime_error("Native preview exceeds its memory bound");
     auto image = svgIcon(window.bootstrap.value("mask_svg").toString().toUtf8(),
@@ -3092,17 +3155,17 @@ extern "C" int bankai_gui(int argc, char **argv) {
       const qint64 startupMs = startup.elapsed();
       QElapsedTimer thumbnailTimeout;
       thumbnailTimeout.start();
-      while (!window.presetThumbnailsLoaded() &&
+      while (!window.allArtworkLoaded() &&
              thumbnailTimeout.elapsed() < 10000) {
         app.processEvents();
         QThread::msleep(1);
       }
-      if (!window.presetThumbnailsLoaded())
+      if (!window.allArtworkLoaded())
         throw std::runtime_error(
-            "Preset thumbnails did not finish loading during benchmark");
-      const qint64 thumbnailsReadyMs = startup.elapsed();
+            "Preset and wallpaper artwork did not finish loading during benchmark");
+      const qint64 artworkReadyMs = startup.elapsed();
       QTextStream(stdout) << QJsonDocument(
-                                 benchmark(window, startupMs, thumbnailsReadyMs))
+                                 benchmark(window, startupMs, artworkReadyMs))
                                  .toJson(QJsonDocument::Compact)
                           << "\n";
       return 0;

@@ -29,7 +29,7 @@ window = center.ControlCenter()
 window.show()
 app.processEvents()
 result = {'edition': 'python-pyside6', 'startup_ms': (time.perf_counter()-started)*1000}
-result['thumbnail_ready_ms'] = result['startup_ms']
+result['artwork_ready_ms'] = result['startup_ms']
 result['qt_version'] = qVersion()
 result['python_version'] = sys.version.split()[0]
 for line in Path('/proc/self/status').read_text().splitlines():
@@ -81,7 +81,7 @@ def main():
         raise RuntimeError(f'Qt versions changed during measurement: {qt_versions}')
     for edition, values in measurements.items():
         summary[edition] = {key: round(statistics.median(v[key] for v in values), 2)
-                            for key in ['startup_ms', 'thumbnail_ready_ms',
+                            for key in ['startup_ms', 'artwork_ready_ms',
                                         'process_wall_ms', 'VmRSS_kib', 'VmHWM_kib']}
     preset_count = next(iter(rust_presets))
     cpu_model = platform.processor()
@@ -102,7 +102,7 @@ def main():
                                   for edition, versions in qt_versions.items()},
               },
               'summary': summary, 'runs': measurements,
-              'method': f'Offscreen Qt Fusion; both source editions load all {preset_count} presets and the initial wallpaper. Startup is measured at first paint; thumbnail readiness is measured after every preset card has artwork. The Python case imports desktop/python from this checkout. Warm-up pair discarded; interleaved process launches.',
+              'method': f'Offscreen Qt Fusion; both source editions load all {preset_count} presets and the initial wallpaper. Startup is measured at first paint; artwork readiness is measured after the wallpaper preview and every preset card are loaded. The Python case imports desktop/python from this checkout. Warm-up pair discarded; interleaved process launches.',
               'limits': 'Native code also downsizes thumbnails earlier. Gains reflect implementation and language/runtime changes. This does not measure live Wayland startup, idle CPU, actual tray hosting, or proportional physical memory.'}
     output = args.output.expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

@@ -1005,6 +1005,9 @@ public:
         auto *card = new QPushButton;
         card->setObjectName("portrait-card");
         card->setAccessibleName(title);
+        card->setAccessibleDescription(
+            QString("Choose %1 for terminal artwork. Use the arrow keys to move between cards.")
+                .arg(title));
         card->setFocusPolicy(Qt::StrongFocus);
         card->setAutoDefault(false);
         card->setDefault(false);
@@ -1780,11 +1783,19 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
     search->setText("uryu");
     qApp->processEvents();
     int visible = 0;
+    QPushButton *matchingCard = nullptr;
     const auto cards = dialog->findChildren<QPushButton *>("portrait-card");
-    for (auto *card : cards)
-      if (card->isVisible()) ++visible;
+    for (auto *card : cards) {
+      if (card->isVisible()) {
+        ++visible;
+        matchingCard = card;
+      }
+    }
     if (visible != 1)
       failure = "Character picker search did not narrow the selected faction";
+    if (!matchingCard || accessibleText(matchingCard, QAccessible::Name) != "Uryu" ||
+        !accessibleText(matchingCard, QAccessible::Description).contains("arrow keys"))
+      failure = "Character card does not explain its selection action to screen readers";
     if (cards.isEmpty() || cards.first()->findChildren<QShortcut *>().size() < 6)
       failure = "Character cards are missing keyboard navigation shortcuts";
     search->setText("no-such-character");

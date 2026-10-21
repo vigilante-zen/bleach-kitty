@@ -11,10 +11,11 @@ pub fn status(app: &App) -> Result<Value> {
             let path = entry.text()?.path();
             if path.extension().and_then(|s| s.to_str()) == Some("png") {
                 fsutil::reject_links(&path, &app.home)?;
-                if path.is_file() {
-                    if let Some(name) = path.file_stem().and_then(|s| s.to_str()) {
-                        if valid_name(name) { names.push(name.to_string()); }
-                    }
+                if path.is_file()
+                    && let Some(name) = path.file_stem().and_then(|s| s.to_str())
+                    && valid_name(name)
+                {
+                    names.push(name.to_string());
                 }
             }
         }

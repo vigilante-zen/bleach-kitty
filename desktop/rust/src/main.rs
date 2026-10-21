@@ -76,6 +76,11 @@ fn response(request: &str) -> Value {
 }
 // These two exports are the ownership boundary: C++ frees only strings returned here.
 #[unsafe(no_mangle)]
+/// Dispatch one JSON request across the C ABI and return its JSON response.
+///
+/// # Safety
+/// `request` must be null or point to a readable, NUL-terminated C string that
+/// remains valid for the duration of this call.
 pub unsafe extern "C" fn bankai_request(request: *const c_char) -> *mut c_char {
     let result = std::panic::catch_unwind(|| {
         if request.is_null() { return obj! { "ok" => false, "error" => "Null request" }.dump(); }
@@ -84,6 +89,11 @@ pub unsafe extern "C" fn bankai_request(request: *const c_char) -> *mut c_char {
     CString::new(result).unwrap().into_raw()
 }
 #[unsafe(no_mangle)]
+/// Release a response string returned by [`bankai_request`].
+///
+/// # Safety
+/// `value` must be null or the exact pointer returned by [`bankai_request`],
+/// and it must not have been freed already.
 pub unsafe extern "C" fn bankai_free(value: *mut c_char) {
     if !value.is_null() { drop(unsafe { CString::from_raw(value) }); }
 }

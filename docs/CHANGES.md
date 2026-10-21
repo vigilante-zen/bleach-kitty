@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Show and expose a live terminal character result count for search and faction filters; include the count and first result in its accessible description and politely announce both after typing pauses on Qt 6.8+, including filters that replace results without changing their number. Describe card actions and arrow-key navigation to screen readers.
+- Show and expose a live terminal character result count for search and faction filters; include the search, filter, count and first result in its accessible description and politely announce them after typing pauses on Qt 6.8+, including filters that replace results without changing their number. Describe card actions and arrow-key navigation to screen readers.
 - Scale Rust brand, section labels and headings with KDE's configured UI font; reflow backup actions and the terminal picker on resize, and fit preview dialogs to screen space, verified by the native smoke test.
 - Add screen-reader context for Rust navigation, saved custom presets, terminal-follow and art-style options, autostart, and the activity log; verify the Qt-exposed labels in the native smoke test.
 - Add an integrity-checked restore preview to the Rust Backups page, listing every saved file to restore and every setting to remove before the user confirms an actual restore.

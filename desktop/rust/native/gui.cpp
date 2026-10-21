@@ -952,7 +952,7 @@ public:
     resultCount->setObjectName("portrait-results-count");
     resultCount->setAccessibleName("Matching terminal characters");
     resultCount->setAccessibleDescription(
-        "0 characters shown by the current search and faction filter.");
+        "0 characters shown for no search text using the All characters filter.");
     layout->addWidget(resultCount);
     auto *announcementTimer = new QTimer(&dialog);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
@@ -1116,8 +1116,13 @@ public:
       const bool visibleResultsChanged = previousVisibleIds != visibleIds;
       previousVisibleIds = visibleIds;
       resultCount->setText(countText);
-      QString countDescription =
-          QString("%1 shown by the current search and faction filter.").arg(countText);
+      const auto searchContext = query.isEmpty()
+                                     ? QString("no search text")
+                                     : QString("search \"%1\"").arg(query);
+      QString countDescription = QString("%1 shown for %2 using the %3 filter.")
+                                     .arg(countText)
+                                     .arg(searchContext)
+                                     .arg(filters->currentText());
       if (!visibleNames.isEmpty())
         countDescription += QString(" First result: %1.").arg(visibleNames.first());
       resultCount->setAccessibleDescription(countDescription);
@@ -1849,7 +1854,7 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       failure = "Character picker result count did not track search filters";
     if (!resultCount ||
         !accessibleText(resultCount, QAccessible::Description)
-             .contains("1 character shown by the current search and faction filter. First result: Uryu."))
+             .contains("1 character shown for search \"uryu\" using the Quincy filter. First result: Uryu."))
       failure = "Character picker accessibility description did not expose the matching count";
     if (!matchingCard || accessibleText(matchingCard, QAccessible::Name) != "Uryu" ||
         !accessibleText(matchingCard, QAccessible::Description).contains("arrow keys"))
@@ -1888,7 +1893,7 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
                     .arg(announcementTimerActive);
     if (!resultCount ||
         !accessibleText(resultCount, QAccessible::Description)
-             .contains("1 character shown by the current search and faction filter. First result: Test Portrait."))
+             .contains("1 character shown for search \"test-portrait\" using the All characters filter. First result: Test Portrait."))
       failure = "Character picker did not expose the identity of its first result";
     search->setText("no-such-character");
     qApp->processEvents();
@@ -1899,7 +1904,7 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       failure = "Character picker result count did not report empty search results";
     if (!resultCount ||
         !accessibleText(resultCount, QAccessible::Description)
-             .contains("0 characters shown by the current search and faction filter"))
+             .contains("0 characters shown for search \"no-such-character\" using the All characters filter"))
       failure = "Character picker accessibility description did not expose empty results";
     if (!dialog->findChild<QPushButton *>("portrait-random"))
       failure = "Character picker is missing the random option";

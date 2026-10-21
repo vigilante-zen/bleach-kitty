@@ -77,7 +77,7 @@ The active Codex project goal tracks this continuation across sessions. Start by
 
 ## Resume here
 
-The current saved project state is commit `bc47bbf` (`Show filtered character count in terminal picker`) on `main`, tracking `origin/main`; the branch is 74 commits ahead of its upstream. There are no uncommitted tracked changes. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
+The latest code commit is `70ff5e3` (`Announce terminal character result changes`) on `main`, tracking `origin/main`; at that code commit the branch was 76 commits ahead of its upstream. There are no uncommitted tracked changes after the accompanying checkpoint note is committed. The untracked `artifacts/` directory contains user-local screenshots and must be preserved.
 
 The latest Rust UI change adds a live, singular/plural-aware matching-character count to the terminal picker. Its accessible label reflects both search text and faction filter, and the smoke test covers matching and empty results. Validation passed 41 Rust tests, Clippy with warnings denied, the optimized Rust build, the offscreen GUI smoke test and `git diff --check`.
 

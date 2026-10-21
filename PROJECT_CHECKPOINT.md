@@ -85,4 +85,6 @@ Latest continuation work adds a polite, 350 ms debounced screen-reader announcem
 
 The current environment has Wayland display variables but no Orca process, and querying the session accessibility bus fails with `Operation not permitted`. Do not mark spoken output verified here; repeat that check from an unrestricted KDE session with a running screen reader.
 
+An additional cross-edition validation sweep after `5e16d3f` passed all 57 repository tests, all 26 Python snapshot-manager checks, the Python runtime checks, all 22 compiled Rust binary integration checks, and shared command routing. The Rust-specific Clippy, 41 tests, optimized build and native offscreen smoke test also passed. GitHub remains unsynced because `git push origin main` still fails DNS lookup for `github.com`; the branch is 86 commits ahead and `artifacts/` remains untouched.
+
 To resume, open this repository, read this checkpoint, then check `git status --short --branch` and inspect the implementation related to the next requested change. Keep `artifacts/` untouched. GitHub may still need syncing: push `main` only when network access is available and after checking the remote state.

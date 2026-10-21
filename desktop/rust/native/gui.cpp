@@ -125,26 +125,40 @@ protected:
         previewSize = size();
       }
       const auto &scaled = scaledPreview;
-      painter.drawPixmap((width() - scaled.width()) / 2,
+      painter.drawPixmap(width() - scaled.width(),
                          (height() - scaled.height()) / 2, scaled);
     }
     QLinearGradient gradient(0, height() * .25, 0, height());
     gradient.setColorAt(0, QColor(9, 12, 18, 0));
     gradient.setColorAt(1, QColor(9, 12, 18, 245));
     painter.fillRect(rect(), gradient);
+    const QFont baseFont = qApp->font();
+    const qreal fontScale = qMax(0.8, baseFont.pointSizeF() / 10.0);
+    QFont eyebrowFont = baseFont;
+    eyebrowFont.setPointSizeF(baseFont.pointSizeF() * 0.82);
+    eyebrowFont.setLetterSpacing(QFont::AbsoluteSpacing, 2.4 * fontScale);
+    QFont titleFont = baseFont;
+    titleFont.setPointSizeF(baseFont.pointSizeF() * 1.85);
+    titleFont.setWeight(QFont::Bold);
+    QFont detailFont = baseFont;
+    detailFont.setPointSizeF(baseFont.pointSizeF() * 0.82);
+    const int bottom = qMax(12, qRound(baseFont.pointSizeF() * 1.2));
+    const int detailBaseline = height() - bottom;
+    const int titleBaseline = detailBaseline - QFontMetrics(detailFont).height() -
+                              qMax(2, qRound(2 * fontScale));
+    const int eyebrowBaseline = titleBaseline - QFontMetrics(titleFont).height() -
+                                qMax(2, qRound(3 * fontScale));
     painter.setPen(QColor(preset.value("accent").toString()));
-    QFont font("Noto Sans", 10);
-    font.setLetterSpacing(QFont::AbsoluteSpacing, 3);
-    painter.setFont(font);
-    painter.drawText(24, height() - 77,
+    painter.setFont(eyebrowFont);
+    painter.drawText(24, eyebrowBaseline,
                      "SOUL SOCIETY / " +
                          preset.value("title").toString().toUpper());
     painter.setPen(Qt::white);
-    painter.setFont(QFont("Noto Sans", 25, QFont::Bold));
-    painter.drawText(22, height() - 37, preset.value("title").toString());
-    painter.setFont(QFont("Noto Sans", 10));
+    painter.setFont(titleFont);
+    painter.drawText(22, titleBaseline, preset.value("title").toString());
+    painter.setFont(detailFont);
     painter.setPen(QColor("#bcc9da"));
-    painter.drawText(24, height() - 15, preset.value("subtitle").toString());
+    painter.drawText(24, detailBaseline, preset.value("subtitle").toString());
   }
 };
 
@@ -257,7 +271,7 @@ public:
     right->addWidget(notice);
     logButton = new QPushButton("Show activity");
     logButton->setAccessibleDescription("Show or hide Bankai's action and error log.");
-    logButton->setMaximumWidth(140);
+    logButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     right->addWidget(logButton);
     log = new QPlainTextEdit;
     log->setAccessibleName("Bankai activity log");
@@ -1905,6 +1919,8 @@ static int smoke(Window &window, const QString &directory) {
   window.selectPreset(initial.toString());
   window.show();
   qApp->processEvents();
+  if (window.logButton->width() < window.logButton->sizeHint().width())
+    throw std::runtime_error("Activity action text is clipped at the configured font size");
   if (window.navigation->horizontalScrollBar()->maximum() > 0)
     throw std::runtime_error("Sidebar navigation labels do not fit without horizontal scrolling");
   auto *presetSearch = window.findChild<QLineEdit *>("preset-search");

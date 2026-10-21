@@ -63,6 +63,17 @@ static QLabel *label(const QString &text, const QString &name = {}) {
   auto *w = new QLabel(text);
   w->setWordWrap(true);
   w->setObjectName(name);
+  QFont font = qApp->font();
+  if (name == "brand") {
+    font.setPointSizeF(font.pointSizeF() * 2.2);
+    font.setLetterSpacing(QFont::AbsoluteSpacing, font.pointSizeF() * 0.25);
+  } else if (name == "eyebrow") {
+    font.setPointSizeF(font.pointSizeF() * 0.78);
+    font.setLetterSpacing(QFont::AbsoluteSpacing, font.pointSizeF() * 0.19);
+  } else if (name == "heading") {
+    font.setPointSizeF(font.pointSizeF() * 1.8);
+  }
+  w->setFont(font);
   return w;
 }
 static QString accessibleText(QWidget *widget, QAccessible::Text field) {
@@ -1937,6 +1948,14 @@ static int smoke(Window &window, const QString &directory) {
   if (controlFont.family() != configuredFont.family() ||
       controlFont.pointSizeF() != configuredFont.pointSizeF())
     throw std::runtime_error("Regular controls do not inherit the configured application font");
+  auto *brandLabel = window.findChild<QLabel *>("brand");
+  auto *eyebrowLabel = window.findChild<QLabel *>("eyebrow");
+  auto *headingLabel = window.findChild<QLabel *>("heading");
+  if (!brandLabel || !eyebrowLabel || !headingLabel ||
+      qAbs(brandLabel->font().pointSizeF() / configuredFont.pointSizeF() - 2.2) > 0.1 ||
+      qAbs(eyebrowLabel->font().pointSizeF() / configuredFont.pointSizeF() - 0.78) > 0.1 ||
+      qAbs(headingLabel->font().pointSizeF() / configuredFont.pointSizeF() - 1.8) > 0.1)
+    throw std::runtime_error("Branded and heading text does not scale with the configured font");
   auto *appearancePreview = window.art;
   auto *presetCard = window.cards.value(initial.toString());
   const auto selectedTitle = window.preset(initial.toString()).value("title").toString();

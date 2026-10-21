@@ -3,9 +3,9 @@
 QWidget { background: #090c12; color: #e8edf5; }
 QFrame#sidebar { background: #101620; border-right: 1px solid #253044; }
 QFrame#sidebar QLabel { background: transparent; }
-QLabel#brand { font-size: 29px; font-weight: 800; letter-spacing: 5px; }
-QLabel#eyebrow { color: #e96b75; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
-QLabel#heading { font-size: 26px; font-weight: 700; }
+QLabel#brand { font-weight: 800; }
+QLabel#eyebrow { color: #e96b75; font-weight: 700; }
+QLabel#heading { font-weight: 700; }
 QLabel#muted { color: #9baabd; }
 QLabel#notice { background: #131e2b; color: #b8ccdf; padding: 12px; border-radius: 8px; }
 QListWidget { border: 0; background: transparent; }

@@ -804,7 +804,7 @@ class ControlCenter(QMainWindow):
         def save():
             value = dict(edition=edition.currentData(), accent=accent.text().strip(), login=login.currentData(),
                          shuffle_login=shuffle.isChecked(), pool=[pool.item(i).data(Qt.ItemDataRole.UserRole) for i in range(pool.count()) if pool.item(i).checkState() == Qt.CheckState.Checked])
-            try: appearance_settings.save(HOME, value)
+            try: appearance_settings.save(HOME, value, expected=options)
             except (OSError, ValueError) as error:
                 QMessageBox.information(dialog, 'Appearance options', str(error)); return
             self.select_preset(self.selected)

@@ -15,7 +15,7 @@ bankai status
 
 You can also search **Bankai** in KDE's app launcher. `bankai-rust` remains a direct compatibility command. The Python alternative is `bankai-python`. The Rust app has its own instance channel and optional login-startup preference. It is not enabled at login by default. Avoid enabling both tray apps at login unless you want two icons.
 
-Both editions read the same saved preset, character artwork, KDE settings, Kitty accents, portrait selection, snapshots and protected-snapshot list. Applying a preset or restoring a snapshot changes the shared desktop. Comparing their windows and previews is read-only; do not apply competing presets from both editions simultaneously.
+Both editions read the same saved preset, character artwork, KDE settings, Kitty accents, portrait selection, snapshots and protected-snapshot list. Applying a preset or restoring a snapshot changes the shared desktop. Appearance-option saves detect changes made in the other edition while a dialog is open; close and reopen the options before retrying. Comparing their windows and previews is read-only; do not apply competing presets from both editions simultaneously.
 
 ## Terminal artwork controls
 
@@ -81,7 +81,7 @@ References: [Rust FFI](https://doc.rust-lang.org/nomicon/ffi.html), [Qt tray API
 ## Validation
 
 - The Rust unit suite passes. Compiled-binary integration checks pass against the release executable using disposable homes. They cover all eighteen presets and two desktop containments, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, independent autostart settings, and appearance reset behavior and recovery.
-- The native offscreen smoke check passed in an isolated temporary home: eighteen previews and exact mask accents, searchable desktop and terminal character selection, configured Random pool summary and eligible-name preview, visible recovery messaging for malformed custom presets and automatic reload after an external repair, nonmutating preview selection, tray action population, external snapshot refresh, cleanup protection, reset-confirmation cancellation without changing saved preferences, background Rust worker, and screenshots at normal/smaller sizes.
+- The native offscreen smoke check passed in an isolated temporary home: eighteen previews and exact mask accents, searchable desktop and terminal character selection, configured Random pool summary and eligible-name preview, visible recovery messaging for malformed custom presets and automatic reload after an external repair, external snapshot refresh, stale appearance-save conflict protection, nonmutating preview selection, tray action population, cleanup protection, reset-confirmation cancellation without changing saved preferences, background Rust worker, and screenshots at normal/smaller sizes.
 - The existing real baseline snapshot was verified read-only by Rust.
 - No real desktop settings were changed and no real snapshots were deleted during validation.
 - Live KDE tray display, cross-process single-instance activation and live color/wallpaper application remain unverified from this sandbox because it blocks session-bus and Unix-socket access.

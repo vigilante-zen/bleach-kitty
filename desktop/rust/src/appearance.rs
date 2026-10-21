@@ -33,6 +33,12 @@ pub fn save(app: &App, request: &Value) -> Result<Value> {
     let value=validate(app,request.get("appearance")?)?;
     let path=app.data.join("appearance.json"); fsutil::reject_links(&path,&app.home)?;
     let _lock=fsutil::Lock::acquire(&app.state)?;
+    if let Some(expected)=request.opt("expected") {
+        let expected=validate(app,expected)?;
+        if load(app)? != expected {
+            return Err("Appearance settings changed in another Bankai window. Close and reopen Appearance options before saving.".into());
+        }
+    }
     fsutil::atomic_write(&path,format!("{}\n",value.dump()).as_bytes(),None)?;
     Ok(obj! {"message"=>"Appearance saved. Apply a background to update wallpaper and accents. Login choice syncs after system setup."})
 }

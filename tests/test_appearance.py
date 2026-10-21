@@ -35,6 +35,16 @@ class AppearanceChecks(unittest.TestCase):
             with self.assertRaises(ValueError): appearance.save(home, options)
             self.assertEqual(outside.read_text(),'unchanged')
 
+    def test_stale_editor_cannot_replace_newer_shared_preferences(self):
+        with tempfile.TemporaryDirectory() as folder:
+            home=Path(folder); expected=appearance.load(home)
+            newer=dict(expected,edition='manga',accent='#123456',login='rukia')
+            appearance.save(home,newer)
+            stale=dict(expected,edition='manga',accent='#abcdef')
+            with self.assertRaisesRegex(ValueError,'changed in another Bankai window'):
+                appearance.save(home,stale,expected=expected)
+            self.assertEqual(appearance.load(home),newer)
+
     def test_custom_presets_round_trip_and_delete(self):
         with tempfile.TemporaryDirectory() as folder:
             home=Path(folder); options=appearance.defaults()

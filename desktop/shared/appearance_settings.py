@@ -1,5 +1,6 @@
 """Shared Bankai appearance preferences; no settings are written on import."""
 import json
+import fcntl
 import os
 from pathlib import Path
 import random
@@ -37,16 +38,27 @@ def load(home):
     if not path.exists(): return defaults()
     return validate(json.loads(path.read_text()))
 
-def save(home, value):
+def save(home, value, expected=None):
     value = validate(value)
     path = Path(home) / '.local/share/bleach-desktop/appearance.json'
     checked(path, home)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temp = tempfile.mkstemp(dir=path.parent)
-    try:
-        with os.fdopen(fd, 'w') as stream: json.dump(value, stream, indent=2); stream.write('\n')
-        os.replace(temp, path)
-    finally: Path(temp).unlink(missing_ok=True)
+    state = Path(home) / '.local/state/bleach-desktop'
+    checked(state, home); state.mkdir(parents=True, exist_ok=True)
+    lock_path = state / 'snapshot-management.lock'
+    checked(lock_path, home)
+    with lock_path.open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            if expected is not None and load(home) != validate(expected):
+                raise ValueError('Appearance settings changed in another Bankai window. Close and reopen Appearance options before saving.')
+            fd, temp = tempfile.mkstemp(dir=path.parent)
+            try:
+                with os.fdopen(fd, 'w') as stream: json.dump(value, stream, indent=2); stream.write('\n')
+                os.replace(temp, path)
+            finally: Path(temp).unlink(missing_ok=True)
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 def shuffled(home, current):
     settings = load(home)

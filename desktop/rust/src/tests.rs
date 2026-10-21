@@ -53,6 +53,17 @@ fn bootstrap_reports_invalid_custom_presets_without_hiding_the_problem() {
     assert!(bootstrap.get("custom_presets").unwrap().array().unwrap().is_empty());
     assert!(bootstrap.get("custom_presets_error").unwrap().text().unwrap().contains("Invalid JSON"));
 }
+
+#[test]
+fn stale_appearance_save_does_not_replace_newer_shared_preferences() {
+    let f=Fixture::new();
+    let expected=appearance::load(&f.app).unwrap();
+    let newer=obj!{"edition"=>"manga","accent"=>"#123456","login"=>"rukia","shuffle_login"=>true,"pool"=>Value::from(vec![Value::from("rukia")])};
+    appearance::save(&f.app,&obj!{"appearance"=>newer.clone()}).unwrap();
+    let error=appearance::save(&f.app,&obj!{"appearance"=>expected.clone(),"expected"=>expected}).unwrap_err();
+    assert!(error.contains("changed in another Bankai window"));
+    assert_eq!(appearance::load(&f.app).unwrap(),newer);
+}
 #[test]fn hash_matches_known_sha256(){assert_eq!(fsutil::hash_bytes(b"abc"),"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");let f=Fixture::new();let path=f.app.home.join("data");fs::write(&path,b"abc").unwrap();assert_eq!(fsutil::hash(&path).unwrap(),fsutil::hash_bytes(b"abc"));}
 #[test]fn snapshot_round_trip_preserves_mode_and_absent_files(){
     let f=Fixture::new();let target=f.app.home.join(".config/kitty/kitty.conf");fs::set_permissions(&target,fs::Permissions::from_mode(0o640)).unwrap();let name=snapshot(&f);

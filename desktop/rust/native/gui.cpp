@@ -1319,7 +1319,7 @@ public:
     connect(buttons,&QDialogButtonBox::accepted,&dialog,[&] {
       QJsonArray selectedPool; for(int i=0;i<pool->count();++i) if(pool->item(i)->checkState()==Qt::Checked) selectedPool.append(pool->item(i)->data(Qt::UserRole).toString());
       QJsonObject options{{"edition",edition->currentData().toString()},{"accent",accent->text().trimmed()},{"login",login->currentData().toString()},{"shuffle_login",shuffle->isChecked()},{"pool",selectedPool}};
-      try { rpc({{"op","save-appearance"},{"appearance",options}}); selectPreset(selected); notice->setText("Appearance saved. Apply a background to update wallpaper and accents."); dialog.accept(); }
+      try { rpc({{"op","save-appearance"},{"appearance",options},{"expected",value}}); selectPreset(selected); notice->setText("Appearance saved. Apply a background to update wallpaper and accents."); dialog.accept(); }
       catch(const std::exception &e) {QMessageBox::information(&dialog,"Appearance options",QString::fromUtf8(e.what()));}
     });
     dialog.exec();
@@ -1508,6 +1508,66 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
   window.choosePortrait();
   if (!failure.isEmpty()) throw std::runtime_error(failure.toStdString());
 }
+static void smokeStaleAppearanceSave(Window &window, const QJsonObject &original) {
+  QString failure;
+  bool messageHandled = false;
+  QTimer::singleShot(100, &window, [&] {
+    auto *dialog = window.findChild<QDialog *>("appearance-options-dialog");
+    auto *buttons = dialog ? dialog->findChild<QDialogButtonBox *>() : nullptr;
+    if (!dialog || !buttons || !buttons->button(QDialogButtonBox::Save)) {
+      failure = "Appearance options Save button is missing";
+      if (dialog) dialog->reject();
+      messageHandled = true;
+      return;
+    }
+    auto newer = original;
+    const QString accent = original.value("accent").toString() == "#123456"
+                               ? "#654321"
+                               : "#123456";
+    newer.insert("accent", accent);
+    try {
+      rpc({{"op", "save-appearance"}, {"appearance", newer}});
+    } catch (const std::exception &e) {
+      failure = QString("Could not stage an external appearance edit: %1").arg(e.what());
+      dialog->reject();
+      return;
+    }
+    QTimer::singleShot(50, &window, [&] {
+      auto *modal = QApplication::activeModalWidget();
+      auto *message = qobject_cast<QMessageBox *>(modal);
+      if (!message ||
+          !message->text().contains("changed in another Bankai window")) {
+        failure = "Stale Appearance save did not explain the conflict";
+        if (modal) modal->close();
+      } else {
+        message->accept();
+      }
+      messageHandled = true;
+    });
+    buttons->button(QDialogButtonBox::Save)->click();
+    if (!dialog->isVisible())
+      failure = "Appearance dialog closed after its stale save was rejected";
+    try {
+      if (rpc({{"op", "appearance"}}).toObject() != newer)
+        failure = "Stale Appearance save replaced the newer shared settings";
+      rpc({{"op", "save-appearance"}, {"appearance", original}});
+    } catch (const std::exception &e) {
+      failure = QString("Could not restore smoke appearance settings: %1").arg(e.what());
+    }
+    dialog->reject();
+  });
+  window.appearanceOptions();
+  QElapsedTimer timer;
+  timer.start();
+  while (!messageHandled && timer.elapsed() < 250) {
+    qApp->processEvents();
+    QThread::msleep(5);
+  }
+  if (!messageHandled && failure.isEmpty())
+    failure = "Stale Appearance conflict message was not handled";
+  if (!failure.isEmpty())
+    throw std::runtime_error(failure.toStdString());
+}
 static int smoke(Window &window, const QString &directory) {
   if (!window.notice->text().startsWith("Saved presets could not be loaded:"))
     throw std::runtime_error("Corrupt custom presets are not surfaced in the native UI");
@@ -1683,6 +1743,7 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error(resetCancelFailure.toStdString());
   if (rpc({{"op", "appearance"}}) != appearanceBefore)
     throw std::runtime_error("Canceling appearance options changed preferences");
+  smokeStaleAppearanceSave(window, appearanceBefore.toObject());
   auto originalArtwork = rpc({{"op", "portraits"}}).toObject();
   window.navigation->setCurrentRow(2);
   window.portraitArt->setCurrentIndex(2);
@@ -1766,7 +1827,7 @@ static int smoke(Window &window, const QString &directory) {
                          "protection, searchable preset and character pickers, "
                          "configured Random pool summary, custom-preset recovery and "
                          "external refresh, external snapshot refresh, reset confirmation, "
-                         "worker process and screenshots.\n";
+                         "stale appearance conflict protection, worker process and screenshots.\n";
   return 0;
 }
 static bool copySmokeFile(const QString &source, const QString &destination) {

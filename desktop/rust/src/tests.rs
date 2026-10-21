@@ -79,6 +79,37 @@ fn appearance_repair_preserves_corrupt_file_before_restoring_defaults() {
     assert!(f.app.dispatch(&obj!{"op"=>"repair-appearance"}).unwrap_err().contains("Symlinks are unsupported"));
     assert_eq!(fs::read_to_string(outside).unwrap(),"keep me");assert!(path.is_symlink());
 }
+#[test]
+fn preset_write_transaction_rolls_back_after_a_midway_failure() {
+    let f=Fixture::new();let first=f.app.home.join(".config/a-first");write(&first,"original");
+    write(&f.app.data.join("current"),"old\n");write(&f.app.state.join("pending"),"old pending\n");
+    let edits=std::collections::BTreeMap::from([
+        (".config/a-first".to_string(),"updated".to_string()),
+        (".config/z-second".to_string(),"new file".to_string()),
+        (".local/share/bleach-desktop/current".to_string(),"new preset\n".to_string()),
+        (".local/state/bleach-desktop/pending".to_string(),"new preset\n".to_string()),
+    ]);
+    let mut writes=0;
+    let error=presets::write_transaction_with(&f.app,&edits,|path,bytes|{
+        writes+=1;
+        if writes==4 { Err("injected write failure".into()) }
+        else { fsutil::atomic_write(path,bytes,None) }
+    }).unwrap_err();
+    assert!(error.contains("injected write failure"));
+    assert_eq!(fs::read_to_string(first).unwrap(),"original");
+    assert!(!f.app.home.join(".config/z-second").exists());
+    assert_eq!(fs::read_to_string(f.app.data.join("current")).unwrap(),"old\n");
+    assert_eq!(fs::read_to_string(f.app.state.join("pending")).unwrap(),"old pending\n");
+}
+#[test]
+fn failed_custom_preset_apply_restores_previous_appearance_settings() {
+    let f=Fixture::new();let previous=appearance::load(&f.app).unwrap();
+    let row=custom_presets::save(&f.app,&obj!{"name"=>"Missing Manga","preset"=>"rukia","accent"=>"#123456","login"=>"rukia","edition"=>"manga"}).unwrap();
+    let error=custom_presets::apply(&f.app,&obj!{"id"=>row.get("id").unwrap().clone()}).unwrap_err();
+    assert!(error.contains("Required asset is missing"));
+    assert_eq!(appearance::load(&f.app).unwrap(),previous);
+    assert!(!f.app.data.join("current").exists());
+}
 #[test]fn hash_matches_known_sha256(){assert_eq!(fsutil::hash_bytes(b"abc"),"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");let f=Fixture::new();let path=f.app.home.join("data");fs::write(&path,b"abc").unwrap();assert_eq!(fsutil::hash(&path).unwrap(),fsutil::hash_bytes(b"abc"));}
 #[test]fn snapshot_round_trip_preserves_mode_and_absent_files(){
     let f=Fixture::new();let target=f.app.home.join(".config/kitty/kitty.conf");fs::set_permissions(&target,fs::Permissions::from_mode(0o640)).unwrap();let name=snapshot(&f);

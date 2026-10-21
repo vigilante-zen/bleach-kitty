@@ -36,9 +36,62 @@ pub fn run(program: &str, args: &[&str]) -> Result<(bool, String)> {
     Ok((status.success(), text))
 }
 
+fn write_transaction(app: &App, edits: &BTreeMap<String,String>) -> Result<()> {
+    write_transaction_with(app, edits, |path, bytes| fsutil::atomic_write(path, bytes, None))
+}
+
+pub(crate) fn write_transaction_with<F>(app: &App, edits: &BTreeMap<String,String>, mut writer: F) -> Result<()>
+where F: FnMut(&Path, &[u8]) -> Result<()> {
+    let mut originals = BTreeMap::<String,Option<Vec<u8>>>::new();
+    for relative in edits.keys() {
+        if !fsutil::valid_relative(relative) { return Err(format!("Invalid configuration path: {relative}")); }
+        let path = app.home.join(relative);
+        fsutil::reject_links(&path, &app.home)?;
+        let original = match fs::symlink_metadata(&path) {
+            Ok(metadata) if metadata.is_file() => Some(fs::read(&path).text()?),
+            Ok(_) => return Err(format!("Refusing to replace a non-file configuration path: {relative}")),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+            Err(error) => return Err(error.to_string()),
+        };
+        originals.insert(relative.clone(), original);
+    }
+
+    let mut attempted = Vec::new();
+    for (relative, text) in edits {
+        let path = app.home.join(relative);
+        attempted.push(relative.clone());
+        if let Err(error) = writer(&path, text.as_bytes()) {
+            let mut rollback_errors = Vec::new();
+            for previous in attempted.iter().rev() {
+                let path = app.home.join(previous);
+                let rollback = match originals.get(previous).and_then(Option::as_deref) {
+                    Some(bytes) => fsutil::atomic_write(&path, bytes, None),
+                    None => fsutil::remove_if_exists(&path),
+                };
+                if let Err(rollback_error) = rollback {
+                    rollback_errors.push(format!("{}: {rollback_error}", path.display()));
+                }
+            }
+            let message = format!("Could not update {relative}: {error}");
+            return if rollback_errors.is_empty() { Err(message) }
+                else { Err(format!("{message}; rollback also failed for {}", rollback_errors.join(", "))) };
+        }
+    }
+    Ok(())
+}
+
 pub fn apply(app: &App, name: &str) -> Result<Value> {
+    apply_with_expected_appearance(app, name, None)
+}
+
+pub fn apply_with_expected_appearance(app: &App, name: &str, expected: Option<&Value>) -> Result<Value> {
     let preset = app.preset(name)?;
+    let _lock = Lock::acquire(&app.state)?;
     let appearance = crate::appearance::load(app)?;
+    if let Some(expected) = expected
+        && appearance != crate::appearance::validate(app, expected)? {
+        return Err("Appearance settings changed while applying the saved preset. Retry the action.".into());
+    }
     let image = app.wallpapers.join(preset.get(if appearance.get("edition")?.text()? == "manga" { "manga" } else { "image" })?.text()?);
     let scheme = format!("Bleach{}", preset.get("title")?.text()?);
     let scheme_file = app.home.join(".local/share/color-schemes").join(format!("{scheme}.colors"));
@@ -47,8 +100,6 @@ pub fn apply(app: &App, name: &str) -> Result<Value> {
         if !path.is_file() { return Err(format!("Required asset is missing: {}", path.display())); }
     }
     let source = fs::read_to_string(&scheme_file).text()?;
-    fsutil::reject_links(&app.state, &app.home)?;
-    let _lock = Lock::acquire(&app.state)?;
     let mut edits: BTreeMap<String,String> = BTreeMap::new();
     let mut edit = |relative: &str, section: &str, key: &str, value: &str| -> Result<()> {
         let path = app.home.join(relative); fsutil::reject_links(&path, &app.home)?;
@@ -98,12 +149,13 @@ pub fn apply(app: &App, name: &str) -> Result<Value> {
     if follow {
         edits.insert(".config/fastfetch/portrait-choice".into(), format!("{}\n", preset.get("portrait")?.text()?));
     }
+    edits.insert(".local/share/bleach-desktop/current".into(), format!("{name}\n"));
+    edits.insert(".local/state/bleach-desktop/pending".into(), format!("{name}\n"));
     for relative in edits.keys() { fsutil::reject_links(&app.home.join(relative), &app.home)?; }
     let backup = snapshots::create(app)?;
-    for (relative,text) in edits { fsutil::atomic_write(&app.home.join(relative), text.as_bytes(), None)?; }
     fsutil::reject_links(&app.data, &app.home)?;
-    fsutil::atomic_write(&app.data.join("current"), format!("{name}\n").as_bytes(), None)?;
-    fsutil::atomic_write(&app.state.join("pending"), format!("{name}\n").as_bytes(), None)?;
+    fsutil::reject_links(&app.state, &app.home)?;
+    write_transaction(app, &edits)?;
     let mut online = false;
     if !app.offline {
         let script = format!("var ds=desktops(); for(var i=0;i<ds.length;++i){{ds[i].wallpaperPlugin='org.kde.image';ds[i].currentConfigGroup=['Wallpaper','org.kde.image','General'];ds[i].writeConfig('Image',{});}}\n{}",json::quote(&uri(&image)),include_str!("../assets/panel.js"));

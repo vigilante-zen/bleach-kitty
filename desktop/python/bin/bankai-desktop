@@ -133,6 +133,20 @@ def apply(name, pending_only=False):
     else:
         print(f'{label} saved. Desktop refresh is queued for your next KDE login.')
 
+def apply_custom(identifier):
+    row = next((p for p in appearance_settings.custom_presets(HOME) if p['id'] == identifier), None)
+    if not row: raise ValueError('Saved preset not found')
+    previous = appearance_settings.load(HOME)
+    options = dict(previous, edition=row['edition'], accent=row['accent'], login=row['login'])
+    appearance_settings.save(HOME, options, expected=previous)
+    try:
+        apply(row['preset'])
+    except (OSError, ValueError) as error:
+        try: appearance_settings.save(HOME, previous, expected=options)
+        except (OSError, ValueError) as restore_error:
+            raise ValueError(f'{error}; failed to restore previous appearance settings: {restore_error}') from error
+        raise
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('preset', nargs='?', default='status')
@@ -147,12 +161,7 @@ def main():
         if chosen: apply(chosen)
     elif args.preset == 'apply-custom':
         identifier = sys.argv[2] if len(sys.argv) > 2 else ''
-        row = next((p for p in appearance_settings.custom_presets(HOME) if p['id'] == identifier), None)
-        if not row: raise ValueError('Saved preset not found')
-        options = appearance_settings.load(HOME)
-        options.update(edition=row['edition'], accent=row['accent'], login=row['login'])
-        appearance_settings.save(HOME, options)
-        apply(row['preset'])
+        apply_custom(identifier)
     elif args.preset == 'apply-pending':
         marker = STATE / 'pending'
         if marker.exists():

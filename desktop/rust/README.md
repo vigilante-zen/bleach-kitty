@@ -31,8 +31,8 @@ The Rust unit suite, compiled-binary integration checks and offscreen native smo
 
 ## Ported behavior
 
-- All eighteen presets, wallpaper previews, explicit Apply, and automatic snapshots before changes.
-- Named custom combinations that capture the current wallpaper, accent, and login-scene choices.
+- All eighteen presets, wallpaper previews, explicit Apply, automatic snapshots, and rollback if a preset write fails partway through.
+- Named custom combinations that capture the current wallpaper, accent, and login-scene choices; failed applies preserve the prior choices.
 - Searchable desktop preset cards, searchable login shuffle pools with select/clear shown, and a confirmed reset to the default appearance settings and TYBW preset.
 - KDE desktop and lock-screen wallpaper, color schemes and terminal accents; independent terminal portrait and art preferences.
 - Hollow-mask tray icon colored for the saved character; updates after command-line changes.
@@ -80,7 +80,7 @@ References: [Rust FFI](https://doc.rust-lang.org/nomicon/ffi.html), [Qt tray API
 
 ## Validation
 
-- The Rust unit suite passes. Compiled-binary integration checks pass against the release executable using disposable homes. They cover all eighteen presets and two desktop containments, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, independent autostart settings, and appearance reset behavior and recovery.
+- The Rust unit suite passes. Compiled-binary integration checks pass against the release executable using disposable homes. They cover all eighteen presets and two desktop containments, rollback after a mid-apply write failure, catalog parity with Python, exact SHA-256 compatibility, Rust reading/restoring Python snapshots, Python restoring Rust snapshots, permissions and absent files, corruption rejection, path traversal, symlinks, baseline/favorite/recent-copy retention, changed/protected snapshots after review, extra files, corrupt protection metadata, independent autostart settings, and appearance reset behavior and recovery.
 - The native offscreen smoke check passed in an isolated temporary home: eighteen previews and exact mask accents, searchable desktop and terminal character selection, configured Random pool summary and eligible-name preview, recovery for malformed custom presets and appearance settings with the original appearance file preserved, automatic reload after an external repair, external snapshot refresh, stale appearance-save conflict protection, nonmutating preview selection, tray action population, cleanup protection, reset-confirmation cancellation without changing saved preferences, background Rust worker, and screenshots at normal/smaller sizes.
 - The existing real baseline snapshot was verified read-only by Rust.
 - No real desktop settings were changed and no real snapshots were deleted during validation.

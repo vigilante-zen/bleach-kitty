@@ -217,9 +217,9 @@ public:
     auto *sidebar = new QFrame;
     sidebar->setObjectName("sidebar");
     sidebar->setMinimumWidth(150);
-    sidebar->setMaximumWidth(210);
+    sidebar->setMaximumWidth(240);
     auto *side = new QVBoxLayout(sidebar);
-    side->setContentsMargins(23, 30, 23, 23);
+    side->setContentsMargins(18, 30, 18, 23);
     side->addWidget(label("SOUL SOCIETY", "eyebrow"));
     side->addWidget(label("BANKAI", "brand"));
     side->addWidget(label("Bankai · 0.1", "muted"));
@@ -273,7 +273,8 @@ public:
       auto *shortcut = new QShortcut(QKeySequence(key), this);
       connect(shortcut, &QShortcut::activated, this,
               [this, row] { navigation->setCurrentRow(row); });
-      navigation->item(row)->setToolTip(key);
+      navigation->item(row)->setToolTip(
+          navigation->item(row)->text() + " · " + key);
     }
     slowTimer.setSingleShot(true);
     slowTimer.setInterval(120000);
@@ -1813,6 +1814,8 @@ static int smoke(Window &window, const QString &directory) {
   window.selectPreset(initial.toString());
   window.show();
   qApp->processEvents();
+  if (window.navigation->horizontalScrollBar()->maximum() > 0)
+    throw std::runtime_error("Sidebar navigation labels do not fit without horizontal scrolling");
   auto *presetSearch = window.findChild<QLineEdit *>("preset-search");
   auto *presetSearchShortcut = window.findChild<QShortcut *>("preset-search-shortcut");
   if (!presetSearch || !window.findChild<QLabel *>("preset-empty-state") || !presetSearchShortcut)

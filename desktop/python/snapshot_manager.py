@@ -129,6 +129,17 @@ class SnapshotStore:
                         raise ValueError('Snapshot paths are invalid.')
                     seen.add(relative)
                     expected.add('files/' + relative)
+                absent = data.get('absent', [])
+                if not isinstance(absent, list):
+                    raise ValueError('Snapshot absent-file metadata is invalid.')
+                for relative in absent:
+                    relative_path = Path(relative) if isinstance(relative, str) else None
+                    if (relative_path is None or not relative or relative_path.is_absolute()
+                            or str(relative_path) != relative
+                            or any(part in ('', '.', '..') for part in relative.split('/'))
+                            or relative in seen):
+                        raise ValueError('Snapshot absent-file paths are invalid.')
+                    seen.add(relative)
                 row['files'] = len(entries)
                 actual = set()
                 tree_hash = hashlib.sha256()

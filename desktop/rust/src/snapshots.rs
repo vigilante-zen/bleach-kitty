@@ -210,12 +210,19 @@ pub fn scan(app: &App) -> Result<Vec<Value>> {
             let manifest = fsutil::read_json(&path.join("manifest.json"))?;
             if manifest.get("version")?.number()? != 1 { return Err("Invalid snapshot version".into()); }
             let mut expected = BTreeSet::from(["manifest.json".to_string()]);
+            let mut seen = BTreeSet::new();
             count = manifest.get("files")?.array()?.len();
             if count == 0 { return Err("Empty snapshot".into()); }
             for entry in manifest.get("files")?.array()? {
                 let relative = entry.get("path")?.text()?;
-                if !allowed(app, relative) { return Err("Invalid snapshot path".into()); }
-                if !expected.insert(format!("files/{relative}")) { return Err("Duplicate snapshot path".into()); }
+                if !allowed(app, relative) || !seen.insert(relative.to_string()) { return Err("Invalid or duplicate snapshot path".into()); }
+                expected.insert(format!("files/{relative}"));
+            }
+            if let Some(absent) = manifest.opt("absent") {
+                for entry in absent.array()? {
+                    let relative = entry.text()?;
+                    if !allowed(app, relative) || !seen.insert(relative.to_string()) { return Err("Invalid or duplicate absent-file path".into()); }
+                }
             }
             let mut actual = BTreeSet::new(); let mut stamps = vec![];
             for file in fsutil::walk(&path)? {

@@ -196,6 +196,21 @@ class SnapshotManagementChecks(unittest.TestCase):
                 self.assertFalse(row['eligible'])
         path.write_text(json.dumps(original))
 
+    def test_scanner_rejects_malformed_or_overlapping_absent_paths(self):
+        path = self.store.root / self.names[0] / 'manifest.json'
+        original = json.loads(path.read_text())
+        invalid_manifests = [
+            {**original, 'absent': 'not a list'},
+            {**original, 'absent': ['../outside']},
+            {**original, 'absent': ['.config/example']},
+        ]
+        for manifest in invalid_manifests:
+            with self.subTest(manifest=manifest):
+                path.write_text(json.dumps(manifest))
+                row = next(item for item in self.store.scan() if item['name'] == self.names[0])
+                self.assertFalse(row['eligible'])
+        path.write_text(json.dumps(original))
+
     def test_cannot_escape_snapshot_directory(self):
         plan = self.store.plan(1)
         plan['candidates'][0]['name'] = '../outside'

@@ -227,6 +227,21 @@ fn snapshot_restore_rolls_back_writes_and_deletions_after_a_late_failure() {
     let f=Fixture::new();for i in 0..3{rename_snapshot(&f,&format!("20261019-21000{i}-000000"));}write(&f.app.snapshots.join("20261019-210000-000000/personal-file"),"preserve");
     symlink(f.app.home.join(".config/kdeglobals"),f.app.snapshots.join("20261019-210001-000000/link")).unwrap();assert!(snapshots::plan(&f.app,1).unwrap().get("candidates").unwrap().array().unwrap().is_empty());
 }
+#[test]fn invalid_absent_paths_exclude_cleanup(){
+    let f=Fixture::new();rename_snapshot(&f,"20261019-210000-000000");rename_snapshot(&f,"20261019-210001-000000");
+    let path=f.app.snapshots.join("20261019-210000-000000/manifest.json");let original=fsutil::read_json(&path).unwrap();
+    let invalid=vec![Value::from("../outside"),Value::from(".config/kitty/kitty.conf")];
+    for relative in invalid {
+        let mut manifest=original.clone();
+        if let Value::Object(fields)=&mut manifest {fields.insert("absent".into(),Value::from(vec![relative]));}
+        fs::write(&path,manifest.dump()).unwrap();
+        assert!(snapshots::plan(&f.app,1).unwrap().get("candidates").unwrap().array().unwrap().is_empty());
+    }
+    let mut manifest=original;
+    if let Value::Object(fields)=&mut manifest {fields.insert("absent".into(),Value::from("not an array"));}
+    fs::write(&path,manifest.dump()).unwrap();
+    assert!(snapshots::plan(&f.app,1).unwrap().get("candidates").unwrap().array().unwrap().is_empty());
+}
 #[test]fn corrupt_protection_metadata_disables_cleanup(){let f=Fixture::new();write(&f.app.state.join("protected-snapshots.json"),"not json");assert!(snapshots::plan(&f.app,1).is_err());}
 
 #[test] fn portrait_preferences_validate_and_survive_presets() {

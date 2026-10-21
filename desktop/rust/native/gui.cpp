@@ -217,8 +217,6 @@ public:
     layout->setSpacing(0);
     auto *sidebar = new QFrame;
     sidebar->setObjectName("sidebar");
-    sidebar->setMinimumWidth(150);
-    sidebar->setMaximumWidth(240);
     auto *side = new QVBoxLayout(sidebar);
     side->setContentsMargins(18, 30, 18, 23);
     side->addWidget(label("SOUL SOCIETY", "eyebrow"));
@@ -229,6 +227,10 @@ public:
     navigation->setAccessibleName("Main pages");
     navigation->addItems(
         {"Appearance", "Backups & restore", "Terminal & tools"});
+    const int sidebarWidth =
+        qMax(150, QFontMetrics(navigation->font()).horizontalAdvance("Backups & restore") + 100);
+    sidebar->setMinimumWidth(sidebarWidth);
+    sidebar->setMaximumWidth(qMax(240, sidebarWidth));
     navigation->item(0)->setIcon(svgIcon(bootstrap.value("mask_svg").toString().toUtf8()));
     navigation->item(1)->setIcon(svgIcon(bootstrap.value("backups_svg").toString().toUtf8()));
     navigation->item(2)->setIcon(svgIcon(bootstrap.value("terminal_svg").toString().toUtf8()));
@@ -1909,6 +1911,11 @@ static int smoke(Window &window, const QString &directory) {
   auto *presetSearchShortcut = window.findChild<QShortcut *>("preset-search-shortcut");
   if (!presetSearch || !window.findChild<QLabel *>("preset-empty-state") || !presetSearchShortcut)
     throw std::runtime_error("Appearance picker is missing search or its empty state");
+  const QFont configuredFont = qApp->font();
+  const QFont controlFont = presetSearch->font();
+  if (controlFont.family() != configuredFont.family() ||
+      controlFont.pointSizeF() != configuredFont.pointSizeF())
+    throw std::runtime_error("Regular controls do not inherit the configured application font");
   auto *appearancePreview = window.art;
   auto *presetCard = window.cards.value(initial.toString());
   const auto selectedTitle = window.preset(initial.toString()).value("title").toString();
@@ -2227,6 +2234,10 @@ extern "C" int bankai_gui(int argc, char **argv) {
   try {
     std::unique_ptr<QTemporaryDir> smokeHome;
     if (smokeTest) {
+      QFont configuredFont = app.font();
+      configuredFont.setFamily("Sans Serif");
+      configuredFont.setPointSize(17);
+      app.setFont(configuredFont);
       const QString originalHome = qEnvironmentVariable("BANKAI_HOME", QDir::homePath());
       smokeHome = std::make_unique<QTemporaryDir>();
       if (!smokeHome->isValid() || !prepareSmokeHome(originalHome, smokeHome->path()))

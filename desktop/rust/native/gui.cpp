@@ -2216,11 +2216,22 @@ static int smoke(Window &window, const QString &directory) {
     throw std::runtime_error(
         "Snapshot scan failure did not preserve the stale selection safely");
   window.refreshSnapshots();
+  if (!window.snapshotScanProcess || window.snapshotScanSucceeded ||
+      window.snapshots->count() != 1)
+    throw std::runtime_error(
+        "Snapshot refresh did not keep the existing list while scanning");
+  window.refreshSnapshots();
+  window.refreshSnapshots();
+  if (!window.snapshotRefreshPending || window.snapshots->count() != 1)
+    throw std::runtime_error(
+        "Overlapping snapshot refresh requests were not coalesced");
   if (!window.waitForSnapshotScan(3000))
     throw std::runtime_error("Successful empty snapshot refresh did not finish");
-  if (!window.snapshotScanSucceeded || window.snapshots->count() != 0 ||
+  if (!window.snapshotScanSucceeded || window.snapshotRefreshPending ||
+      window.snapshotScanProcess || window.snapshots->count() != 0 ||
       !window.snapshotDetails->text().contains("No snapshots yet"))
-    throw std::runtime_error("Successful empty snapshot refresh did not replace stale results");
+    throw std::runtime_error(
+        "Successful coalesced refresh did not replace stale results cleanly");
   if (!window.watcher.files().contains(window.data + "/custom-presets.json"))
     throw std::runtime_error("Corrupt custom-preset file is not watched for recovery");
   QSaveFile repairedPresets(window.data + "/custom-presets.json");

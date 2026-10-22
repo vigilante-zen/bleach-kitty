@@ -37,8 +37,8 @@ jobs:
             throw "Bankai exited without a smoke report. Exit code: $($app.ExitCode)"
           }
           $report = Get-Content $env:BANKAI_WINDOWS_SMOKE_REPORT -Raw | ConvertFrom-Json
-          if (-not $report.success) { throw $report.error }
           Get-Content $env:BANKAI_WINDOWS_SMOKE_REPORT
+          if (-not $report.success) { throw $report.error }
       - name: Create portable preview and checksum
         shell: pwsh
         run: |

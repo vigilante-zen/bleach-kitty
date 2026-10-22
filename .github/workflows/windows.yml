@@ -23,12 +23,19 @@ jobs:
         shell: pwsh
         run: |
           $env:BANKAI_WINDOWS_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP 'bankai-windows-smoke.json'
-          $app = Start-Process -FilePath '.\windows-preview\Bankai.Windows.exe' -PassThru
+          $started = Get-Date
+          $stderr = Join-Path $env:RUNNER_TEMP 'bankai-windows-stderr.log'
+          $app = Start-Process -FilePath '.\windows-preview\Bankai.Windows.exe' -PassThru -RedirectStandardError $stderr
           if (-not $app.WaitForExit(60000)) {
             Stop-Process -Id $app.Id -Force
             throw 'Bankai did not finish its launch check within 60 seconds.'
           }
-          if (-not (Test-Path $env:BANKAI_WINDOWS_SMOKE_REPORT)) { throw 'Bankai exited without a smoke report.' }
+          if (-not (Test-Path $env:BANKAI_WINDOWS_SMOKE_REPORT)) {
+            Get-Content $stderr -ErrorAction SilentlyContinue
+            Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=$started} -ErrorAction SilentlyContinue |
+              Select-Object -First 8 ProviderName, Id, Message | Format-List
+            throw "Bankai exited without a smoke report. Exit code: $($app.ExitCode)"
+          }
           $report = Get-Content $env:BANKAI_WINDOWS_SMOKE_REPORT -Raw | ConvertFrom-Json
           if (-not $report.success) { throw $report.error }
           Get-Content $env:BANKAI_WINDOWS_SMOKE_REPORT

@@ -23,6 +23,7 @@ jobs:
         shell: pwsh
         run: |
           $env:BANKAI_WINDOWS_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP 'bankai-windows-smoke.json'
+          if (-not (Test-Path windows-preview/resources.pri)) { throw 'Published WinUI resource index is missing.' }
           $started = Get-Date
           $stderr = Join-Path $env:RUNNER_TEMP 'bankai-windows-stderr.log'
           $app = Start-Process -FilePath '.\windows-preview\Bankai.Windows.exe' -PassThru -RedirectStandardError $stderr

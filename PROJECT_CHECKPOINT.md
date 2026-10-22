@@ -2,6 +2,96 @@
 
 This file records a continuation point for the Bankai desktop project.
 
+## Current Windows handoff (2026-10-22)
+
+The user explicitly switched focus to continuing the Windows package. The WinUI 3
+C# preview is committed and pushed through `e91ddac`. It shares the existing 18
+preset definitions and wallpaper assets, supports character search and previews,
+and has explicit Apply wallpaper / Restore previous wallpaper controls.
+
+Windows wallpaper changes use `IDesktopWallpaper` on a background STA thread.
+Before changes, the app saves independent image copies, per-monitor assignments,
+position and background color under `%LOCALAPPDATA%\Bankai\WallpaperBackups`, with
+an atomically replaced previous-wallpaper pointer. Applied images have their own
+stable copies under the same state root. Failed changes attempt rollback, and
+restores save the background they replace. Operations are serialized across app
+instances. Static Picture and Solid color backgrounds are supported; slideshow
+backgrounds are refused, and restore requires the original monitor set.
+
+All 11 isolated recovery checks pass on both Linux and Windows. GitHub run
+https://github.com/vigilante-zen/bleach-kitty/actions/runs/39810412818 passed the
+Windows x64 publish, launched the published app, verified initial image loading,
+character filtering, empty-result action safety and clearing search, then uploaded
+the `bankai-windows-x64-preview` artifact containing a portable ZIP and SHA-256
+sidecar. Tested source commit: `e91ddac`. WinUI publish requires
+`EnableMsixTooling=true` and an explicitly named `resources.pri`; smoke checks catch
+missing resources. Search checks wait for WinUI's deferred text-change events.
+The downloaded artifact is under `dist/windows-e91ddac`.
+
+Real wallpaper application/restore through the native COM implementation,
+multi-monitor behavior, keyboard navigation and Narrator still need live Windows
+desktop testing; automated recovery checks use a fake backend and do not change
+the runner's real wallpaper. Windows Terminal integration, tray/single-instance
+activation, login startup, a backup browser, installer/signing and automatic
+updates remain future work. Linux implementations and user screenshots in
+`artifacts/` were preserved. No Windows GitHub release was published.
+
+The Linux release below is still pending publication; its earlier network-blocked
+notes are historical. Do not treat the Windows artifact as a completed Linux
+release. The current user focus is the Windows edition.
+
+## Linux release preparation (2026-10-22)
+
+Network access was enabled later on 2026-10-22. Git fetch/push and the GitHub API
+now work. Release prep and follow-up fixes are pushed through `dcb7696` on main.
+There are no existing remote release tags or GitHub releases at this check.
+The old GitHub CI failures exposed a Python socket-wrapper lifetime crash and
+a Rust smoke predicate that waited on retired hidden thumbnails. Both are fixed;
+all 23 Python UI checks (including socket forwarding, no skip), all 43 Rust tests,
+Clippy, the optimized build, native smoke, 60 repository tests and 22 binary
+integration checks pass locally. Updated packages from clean commit `dcb7696`
+are verified in `dist/v2026.10.22-dcb7696`.
+
+Manual release preflight is running at
+https://github.com/vigilante-zen/bleach-kitty/actions/runs/39804029105 . Python and
+installer jobs passed; the Rust job was still installing native build dependencies
+at the last check. Push checks also run at 39804030177. Wait for the preflight to
+pass before publishing; the release and tag still have NOT been created. Release
+notes with the changelog link adjusted for GitHub are prepared at
+`/tmp/bankai-v2026.10.22-release-notes.md`. User authorization to publish persists.
+Use the exact tested commit as the tag target, then verify release workflow success
+and all download assets. Preserve uncommitted Windows work and user screenshots.
+
+The user authorized publishing the completed Linux changes. Commit `899e178`
+groups them under proposed tag `v2026.10.22` in `docs/CHANGES.md` and adds release
+notes at `docs/releases/v2026.10.22.md`. Packages were rebuilt from a clean
+`git archive` of that commit into `dist/v2026.10.22`, excluding the uncommitted
+Windows preview. Python, Rust-source and local CachyOS x86-64 Rust archives all
+passed `scripts/check_release_packages.py`, including checksums, extracted
+installers, login lifecycle and snapshot restore. Existing dist archives and
+user screenshots were preserved.
+
+Publication is pending: `gh release list` could not connect to api.github.com and
+`git ls-remote --tags origin` failed DNS resolution. No tag or GitHub release was
+created, and the release commit was not pushed. When GitHub is reachable, inspect
+remote tags/releases and branch state first; confirm the proposed tag is unused,
+push the Linux release commit, then publish with its notes. The release workflow
+will build the Ubuntu Linux binary and attach packages after checks pass. Keep
+Windows changes separate and do not upload the CachyOS binary under the Ubuntu
+`linux-x86-64` filename.
+
+## Windows edition start (2026-10-22)
+
+The user chose a dedicated WinUI 3 Windows interface. `desktop/windows` now
+contains an initial C# / .NET 10 unpackaged x64 app with character search and
+wallpaper previews, linked to the existing shared catalog and artwork. No Windows
+desktop changes, Rust bridge, backups, tray, or startup integration are implemented
+yet. `.github/workflows/windows.yml` builds and uploads the preview on Windows;
+that workflow has not been run in this session. This Linux host has no .NET SDK,
+so compilation and live WinUI behavior remain unverified. Start with the Windows
+build and runtime checks documented in `desktop/windows/README.md` before adding
+desktop integrations. Preserve the user's untracked `artifacts/` screenshots.
+
 ## Current handoff (2026-10-21)
 
 - Repository: `/home/zen/Projects/bleach-kitty`; branch `main`, synced at `55aaaa7` according to the local `origin/main` ref, and the user-provided push output confirms GitHub accepted that commit. A subsequent fetch from this environment failed because it could not resolve `github.com`. The tracked worktree is clean; `artifacts/` is untracked user data.

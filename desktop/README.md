@@ -1,8 +1,9 @@
 # Choose your Bankai edition
 
 A [Windows edition using C# and WinUI 3](windows/README.md) is now in development.
-Its initial preview includes character search and wallpaper previews; Windows
-desktop integrations and Windows build/runtime verification remain pending.
+Its preview includes character search, wallpaper previews, explicit wallpaper
+application and previous-background recovery. Windows Terminal, tray integration
+and login startup remain planned; see its guide for downloads and testing limits.
 
 Rust is the default desktop edition. Python remains available as an alternative. Both use the same terminal artwork and KDE desktop assets.
 

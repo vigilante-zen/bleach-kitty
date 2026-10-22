@@ -4,6 +4,11 @@ This file records a continuation point for the Bankai desktop project.
 
 ## Current Windows handoff (2026-10-22)
 
+For switching computers, start with `docs/WINDOWS_HANDOFF.md`: it includes clone,
+build and test commands, the verified preview checksum, and a resume prompt for a
+new coding session. All implementation work is pushed to `main`; the original
+computer's untracked screenshots and generated downloads remain local.
+
 The user explicitly switched focus to continuing the Windows package. The WinUI 3
 C# preview is committed and pushed through `e91ddac`. It shares the existing 18
 preset definitions and wallpaper assets, supports character search and previews,

@@ -10,6 +10,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <ProjectPriFileName>resources.pri</ProjectPriFileName>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <WindowsPackageType>None</WindowsPackageType>

@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 import sys
 
-from PySide6.QtCore import QByteArray, QFileSystemWatcher, QLockFile, QProcess, QSize, Qt, QTimer, QUrl
+from PySide6.QtCore import QByteArray, QFileSystemWatcher, QLockFile, QObject, QProcess, QSize, Qt, QTimer, QUrl, Slot
 from PySide6.QtGui import QActionGroup, QColor, QDesktopServices, QFont, QIcon, QImageReader, QKeySequence, QShortcut, QLinearGradient, QPainter, QPainterPath, QPixmap
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from PySide6.QtSvg import QSvgRenderer
@@ -888,9 +888,10 @@ class ControlCenter(QMainWindow):
             event.accept()
 
 
-class InstanceCoordinator:
+class InstanceCoordinator(QObject):
     """Route a second launch to the existing window without a second tray icon."""
     def __init__(self, state):
+        super().__init__()
         reject_symlinks(state)
         state.mkdir(parents=True, exist_ok=True)
         self.state_path = state
@@ -901,7 +902,7 @@ class InstanceCoordinator:
         reject_symlinks(self.lock_path)
         self.socket_name = str(self.socket_path)
         self.lock = QLockFile(str(self.lock_path))
-        self.server = QLocalServer()
+        self.server = QLocalServer(self)
         self.server.setSocketOptions(QLocalServer.SocketOption.UserAccessOption)
         self.callback = None
         self.server.newConnection.connect(self.accept_connection)
@@ -932,8 +933,14 @@ class InstanceCoordinator:
         while self.server.hasPendingConnections():
             socket = self.server.nextPendingConnection()
             socket.setProperty('message', b'')
-            socket.readyRead.connect(lambda s=socket: self.read_message(s))
+            socket.readyRead.connect(self.read_pending_message)
             socket.disconnected.connect(socket.deleteLater)
+            self.read_message(socket)
+
+    @Slot()
+    def read_pending_message(self):
+        socket = self.sender()
+        if isinstance(socket, QLocalSocket):
             self.read_message(socket)
 
     def read_message(self, socket):

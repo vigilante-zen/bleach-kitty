@@ -308,12 +308,13 @@ class ControlCenterChecks(unittest.TestCase):
                 self.skipTest('Local sockets unavailable in this environment: ' + str(error))
             self.assertTrue(started)
             self.assertFalse(second.start())
-            self.assertTrue(second.forward('backups'))
-            deadline = time.monotonic() + 2
-            while not received and time.monotonic() < deadline:
-                app.processEvents()
-                time.sleep(.01)
-            self.assertEqual(received, ['backups'])
+            for index, message in enumerate(('backups', 'open', 'tray'), start=1):
+                self.assertTrue(second.forward(message))
+                deadline = time.monotonic() + 2
+                while len(received) < index and time.monotonic() < deadline:
+                    app.processEvents()
+                    time.sleep(.01)
+                self.assertEqual(received, list(('backups', 'open', 'tray')[:index]))
         finally:
             first.close()
 

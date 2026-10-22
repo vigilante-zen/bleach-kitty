@@ -2234,7 +2234,11 @@ static void smokePortraitPicker(Window &window, const QString &directory) {
       return;
     }
     auto pickerThumbnailsComplete = [&] {
-      const auto thumbnails = dialog->findChildren<QLabel *>("portrait-thumbnail");
+      auto thumbnails = dialog->findChildren<QLabel *>("portrait-thumbnail");
+      thumbnails.erase(
+          std::remove_if(thumbnails.begin(), thumbnails.end(),
+                         [](const auto *thumbnail) { return !thumbnail->isVisible(); }),
+          thumbnails.end());
       return !thumbnails.isEmpty() &&
              std::all_of(thumbnails.cbegin(), thumbnails.cend(), [](const auto *thumbnail) {
                return thumbnail->property("portrait-thumbnail-complete").toBool();

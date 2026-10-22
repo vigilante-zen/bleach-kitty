@@ -6,6 +6,8 @@ No additional Linux changes recorded yet.
 
 ## v2026.10.22 — 2026-10-22
 
+- Give Python single-instance socket callbacks a Qt receiver instead of capturing socket wrappers, preventing a crash during disconnected-socket deletion. Exercise repeated forwarded launches in the UI checks.
+- Check only visible Rust picker thumbnails during the native smoke test; retired cards awaiting deferred deletion no longer cause a false timeout on older Qt versions.
 - Load the Rust wallpaper preview and preset-card thumbnails in background workers, skip stale preview decodes after rapid character changes, and prioritize worker RPC parsing ahead of queued artwork.
 - Show an explicit, screen-reader-readable unavailable state when a preset thumbnail cannot be loaded.
 - Decode terminal-picker portrait thumbnails off the UI thread, cache recent scaled images, discard superseded search results, and expose unavailable artwork on the card to screen readers.

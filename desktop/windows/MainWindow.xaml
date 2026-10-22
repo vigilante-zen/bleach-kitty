@@ -8,6 +8,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <StackPanel Spacing="4">
       <TextBlock Text="Bankai" Style="{StaticResource TitleTextBlockStyle}" />
@@ -29,15 +30,20 @@
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
-          <Image x:Name="Preview" Stretch="Uniform" ImageFailed="PreviewFailed"
+          <Image x:Name="Preview" Stretch="Uniform" ImageFailed="PreviewFailed" ImageOpened="PreviewOpened"
               AutomationProperties.Name="Wallpaper preview" />
         </Border>
         <TextBlock x:Name="CharacterTitle" Grid.Row="1" Style="{StaticResource SubtitleTextBlockStyle}" />
         <TextBlock x:Name="CharacterDescription" Grid.Row="2" TextWrapping="Wrap" />
       </Grid>
     </Grid>
-    <InfoBar x:Name="Status" Grid.Row="3" IsOpen="True" IsClosable="False"
+    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="12">
+      <Button x:Name="ApplyWallpaper" Content="Apply wallpaper" IsEnabled="False"
+          Style="{StaticResource AccentButtonStyle}" Click="ApplyClicked" />
+      <Button x:Name="RestoreWallpaper" Content="Restore previous wallpaper" Click="RestoreClicked" />
+    </StackPanel>
+    <InfoBar x:Name="Status" Grid.Row="4" IsOpen="True" IsClosable="False"
         Severity="Informational" Title="Windows edition preview"
-        Message="Browse characters and wallpapers. Desktop changes, backups, and tray controls are planned." />
+        Message="Apply changes the wallpaper on all monitors. The previous background is backed up first." />
   </Grid>
 </Window>

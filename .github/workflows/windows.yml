@@ -15,10 +15,34 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Wallpaper recovery and failure checks
+        run: dotnet run --project desktop/windows/Checks/Bankai.Windows.Checks.csproj -c Release
       - name: Publish unpackaged x64 preview
         run: dotnet publish desktop/windows/Bankai.Windows.csproj -c Release -p:Platform=x64 -o windows-preview
+      - name: Launch and check the published interface
+        shell: pwsh
+        run: |
+          $env:BANKAI_WINDOWS_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP 'bankai-windows-smoke.json'
+          $app = Start-Process -FilePath '.\windows-preview\Bankai.Windows.exe' -PassThru
+          if (-not $app.WaitForExit(60000)) {
+            Stop-Process -Id $app.Id -Force
+            throw 'Bankai did not finish its launch check within 60 seconds.'
+          }
+          if (-not (Test-Path $env:BANKAI_WINDOWS_SMOKE_REPORT)) { throw 'Bankai exited without a smoke report.' }
+          $report = Get-Content $env:BANKAI_WINDOWS_SMOKE_REPORT -Raw | ConvertFrom-Json
+          if (-not $report.success) { throw $report.error }
+          Get-Content $env:BANKAI_WINDOWS_SMOKE_REPORT
+      - name: Create portable preview and checksum
+        shell: pwsh
+        run: |
+          Copy-Item desktop/windows/README.md windows-preview/README.md
+          Compress-Archive -Path windows-preview -DestinationPath bankai-windows-x64-preview.zip
+          $hash = (Get-FileHash bankai-windows-x64-preview.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  bankai-windows-x64-preview.zip" | Set-Content bankai-windows-x64-preview.zip.sha256 -Encoding ascii
       - uses: actions/upload-artifact@v4
         with:
           name: bankai-windows-x64-preview
-          path: windows-preview/
+          path: |
+            bankai-windows-x64-preview.zip
+            bankai-windows-x64-preview.zip.sha256
           if-no-files-found: error

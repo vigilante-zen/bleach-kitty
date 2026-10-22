@@ -10,12 +10,21 @@ public sealed partial class MainWindow : Window
 {
     private IReadOnlyList<Preset> presets = Array.Empty<Preset>();
     private readonly ObservableCollection<Preset> visible = new();
+    private readonly string stateDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bankai");
+    private bool busy;
+    private bool previewReady;
 
     public MainWindow()
     {
         InitializeComponent();
         AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1100, 760));
         Characters.ItemsSource = visible;
+        RestoreWallpaper.IsEnabled = File.Exists(Path.Combine(stateDirectory, "previous-wallpaper.json"));
+        AppWindow.Closing += (_, args) =>
+        {
+            if (busy) args.Cancel = true;
+        };
         try
         {
             presets = PresetCatalog.Load();
@@ -45,6 +54,8 @@ public sealed partial class MainWindow : Window
 
     private void SelectionChanged(object sender, SelectionChangedEventArgs args)
     {
+        previewReady = false;
+        ApplyWallpaper.IsEnabled = false;
         Preview.Source = null;
         if (Characters.SelectedItem is not Preset preset)
         {
@@ -69,8 +80,90 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void PreviewFailed(object sender, ExceptionRoutedEventArgs args) =>
+    private void PreviewOpened(object sender, RoutedEventArgs args)
+    {
+        previewReady = Characters.SelectedItem is Preset;
+        ApplyWallpaper.IsEnabled = previewReady && !busy;
+        ShowStatus("Windows edition preview", "Apply changes the wallpaper on all monitors. The previous background is backed up first.");
+    }
+
+    private void PreviewFailed(object sender, ExceptionRoutedEventArgs args)
+    {
+        previewReady = false;
+        ApplyWallpaper.IsEnabled = false;
         ShowError($"Cannot decode the selected wallpaper: {args.ErrorMessage}");
+    }
+
+    private async void ApplyClicked(object sender, RoutedEventArgs args)
+    {
+        if (busy || !previewReady || Characters.SelectedItem is not Preset preset) return;
+        await RunWallpaperAction(manager => manager.Apply(PresetCatalog.WallpaperPath(preset)),
+            $"{preset.Title} wallpaper applied. Your previous background can be restored.");
+    }
+
+    private async void RestoreClicked(object sender, RoutedEventArgs args)
+    {
+        if (busy) return;
+        await RunWallpaperAction(manager => manager.RestorePrevious(),
+            "Previous wallpaper restored. The background you replaced has also been saved.");
+    }
+
+    private async Task RunWallpaperAction(Action<WallpaperManager> action, string success)
+    {
+        busy = true;
+        ApplyWallpaper.IsEnabled = RestoreWallpaper.IsEnabled = Search.IsEnabled = Characters.IsEnabled = false;
+        ShowStatus("Updating your background", "Saving recovery data and updating Windows. Please wait before closing Bankai.");
+        try
+        {
+            var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var worker = new Thread(() =>
+            {
+                try
+                {
+                    using var backend = new WindowsWallpaperBackend();
+                    action(new WallpaperManager(stateDirectory, backend));
+                    completion.SetResult();
+                }
+                catch (Exception error) { completion.SetException(error); }
+            });
+            worker.SetApartmentState(ApartmentState.STA);
+            worker.Start();
+            await completion.Task;
+            ShowStatus("Background updated", success, InfoBarSeverity.Success);
+        }
+        catch (Exception error) { ShowError(error.Message); }
+        finally
+        {
+            busy = false;
+            Search.IsEnabled = Characters.IsEnabled = true;
+            ApplyWallpaper.IsEnabled = previewReady;
+            RestoreWallpaper.IsEnabled = File.Exists(Path.Combine(stateDirectory, "previous-wallpaper.json"));
+        }
+    }
+
+    internal async Task RunSmokeCheck()
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(20);
+        while (!previewReady && DateTime.UtcNow < deadline) await Task.Delay(100);
+        if (!previewReady || visible.Count != presets.Count || presets.Count == 0)
+            throw new InvalidOperationException("Initial catalog or wallpaper preview did not load.");
+        Search.Text = "rukia";
+        if (visible.Count != 1 || (Characters.SelectedItem as Preset)?.Id != "rukia")
+            throw new InvalidOperationException("Character filtering failed.");
+        Search.Text = "no-matching-character-fixture";
+        if (visible.Count != 0 || ApplyWallpaper.IsEnabled || Preview.Source is not null)
+            throw new InvalidOperationException("Empty search retained an actionable wallpaper.");
+        Search.Text = "";
+        if (visible.Count != presets.Count) throw new InvalidOperationException("Clearing search did not restore the catalog.");
+    }
+
+    private void ShowStatus(string title, string message, InfoBarSeverity severity = InfoBarSeverity.Informational)
+    {
+        Status.Title = title;
+        Status.Message = message;
+        Status.Severity = severity;
+        Status.IsOpen = true;
+    }
 
     private void ShowError(string message)
     {

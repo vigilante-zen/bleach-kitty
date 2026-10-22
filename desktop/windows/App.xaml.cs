@@ -8,9 +8,23 @@ public partial class App : Application
 
     public App() => InitializeComponent();
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
-        window = new MainWindow();
+        var main = new MainWindow();
+        window = main;
         window.Activate();
+        if (Environment.GetEnvironmentVariable("BANKAI_WINDOWS_SMOKE_REPORT") is string report)
+        {
+            try
+            {
+                await main.RunSmokeCheck();
+                File.WriteAllText(report, "{\"success\":true}");
+            }
+            catch (Exception error)
+            {
+                File.WriteAllText(report, System.Text.Json.JsonSerializer.Serialize(new { success = false, error = error.ToString() }));
+            }
+            finally { Exit(); }
+        }
     }
 }

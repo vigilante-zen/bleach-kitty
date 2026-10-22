@@ -143,18 +143,24 @@ public sealed partial class MainWindow : Window
 
     internal async Task RunSmokeCheck()
     {
-        var deadline = DateTime.UtcNow.AddSeconds(20);
-        while (!previewReady && DateTime.UtcNow < deadline) await Task.Delay(100);
-        if (!previewReady || visible.Count != presets.Count || presets.Count == 0)
-            throw new InvalidOperationException("Initial catalog or wallpaper preview did not load.");
+        await WaitFor(() => previewReady && visible.Count == presets.Count && presets.Count > 0,
+            "Initial catalog or wallpaper preview did not load.");
         Search.Text = "rukia";
-        if (visible.Count != 1 || (Characters.SelectedItem as Preset)?.Id != "rukia")
-            throw new InvalidOperationException("Character filtering failed.");
+        await WaitFor(() => visible.Count == 1 && (Characters.SelectedItem as Preset)?.Id == "rukia",
+            "Character filtering failed.");
         Search.Text = "no-matching-character-fixture";
-        if (visible.Count != 0 || ApplyWallpaper.IsEnabled || Preview.Source is not null)
-            throw new InvalidOperationException("Empty search retained an actionable wallpaper.");
+        await WaitFor(() => visible.Count == 0 && !ApplyWallpaper.IsEnabled && Preview.Source is null,
+            "Empty search retained an actionable wallpaper.");
         Search.Text = "";
-        if (visible.Count != presets.Count) throw new InvalidOperationException("Clearing search did not restore the catalog.");
+        await WaitFor(() => visible.Count == presets.Count && previewReady,
+            "Clearing search did not restore the catalog.");
+    }
+
+    private static async Task WaitFor(Func<bool> condition, string failure)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(15);
+        while (!condition() && DateTime.UtcNow < deadline) await Task.Delay(50);
+        if (!condition()) throw new InvalidOperationException(failure);
     }
 
     private void ShowStatus(string title, string message, InfoBarSeverity severity = InfoBarSeverity.Informational)

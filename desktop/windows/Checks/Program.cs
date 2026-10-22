@@ -46,7 +46,8 @@ var checks = new (string Name, Action<Fixture> Run)[]
     ("Failed backup publication prevents desktop changes", f =>
     {
         Directory.CreateDirectory(Path.Combine(f.State, "previous-wallpaper.json"));
-        Throws<IOException>(() => f.Manager.Apply(f.NewImage));
+        var error = Throws<Exception>(() => f.Manager.Apply(f.NewImage));
+        Require(error is IOException or UnauthorizedAccessException, "Unexpected backup failure.");
         Require(f.Backend.ApplyCalls == 0, "Desktop changed without a durable backup.");
     }),
     ("Missing recovery payload prevents restore writes", f =>

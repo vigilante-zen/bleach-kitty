@@ -1,0 +1,24 @@
+name: Windows edition
+on:
+  workflow_dispatch:
+  push:
+    paths: ['desktop/windows/**', 'desktop/shared/presets.json', 'desktop/shared/wallpapers/**', '.github/workflows/windows.yml']
+  pull_request:
+    paths: ['desktop/windows/**', 'desktop/shared/presets.json', 'desktop/shared/wallpapers/**', '.github/workflows/windows.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Publish unpackaged x64 preview
+        run: dotnet publish desktop/windows/Bankai.Windows.csproj -c Release -p:Platform=x64 -o windows-preview
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bankai-windows-x64-preview
+          path: windows-preview/
+          if-no-files-found: error

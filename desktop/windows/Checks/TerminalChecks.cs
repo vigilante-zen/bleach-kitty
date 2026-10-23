@@ -152,7 +152,24 @@ internal static class TerminalChecks
             File.WriteAllText(Path.Combine(unpackaged, "settings.json"), "{}");
             Require(TerminalSettingsDocument.Discover(f.Root).Count == 4, "Discovery missed a supported installation.");
         });
-        if (!OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows())
+            Check("Failed Windows replacement retains settings and earlier recovery metadata", f =>
+            {
+                var original = File.ReadAllBytes(f.Settings);
+                var first = f.Load();
+                f.Manager.Apply(first, first.Document.Profiles[0], Scheme);
+                var applied = f.Load();
+                var pointer = Directory.GetFiles(f.State, "previous.json", SearchOption.AllDirectories).Single();
+                var descriptor = File.ReadAllBytes(pointer);
+                var other = TerminalScheme.ForPreset(new Preset("ichigo", "Ichigo", "Orange", "#ff9d52", "ichigo.png"));
+                using (var held = new FileStream(f.Settings, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    Throws<IOException>(() => f.Manager.Apply(applied, applied.Document.Profiles[0], other));
+                Require(File.ReadAllBytes(f.Settings).AsSpan().SequenceEqual(applied.Original), "Failed replacement changed settings.");
+                Require(File.ReadAllBytes(pointer).AsSpan().SequenceEqual(descriptor), "Earlier recovery metadata was lost.");
+                f.Manager.Restore(f.Load());
+                Require(File.ReadAllBytes(f.Settings).AsSpan().SequenceEqual(original), "Earlier recovery stopped working.");
+            });
+        else
             Check("Symlinked settings and parent directories are refused", f =>
             {
                 var link = Path.Combine(f.Root, "linked.json");

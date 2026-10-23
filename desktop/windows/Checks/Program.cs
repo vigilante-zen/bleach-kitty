@@ -89,6 +89,7 @@ foreach (var (name, run) in checks)
     Console.WriteLine($"PASS: {name}");
 }
 Console.WriteLine($"{checks.Length} Windows wallpaper checks passed. No real desktop settings were changed.");
+TerminalChecks.Run();
 
 static void Require(bool condition, string message)
 {

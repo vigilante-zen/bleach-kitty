@@ -5,45 +5,82 @@
   <Grid Padding="24" RowSpacing="16" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <StackPanel Spacing="4">
-      <TextBlock Text="Bankai" Style="{StaticResource TitleTextBlockStyle}" />
-      <TextBlock Text="Choose your character" Style="{StaticResource SubtitleTextBlockStyle}" />
-    </StackPanel>
-    <TextBox x:Name="Search" Grid.Row="1" PlaceholderText="Search characters"
-        AutomationProperties.Name="Search characters" TextChanged="SearchChanged" />
-    <Grid Grid.Row="2" ColumnSpacing="24">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="260" />
-        <ColumnDefinition Width="*" />
-      </Grid.ColumnDefinitions>
-      <ListView x:Name="Characters" DisplayMemberPath="Title" SelectionMode="Single"
-          AutomationProperties.Name="Characters" SelectionChanged="SelectionChanged" />
-      <Grid Grid.Column="1" RowSpacing="12">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="*" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
-          <Image x:Name="Preview" Stretch="Uniform" ImageFailed="PreviewFailed" ImageOpened="PreviewOpened"
-              AutomationProperties.Name="Wallpaper preview" />
-        </Border>
-        <TextBlock x:Name="CharacterTitle" Grid.Row="1" Style="{StaticResource SubtitleTextBlockStyle}" />
-        <TextBlock x:Name="CharacterDescription" Grid.Row="2" TextWrapping="Wrap" />
-      </Grid>
-    </Grid>
-    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="12">
-      <Button x:Name="ApplyWallpaper" Content="Apply wallpaper" IsEnabled="False"
-          Style="{StaticResource AccentButtonStyle}" Click="ApplyClicked" />
-      <Button x:Name="RestoreWallpaper" Content="Restore previous wallpaper" Click="RestoreClicked" />
-    </StackPanel>
-    <InfoBar x:Name="Status" Grid.Row="4" IsOpen="True" IsClosable="False"
+    <TextBlock Text="Bankai" Style="{StaticResource TitleTextBlockStyle}" />
+    <TabView x:Name="Pages" Grid.Row="1" IsAddTabButtonVisible="False">
+      <TabViewItem Header="Wallpaper" IsClosable="False">
+        <Grid Padding="0,16,0,0" RowSpacing="16">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <TextBox x:Name="Search" PlaceholderText="Search characters"
+              AutomationProperties.Name="Search characters" TextChanged="SearchChanged" />
+          <Grid Grid.Row="1" ColumnSpacing="24">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="260" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ListView x:Name="Characters" DisplayMemberPath="Title" SelectionMode="Single"
+                AutomationProperties.Name="Characters" SelectionChanged="SelectionChanged" />
+            <Grid Grid.Column="1" RowSpacing="12">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+              <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8">
+                <Image x:Name="Preview" Stretch="Uniform" ImageFailed="PreviewFailed" ImageOpened="PreviewOpened"
+                    AutomationProperties.Name="Wallpaper preview" />
+              </Border>
+              <TextBlock x:Name="CharacterTitle" Grid.Row="1" Style="{StaticResource SubtitleTextBlockStyle}" />
+              <TextBlock x:Name="CharacterDescription" Grid.Row="2" TextWrapping="Wrap" />
+            </Grid>
+          </Grid>
+          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12">
+            <Button x:Name="ApplyWallpaper" Content="Apply wallpaper" IsEnabled="False"
+                Style="{StaticResource AccentButtonStyle}" Click="ApplyClicked" />
+            <Button x:Name="RestoreWallpaper" Content="Restore previous wallpaper" Click="RestoreClicked" />
+          </StackPanel>
+        </Grid>
+      </TabViewItem>
+      <TabViewItem x:Name="TerminalTab" Header="Windows Terminal" IsClosable="False">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Padding="0,16,16,0" Spacing="16">
+            <TextBlock Text="Bring your character's colors to Terminal" Style="{StaticResource SubtitleTextBlockStyle}" TextWrapping="Wrap" />
+            <TextBlock Text="Choose an installation and profile. Previewing is read-only; Apply saves a backup before changing its color scheme." TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <ComboBox x:Name="TerminalInstall" Header="Terminal installation" Width="340" DisplayMemberPath="Label"
+                  SelectionChanged="TerminalInstallationChanged" />
+              <Button x:Name="BrowseTerminal" Content="Choose settings file…" VerticalAlignment="Bottom" Click="BrowseTerminalClicked" />
+              <Button x:Name="RefreshTerminal" Content="Refresh" VerticalAlignment="Bottom" Click="RefreshTerminalClicked" />
+            </StackPanel>
+            <TextBlock x:Name="TerminalSettingsPath" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+            <ComboBox x:Name="TerminalProfiles" Header="Apply to" DisplayMemberPath="Label" MinWidth="340"
+                SelectionChanged="TerminalProfileChanged" />
+            <ComboBox x:Name="TerminalCharacter" Header="Character colors" DisplayMemberPath="Title" MinWidth="340"
+                SelectionChanged="TerminalCharacterChanged" />
+            <Border x:Name="TerminalSample" CornerRadius="8" Padding="20" AutomationProperties.Name="Terminal color preview">
+              <StackPanel Spacing="12">
+                <TextBlock x:Name="TerminalPrompt" Text="PS C:\Users\you&gt; bankai" FontFamily="Cascadia Mono,Consolas" FontSize="18" />
+                <TextBlock x:Name="TerminalOutput" Text="Your next chapter starts here." FontFamily="Cascadia Mono,Consolas" FontSize="16" />
+                <StackPanel x:Name="TerminalSwatches" Orientation="Horizontal" Spacing="4" />
+              </StackPanel>
+            </Border>
+            <TextBlock Text="Profile defaults affect profiles that inherit their colors. Individual profile schemes and custom color overrides remain in effect. Fonts, shell commands, shortcuts and background images are preserved." TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Button x:Name="ApplyTerminal" Content="Apply terminal colors" Style="{StaticResource AccentButtonStyle}" IsEnabled="False" Click="ApplyTerminalClicked" />
+              <Button x:Name="RestoreTerminal" Content="Restore previous terminal settings" IsEnabled="False" Click="RestoreTerminalClicked" />
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </TabViewItem>
+    </TabView>
+    <InfoBar x:Name="Status" Grid.Row="2" IsOpen="True" IsClosable="False"
         Severity="Informational" Title="Windows edition preview"
-        Message="Apply changes the wallpaper on all monitors. The previous background is backed up first." />
+        Message="Choose Wallpaper or Windows Terminal. Each has its own Apply and recovery controls." />
   </Grid>
 </Window>

@@ -14,10 +14,14 @@ public sealed partial class MainWindow : Window
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bankai");
     private bool busy;
     private bool previewReady;
+    private bool uiReady;
 
     public MainWindow()
     {
+        if (Environment.GetEnvironmentVariable("BANKAI_WINDOWS_SMOKE_REPORT") is not null)
+            stateDirectory = Path.Combine(Path.GetTempPath(), "bankai-windows-smoke-" + Guid.NewGuid().ToString("N"));
         InitializeComponent();
+        uiReady = true;
         AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1100, 760));
         Characters.ItemsSource = visible;
         RestoreWallpaper.IsEnabled = File.Exists(Path.Combine(stateDirectory, "previous-wallpaper.json"));
@@ -29,6 +33,9 @@ public sealed partial class MainWindow : Window
         {
             presets = PresetCatalog.Load();
             Filter();
+            TerminalCharacter.ItemsSource = presets;
+            TerminalCharacter.SelectedIndex = 0;
+            RefreshTerminalInstallations();
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or KeyNotFoundException or InvalidOperationException)
         {
@@ -40,7 +47,7 @@ public sealed partial class MainWindow : Window
 
     private void Filter()
     {
-        if (Characters is null) return;
+        if (!uiReady || Characters is null) return;
         var selectedId = (Characters.SelectedItem as Preset)?.Id;
         var query = Search.Text.Trim();
         visible.Clear();
@@ -84,7 +91,8 @@ public sealed partial class MainWindow : Window
     {
         previewReady = Characters.SelectedItem is Preset;
         ApplyWallpaper.IsEnabled = previewReady && !busy;
-        ShowStatus("Windows edition preview", "Apply changes the wallpaper on all monitors. The previous background is backed up first.");
+        if (!busy && Pages.SelectedIndex == 0)
+            ShowStatus("Windows edition preview", "Apply changes the wallpaper on all monitors. The previous background is backed up first.");
     }
 
     private void PreviewFailed(object sender, ExceptionRoutedEventArgs args)
@@ -111,7 +119,7 @@ public sealed partial class MainWindow : Window
     private async Task RunWallpaperAction(Action<WallpaperManager> action, string success)
     {
         busy = true;
-        ApplyWallpaper.IsEnabled = RestoreWallpaper.IsEnabled = Search.IsEnabled = Characters.IsEnabled = false;
+        UpdateActionControls();
         ShowStatus("Updating your background", "Saving recovery data and updating Windows. Please wait before closing Bankai.");
         try
         {
@@ -135,9 +143,7 @@ public sealed partial class MainWindow : Window
         finally
         {
             busy = false;
-            Search.IsEnabled = Characters.IsEnabled = true;
-            ApplyWallpaper.IsEnabled = previewReady;
-            RestoreWallpaper.IsEnabled = File.Exists(Path.Combine(stateDirectory, "previous-wallpaper.json"));
+            UpdateActionControls();
         }
     }
 
@@ -154,6 +160,7 @@ public sealed partial class MainWindow : Window
         Search.Text = "";
         await WaitFor(() => visible.Count == presets.Count && previewReady,
             "Clearing search did not restore the catalog.");
+        await RunTerminalSmokeCheck();
     }
 
     private static async Task WaitFor(Func<bool> condition, string failure)

@@ -7,5 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../WallpaperManager.cs" Link="WallpaperManager.cs" />
+    <Compile Include="../PresetCatalog.cs" Link="PresetCatalog.cs" />
+    <Compile Include="../TerminalScheme.cs" Link="TerminalScheme.cs" />
+    <Compile Include="../JsoncEditor.cs" Link="JsoncEditor.cs" />
+    <Compile Include="../TerminalSettingsDocument.cs" Link="TerminalSettingsDocument.cs" />
+    <Compile Include="../TerminalSettingsManager.cs" Link="TerminalSettingsManager.cs" />
   </ItemGroup>
 </Project>

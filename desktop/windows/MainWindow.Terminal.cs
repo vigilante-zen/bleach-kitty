@@ -13,14 +13,16 @@ public sealed partial class MainWindow
 
     private void RefreshTerminalInstallations()
     {
-        var selected = (TerminalInstall.SelectedItem as TerminalInstallation)?.Path;
+        var selected = TerminalInstall.SelectedItem as TerminalInstallation;
         terminalInstallations.Clear();
         if (Environment.GetEnvironmentVariable("BANKAI_WINDOWS_SMOKE_REPORT") is null)
             terminalInstallations.AddRange(TerminalSettingsDocument.Discover(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)));
+        if (selected is not null && File.Exists(selected.Path) && terminalInstallations.All(item => item.Path != selected.Path))
+            terminalInstallations.Add(selected);
         TerminalInstall.ItemsSource = null;
         TerminalInstall.ItemsSource = terminalInstallations;
-        TerminalInstall.SelectedItem = terminalInstallations.FirstOrDefault(item => item.Path == selected)
+        TerminalInstall.SelectedItem = terminalInstallations.FirstOrDefault(item => item.Path == selected?.Path)
             ?? terminalInstallations.FirstOrDefault();
         if (terminalInstallations.Count == 0)
             TerminalSettingsPath.Text = "Open Windows Terminal once, then Refresh. For a portable installation, choose its settings.json file.";
@@ -61,11 +63,10 @@ public sealed partial class MainWindow
         }
     }
 
-    private async void RefreshTerminalClicked(object sender, RoutedEventArgs args)
+    private void RefreshTerminalClicked(object sender, RoutedEventArgs args)
     {
         if (busy) return;
-        if (TerminalInstall.SelectedItem is not null) await LoadTerminalSettings();
-        else RefreshTerminalInstallations();
+        RefreshTerminalInstallations();
     }
 
     private async void BrowseTerminalClicked(object sender, RoutedEventArgs args)
@@ -132,24 +133,26 @@ public sealed partial class MainWindow
 
     private async Task UpdateTerminal(bool restore)
     {
-        if (busy || terminalPreview is not { } preview || TerminalProfiles.SelectedItem is not TerminalProfile profile ||
-            TerminalCharacter.SelectedItem is not Preset preset) return;
+        if (busy || terminalPreview is not { } preview) return;
+        var profile = TerminalProfiles.SelectedItem as TerminalProfile;
+        var preset = TerminalCharacter.SelectedItem as Preset;
+        if (!restore && (profile is null || preset is null)) return;
         busy = true;
         UpdateActionControls();
         ShowStatus("Updating Terminal", "Saving recovery data and updating your settings…");
         try
         {
-            var scheme = TerminalScheme.ForPreset(preset);
+            var scheme = restore ? null : TerminalScheme.ForPreset(preset!);
             await Task.Run(() =>
             {
                 var manager = new TerminalSettingsManager(stateDirectory);
                 if (restore) manager.Restore(preview);
-                else manager.Apply(preview, profile, scheme);
+                else manager.Apply(preview, profile!, scheme!);
             });
             if (await LoadTerminalSettings())
                 ShowStatus("Terminal updated", restore
                     ? "Previous Terminal settings restored. The settings they replaced were also saved."
-                    : $"{scheme.Name} applied to {profile.Label}. Terminal normally reloads settings automatically; reopen a tab if needed.", InfoBarSeverity.Success);
+                    : $"{scheme!.Name} applied to {profile!.Label}. Terminal normally reloads settings automatically; reopen a tab if needed.", InfoBarSeverity.Success);
         }
         catch (Exception error) { ShowError(error.Message); }
         finally { busy = false; UpdateActionControls(); }

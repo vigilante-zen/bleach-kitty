@@ -35,18 +35,28 @@ Testing the portable download alone does not require installing development tool
 - Eighteen shared presets, character search and wallpaper previews.
 - Explicit wallpaper application and previous-background recovery, with Windows
   state under `%LOCALAPPDATA%\Bankai`.
-- Eleven recovery checks pass on Linux and Windows; published-app launch, initial
-  image loading, filtering, empty results and clearing search passed on Windows.
-- Verified binary source: `e91ddac`. Later commits document the same implementation.
+- Windows Terminal installation/profile selection, character color previews,
+  comment-preserving Apply and exact-byte Restore. Each installation has separate
+  recovery data; changed settings are detected before Apply or Restore.
+- Eleven wallpaper and sixteen Terminal recovery checks pass on Linux and Windows.
+  The Linux Terminal checks include symlink rejection; Windows checks include a
+  locked-settings replacement failure and preservation of earlier restore data.
+- Published-app checks exercise wallpaper previews/search and Terminal Apply/Restore
+  using disposable settings, without changing the runner's real preferences.
+- Current implementation source: `23f601c`.
 - Successful build and downloadable artifact:
-  https://github.com/vigilante-zen/bleach-kitty/actions/runs/39810412818
-- Artifact SHA-256 for `bankai-windows-x64-preview.zip`:
-  `dd0656f8d465010ec2738770a121e082fd074b907c257db86a3e84ba873071d4`.
+  https://github.com/vigilante-zen/bleach-kitty/actions/runs/39882854418
+- SHA-256 for that run's `bankai-windows-x64-preview.zip`:
+  `34a42fd7e824e2b175d7e432d0af3d6ddcb3f050b11cb097fe79e8496cd6a2cb`.
+  Later builds are available from the Windows edition workflow; each includes
+  its own SHA-256 sidecar.
 
 Start with interactive testing of Apply/Restore on a real Windows desktop,
 including multiple monitors, keyboard use and Narrator. Automated recovery checks
-use a fake backend and have not verified real wallpaper changes. After validation,
-the next planned feature is Windows Terminal appearance integration. Tray controls,
+use a fake wallpaper backend and have not verified real wallpaper changes. Test
+Terminal's live reload and profile overrides interactively too. Terminal colors
+are implemented; artwork inside the shell and terminal launchers remain future
+extensions. Tray controls,
 single-instance activation, optional startup, a backup browser and installer/signing
 remain future work.
 
@@ -62,9 +72,10 @@ is still pending publication; it is separate from this Windows development previ
 > PROJECT_CHECKPOINT.md, docs/WINDOWS_HANDOFF.md and desktop/windows/README.md
 > first. Work in desktop/windows using C# and WinUI 3, preserving the Linux
 > editions and shared artwork. The current preview has searchable character
-> wallpapers, Apply and Restore, and a passing Windows build/launch workflow.
+> wallpapers, wallpaper Apply and Restore, plus Windows Terminal color previews,
+> profile selection, comment-preserving settings updates and independent recovery.
 > Start by checking the worktree and validating the preview on Windows, then
-> continue with Windows Terminal integration. Preserve any local screenshots.
+> continue with the next requested feature. Preserve any local screenshots.
 
 The original computer's untracked `artifacts/` screenshots, generated `dist/`
 downloads and installed preferences/backups are not in Git. Copy those separately

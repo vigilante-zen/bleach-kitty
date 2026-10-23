@@ -2,6 +2,47 @@
 
 This file records a continuation point for the Bankai desktop project.
 
+## Windows Terminal integration handoff (2026-10-22)
+
+Windows Terminal color integration is implemented and pushed through `23f601c`.
+The app now has Wallpaper and Windows Terminal tabs. Terminal detects Stable,
+Preview, Canary and standard unpackaged settings, supports choosing another JSONC
+settings file, lists explicit profiles plus inherited defaults, and previews all
+18 character schemes. Colors match the existing Kitty palette and character
+accent overrides. Apply adds a named Bankai scheme and changes only the chosen
+profile's colorScheme. Fonts, commands, keybindings, background images, unrelated
+profiles, schemes and settings text are preserved. Existing comments, BOMs and
+trailing commas are supported; ambiguous duplicate keys and conflicting existing
+Bankai scheme names are rejected.
+
+`TerminalSettingsManager` saves exact bytes and SHA-256 metadata separately for
+each target under `%LOCALAPPDATA%\Bankai\TerminalBackups`. It locks across Bankai
+instances, checks for external edits, and uses atomic replacement. Restore checks
+integrity and refuses settings edited since Bankai's last write, saves the file it
+replaces, and can itself be undone. A failed replacement restores the preceding
+backup metadata. Reads are bounded at 8 MiB and symlink/junction paths are refused.
+Recovery is independent of current profile selection. Refresh rediscovers current
+installations while retaining a selected custom settings file.
+
+All 11 wallpaper and 16 Terminal checks pass on Linux and Windows (27 per host).
+The platform-specific Terminal checks differ: Linux tests symlink boundaries;
+Windows tests a sharing violation during atomic replacement and continued access
+to the earlier restore point. Windows run
+https://github.com/vigilante-zen/bleach-kitty/actions/runs/39882854418 passed publish,
+wallpaper preview/search checks and a real WinUI Terminal Apply/Restore flow using
+an isolated temporary settings file. No real wallpaper or Terminal settings were
+changed. The run uploaded the portable ZIP and its SHA-256 sidecar. Local download:
+`dist/windows-terminal-23f601c`.
+
+Start on another computer with `docs/WINDOWS_HANDOFF.md` and
+`desktop/windows/README.md`. Live Terminal reload, picker use, profile override
+behavior, Narrator and real wallpaper/multi-monitor behavior still need interactive
+Windows validation. Shell artwork/prompt installation, terminal launchers, tray,
+single-instance activation, startup, a backup browser and installer/signing remain
+future work. User screenshots in `artifacts/` and Linux editions are preserved.
+The older checkpoints below describe earlier milestones, not unfinished Terminal
+color integration. The Linux release is still separate and pending publication.
+
 ## Current Windows handoff (2026-10-22)
 
 For switching computers, start with `docs/WINDOWS_HANDOFF.md`: it includes clone,

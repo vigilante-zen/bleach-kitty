@@ -2,8 +2,9 @@
 
 A [Windows edition using C# and WinUI 3](windows/README.md) is now in development.
 Its preview includes character search, wallpaper previews, explicit wallpaper
-application and previous-background recovery. Windows Terminal, tray integration
-and login startup remain planned; see its guide for downloads and testing limits.
+application and previous-background recovery, plus Windows Terminal color previews,
+profile selection and settings recovery. Tray integration and login startup remain
+planned; see its guide for downloads and testing limits.
 
 Rust is the default desktop edition. Python remains available as an alternative. Both use the same terminal artwork and KDE desktop assets.
 
